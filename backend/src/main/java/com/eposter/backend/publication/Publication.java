@@ -1,0 +1,87 @@
+package com.eposter.backend.publication;
+
+import com.eposter.backend.event.Event;
+import com.eposter.backend.media.Media;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(
+        name = "publications",
+        indexes = {
+                @Index(name = "idx_publications_event_id", columnList = "eventId"),
+                @Index(name = "idx_publications_status", columnList = "status")
+        }
+)
+public class Publication {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String eventId;
+    @ManyToOne
+    @JoinColumn(name = "event_ref_id")
+    private Event event;
+    @Column(nullable = false)
+    private String title;
+    private String authors;
+    @Column(columnDefinition = "TEXT")
+    private String description;
+    private String status;
+    private String session;
+    private String category;
+    @ManyToOne
+    private com.eposter.backend.category.Category categoryRef;
+    private String room;
+    private String posterUrl;
+    @OneToMany(mappedBy = "publication", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Media> mediaList = new ArrayList<>();
+    private Instant publishDate;
+    private Instant createdAt;
+    private Instant updatedAt;
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getEventId() { return eventId; }
+    public void setEventId(String eventId) { this.eventId = eventId; }
+    public Event getEvent() { return event; }
+    public void setEvent(Event event) { this.event = event; }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+    public String getAuthors() { return authors; }
+    public void setAuthors(String authors) { this.authors = authors; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public String getSession() { return session; }
+    public void setSession(String session) { this.session = session; }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+    public com.eposter.backend.category.Category getCategoryRef() { return categoryRef; }
+    public void setCategoryRef(com.eposter.backend.category.Category categoryRef) { this.categoryRef = categoryRef; }
+    public String getRoom() { return room; }
+    public void setRoom(String room) { this.room = room; }
+    public String getPosterUrl() { return posterUrl; }
+    public void setPosterUrl(String posterUrl) { this.posterUrl = posterUrl; }
+    public List<Media> getMediaList() { return mediaList; }
+    public void setMediaList(List<Media> mediaList) { this.mediaList = mediaList; }
+    public Instant getPublishDate() { return publishDate; }
+    public void setPublishDate(Instant publishDate) { this.publishDate = publishDate; }
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public Instant getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+}
