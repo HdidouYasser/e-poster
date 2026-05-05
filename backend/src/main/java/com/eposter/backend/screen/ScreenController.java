@@ -2,6 +2,7 @@ package com.eposter.backend.screen;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,8 +29,8 @@ public class ScreenController {
     }
 
     @GetMapping
-    public List<Screen> list() {
-        return service.list();
+    public List<Screen> list(@RequestParam(required = false) Long eventId) {
+        return service.list(eventId);
     }
 
     @GetMapping("/{id}")
@@ -46,6 +48,16 @@ public class ScreenController {
         return service.update(id, request.toModel());
     }
 
+    @GetMapping("/{id}/layout")
+    public List<ScreenSection> getLayout(@PathVariable Long id) {
+        return service.getLayout(id);
+    }
+
+    @PutMapping("/{id}/layout")
+    public List<ScreenSection> replaceLayout(@PathVariable Long id, @Valid @RequestBody List<ScreenSectionRequest> sections) {
+        return service.replaceLayout(id, sections.stream().map(ScreenSectionRequest::toModel).toList());
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
@@ -61,14 +73,40 @@ public class ScreenController {
     public record ScreenRequest(
             @NotBlank String name,
             String location,
-            @NotBlank String mode
+            @NotBlank String mode,
+            @NotNull Long eventId,
+            List<ScreenSectionRequest> sections
     ) {
         Screen toModel() {
             Screen s = new Screen();
             s.setName(name);
             s.setLocation(location);
             s.setMode(mode);
+            com.eposter.backend.event.Event event = new com.eposter.backend.event.Event();
+            event.setId(eventId);
+            s.setEvent(event);
+            if (sections != null) {
+                s.setSections(sections.stream().map(ScreenSectionRequest::toModel).toList());
+            }
             return s;
+        }
+    }
+
+    public record ScreenSectionRequest(
+            String title,
+            Integer position,
+            Long publicationId
+    ) {
+        ScreenSection toModel() {
+            ScreenSection section = new ScreenSection();
+            section.setTitle(title);
+            section.setPosition(position);
+            if (publicationId != null) {
+                com.eposter.backend.publication.Publication publication = new com.eposter.backend.publication.Publication();
+                publication.setId(publicationId);
+                section.setPublication(publication);
+            }
+            return section;
         }
     }
 }

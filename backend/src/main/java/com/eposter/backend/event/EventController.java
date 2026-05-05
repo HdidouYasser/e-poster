@@ -46,6 +46,11 @@ public class EventController {
         return service.getById(id);
     }
 
+    @GetMapping("/active")
+    public Event getActiveEvent() {
+        return service.getActiveEvent();
+    }
+
     @GetMapping("/search")
     public ApiPageResponse<Event> search(
             @RequestParam @NotBlank String q,

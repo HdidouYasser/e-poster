@@ -30,6 +30,7 @@ public class Event {
     private Instant endDate;
     private Instant createdAt;
     private Instant updatedAt;
+    private Instant deletedAt;
     @OneToMany(mappedBy = "event")
     private List<Publication> publications = new ArrayList<>();
     @OneToMany(mappedBy = "event")
@@ -51,6 +52,8 @@ public class Event {
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+    public Instant getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Instant deletedAt) { this.deletedAt = deletedAt; }
     public List<Publication> getPublications() { return publications; }
     public void setPublications(List<Publication> publications) { this.publications = publications; }
     public List<Screen> getScreens() { return screens; }

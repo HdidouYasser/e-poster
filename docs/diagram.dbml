@@ -1,0 +1,209 @@
+// E-Poster Platform - Database Schema (DBML)
+// Copier ce code sur https://dbdiagram.io pour visualiser
+
+// Note: Toutes les entités incluent createdAt, updatedAt, deletedAt (timestamps & soft delete)
+// Ces champs sont masqués pour la lisibilité mais présents dans l'implémentation JPA
+
+// ======================
+// AUTHENTIFICATION
+// ======================
+
+Table roles {
+  id bigint [pk, increment]
+  name varchar [unique, not null]
+  description text
+  // created_at timestamp
+}
+
+Table users {
+  id bigint [pk, increment]
+  email varchar [unique, not null]
+  password_hash varchar [not null]
+  first_name varchar
+  last_name varchar
+  role_id bigint [ref: > roles.id]
+  // created_at, updated_at, deleted_at timestamps
+}
+
+// ======================
+// ÉVÉNEMENTS
+// ======================
+
+Table events {
+  id bigint [pk, increment]
+  title varchar [not null]
+  description text
+  status varchar
+  start_date timestamp
+  end_date timestamp
+  // created_at, updated_at, deleted_at timestamps
+}
+
+// ======================
+// ÉCRANS
+// ======================
+
+Table screens {
+  id bigint [pk, increment]
+  name varchar [not null]
+  location varchar
+  mode varchar [not null, note: 'TOTEM, DISPLAY, VIDEO_WALL']
+  resolution varchar
+  is_active boolean [default: true]
+  event_id bigint [ref: > events.id]
+  // created_at, updated_at, deleted_at timestamps
+}
+
+Table screen_sections {
+  id bigint [pk, increment]
+  title varchar
+  position int
+  display_duration int
+  screen_id bigint [ref: > screens.id]
+  publication_id bigint [ref: > publications.id]
+  // created_at, updated_at timestamps
+}
+
+// ======================
+// PUBLICATIONS
+// ======================
+
+Table publications {
+  id bigint [pk, increment]
+  title varchar [not null]
+  abstract_text text
+  description text
+  status varchar
+  session varchar
+  room varchar
+  poster_url varchar
+  event_ref_id bigint [ref: > events.id]
+  publish_date timestamp
+  // created_at, updated_at, deleted_at timestamps
+  
+  Indexes {
+    event_ref_id [name: 'idx_publications_event_id']
+    status [name: 'idx_publications_status']
+  }
+}
+
+Table authors {
+  id bigint [pk, increment]
+  first_name varchar [not null]
+  last_name varchar [not null]
+  email varchar
+  affiliation varchar
+  is_corresponding boolean [default: false]
+  // created_at timestamp
+}
+
+Table categories {
+  id bigint [pk, increment]
+  name varchar [not null]
+  type varchar
+  description text
+  event_id bigint [ref: > events.id]
+  // created_at, updated_at, deleted_at timestamps
+}
+
+// ======================
+// TABLES DE LIAISON
+// ======================
+
+Table publication_authors {
+  id bigint [pk, increment]
+  publication_id bigint [ref: > publications.id, not null]
+  author_id bigint [ref: > authors.id, not null]
+  author_order int
+  
+  Indexes {
+    (publication_id, author_id) [unique, name: 'unique_publication_author']
+  }
+}
+
+Table publication_categories {
+  id bigint [pk, increment]
+  publication_id bigint [ref: > publications.id, not null]
+  category_id bigint [ref: > categories.id, not null]
+  
+  Indexes {
+    (publication_id, category_id) [unique, name: 'unique_publication_category']
+  }
+}
+
+// ======================
+// MÉDIAS
+// ======================
+
+Table media {
+  id bigint [pk, increment]
+  file_path varchar [not null]
+  file_name varchar
+  file_type varchar [note: 'POSTER, THUMBNAIL, IMAGE, VIDEO']
+  file_size bigint
+  thumbnail_path varchar
+  publication_id bigint [ref: > publications.id]
+  // upload_date, created_at, deleted_at timestamps
+}
+
+Table files {
+  id bigint [pk, increment]
+  original_name varchar
+  content_type varchar
+  storage_path varchar
+  size_bytes bigint
+  // created_at timestamp
+}
+
+// ======================
+// IMPORTS
+// ======================
+
+Table import_records {
+  id bigint [pk, increment]
+  file_name varchar [not null]
+  file_type varchar [note: 'CSV, EXCEL']
+  total_rows int [default: 0]
+  success_rows int [default: 0]
+  failed_rows int [default: 0]
+  status varchar [not null, note: 'PENDING, PROCESSING, COMPLETED, FAILED']
+  error_message text
+  // imported_by, imported_at, completed_at
+}
+
+// ======================
+// AUDIT
+// ======================
+
+Table audit_logs {
+  id bigint [pk, increment]
+  username varchar [not null]
+  entity_type varchar [not null]
+  entity_id bigint
+  action varchar [not null]
+  details text
+  // created_at timestamp
+}
+
+// ======================
+// RELATIONS
+// ======================
+
+// Event relationships
+Ref: screens.event_id > events.id // Event 1 -- * Screen
+Ref: publications.event_ref_id > events.id // Event 1 -- * Publication
+Ref: categories.event_id > events.id // Event 1 -- * Category
+
+// Screen relationships
+Ref: screen_sections.screen_id > screens.id // Screen 1 -- * ScreenSection
+Ref: screen_sections.publication_id > publications.id // ScreenSection * -- * Publication
+
+// Publication relationships
+Ref: publication_authors.publication_id > publications.id // Publication 1 -- * PublicationAuthor
+Ref: publication_authors.author_id > authors.id // Author 1 -- * PublicationAuthor
+Ref: publication_categories.publication_id > publications.id // Publication 1 -- * PublicationCategory
+Ref: publication_categories.category_id > categories.id // Category 1 -- * PublicationCategory
+Ref: media.publication_id > publications.id // Publication 1 -- * Media
+
+// User relationships
+Ref: users.role_id > roles.id // User * -- * Role

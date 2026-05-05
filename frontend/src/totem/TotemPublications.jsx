@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "../api";
 import { useIdleTimer } from "../hooks/useIdleTimer";
 import { createTotemSync } from "./totemSync";
+import { Home, Search, MonitorPlay, ChevronLeft, ChevronRight, Image as ImageIcon } from "lucide-react";
 
 const sync = createTotemSync();
 
@@ -48,131 +49,106 @@ export default function TotemPublications() {
   });
 
   useEffect(() => {
-    // follower behavior: if another screen opens a poster, follow it
     return sync.onMessage((msg) => {
       if (!msg || msg.type !== "NAVIGATE") return;
-      if (String(msg.screen) === String(screen)) return; // ignore self
-      // follow any other screen
+      if (String(msg.screen) === String(screen)) return; 
       navigate(msg.path);
     });
   }, [navigate, screen]);
 
   return (
-    <div style={styles.shell}>
-      <div style={styles.topBar}>
-        <Link style={styles.bigBtn} to={`/totem?screen=${screen}`}>
-          Accueil
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col p-6 relative overflow-hidden">
+      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-blue-600/10 blur-[150px] rounded-full pointer-events-none" />
+
+      <header className="flex items-center justify-between mb-8 relative z-10 bg-slate-900/40 p-4 rounded-3xl border border-slate-800/50 backdrop-blur-md">
+        <Link to={`/totem?screen=${screen}`} className="px-6 py-4 bg-slate-800 hover:bg-slate-700 rounded-2xl text-xl font-bold transition-all flex items-center gap-3">
+          <Home size={28} /> Accueil
         </Link>
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <input
-            style={styles.search}
-            value={q}
-            onChange={(e) => {
-              setQ(e.target.value);
-              setPage(0);
-            }}
-            placeholder="Rechercher un poster…"
-          />
-          <button
-            style={styles.bigBtn}
-            onClick={() => {
-              window.open(`${window.location.origin}/totem/publications?screen=${Number(screen) + 1}`, `totem-screen-${Number(screen) + 1}`);
-            }}
-          >
-            + écran
-          </button>
+        <div className="flex items-center gap-4 flex-1 justify-center max-w-2xl">
+          <div className="relative w-full">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={28} />
+            <input
+              className="w-full bg-slate-950 border-2 border-slate-700/50 focus:border-indigo-500 text-white pl-16 pr-6 py-4 rounded-2xl text-xl outline-none transition-all shadow-inner"
+              value={q}
+              onChange={(e) => {
+                setQ(e.target.value);
+                setPage(0);
+              }}
+              placeholder="Rechercher un poster (titre, auteur, mots-clés)..."
+            />
+          </div>
         </div>
-      </div>
-
-      <div style={styles.grid}>
-        {(data.items || []).map((p) => (
-          <button
-            key={p.id}
-            style={styles.tile}
-            onClick={() => {
-              const path = `/totem/publications/${p.id}?screen=${screen}`;
-              sync.send({ type: "NAVIGATE", screen, path });
-              navigate(path);
-            }}
-          >
-            <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>{p.title}</div>
-            <div style={{ opacity: 0.85, fontSize: 16, lineHeight: 1.2, maxHeight: 58, overflow: "hidden" }}>
-              {p.description}
-            </div>
-            <div style={{ marginTop: 10, opacity: 0.7 }}>{p.status}</div>
-          </button>
-        ))}
-      </div>
-
-      <div style={styles.pager}>
-        <button style={styles.bigBtn} disabled={page <= 0} onClick={() => setPage((x) => x - 1)}>
-          Précédent
+        <button
+          onClick={() => window.open(`${window.location.origin}/totem/publications?screen=${Number(screen) + 1}`, `totem-screen-${Number(screen) + 1}`)}
+          className="px-6 py-4 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/30 border border-indigo-500/30 rounded-2xl text-xl font-bold transition-all flex items-center gap-3"
+        >
+          <MonitorPlay size={28} /> Lier Écran
         </button>
-        <div style={{ fontSize: 18 }}>
-          Page {data.page + 1} / {Math.max(data.totalPages, 1)}
+      </header>
+
+      <main className="flex-1 relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {pubsQuery.isLoading ? (
+          <div className="col-span-full flex flex-col items-center justify-center p-20 animate-pulse">
+            <div className="w-20 h-20 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-6" />
+            <div className="text-2xl text-slate-400">Chargement des publications...</div>
+          </div>
+        ) : data.items?.length === 0 ? (
+          <div className="col-span-full text-center p-20 bg-slate-900/50 border border-slate-800 rounded-3xl backdrop-blur-sm">
+            <Search size={64} className="mx-auto text-slate-600 mb-6" />
+            <h2 className="text-3xl font-bold mb-4">Aucun poster trouvé</h2>
+            <p className="text-xl text-slate-400">Essayez une autre recherche.</p>
+          </div>
+        ) : (
+          data.items?.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => {
+                const path = `/totem/publications/${p.id}?screen=${screen}`;
+                sync.send({ type: "NAVIGATE", screen, path });
+                navigate(path);
+              }}
+              className="group text-left bg-slate-900/80 border border-slate-800 hover:border-indigo-500/50 rounded-3xl p-6 flex flex-col gap-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-indigo-500/10 backdrop-blur-sm"
+            >
+              <div className="w-full aspect-[3/4] bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 flex items-center justify-center relative shadow-inner">
+                {p.posterUrl ? (
+                  <img src={p.posterUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                ) : (
+                  <ImageIcon size={48} className="text-slate-700" />
+                )}
+                {p.status === 'PUBLISHED' && (
+                  <div className="absolute top-4 right-4 bg-emerald-500/90 text-white px-3 py-1 text-sm font-bold rounded-full backdrop-blur-md shadow-lg">
+                    En Ligne
+                  </div>
+                )}
+              </div>
+              <div className="flex-1">
+                <h3 className="text-2xl font-bold line-clamp-2 leading-tight mb-2 group-hover:text-indigo-300 transition-colors">{p.title}</h3>
+                <p className="text-lg text-slate-400 line-clamp-2">{p.authors || "Auteurs multiples"}</p>
+              </div>
+            </button>
+          ))
+        )}
+      </main>
+
+      <footer className="mt-8 flex justify-between items-center bg-slate-900/40 p-4 rounded-3xl border border-slate-800/50 backdrop-blur-md relative z-10">
+        <button 
+          disabled={page <= 0} 
+          onClick={() => setPage((x) => x - 1)}
+          className="px-8 py-4 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:hover:bg-slate-800 rounded-2xl text-xl font-bold transition-all flex items-center gap-3"
+        >
+          <ChevronLeft size={28} /> Précédent
+        </button>
+        <div className="text-2xl font-bold text-slate-300 bg-slate-950 px-8 py-3 rounded-2xl border border-slate-800">
+          Page {data.page + 1} <span className="text-slate-600 mx-2">/</span> {Math.max(data.totalPages, 1)}
         </div>
-        <button style={styles.bigBtn} disabled={page + 1 >= data.totalPages} onClick={() => setPage((x) => x + 1)}>
-          Suivant
+        <button 
+          disabled={page + 1 >= data.totalPages} 
+          onClick={() => setPage((x) => x + 1)}
+          className="px-8 py-4 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:hover:bg-slate-800 rounded-2xl text-xl font-bold transition-all flex items-center gap-3"
+        >
+          Suivant <ChevronRight size={28} />
         </button>
-      </div>
+      </footer>
     </div>
   );
 }
-
-const styles = {
-  shell: {
-    minHeight: "100vh",
-    background: "#0b1220",
-    color: "white",
-    padding: 24
-  },
-  topBar: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 12,
-    marginBottom: 18
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-    gap: 16
-  },
-  tile: {
-    textAlign: "left",
-    borderRadius: 16,
-    border: "1px solid #233252",
-    background: "#111b2f",
-    padding: 16,
-    color: "white",
-    minHeight: 150,
-    cursor: "pointer"
-  },
-  pager: {
-    marginTop: 18,
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 12
-  },
-  bigBtn: {
-    fontSize: 20,
-    padding: "14px 18px",
-    borderRadius: 14,
-    border: "1px solid #2f4166",
-    background: "#17243d",
-    color: "white",
-    cursor: "pointer",
-    textDecoration: "none"
-  },
-  search: {
-    fontSize: 20,
-    padding: "14px 16px",
-    borderRadius: 14,
-    border: "1px solid #2f4166",
-    background: "#0e1930",
-    color: "white",
-    minWidth: 340
-  }
-};
-

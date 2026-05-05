@@ -1,7 +1,4 @@
 import "dotenv/config";
-import path from "node:path";
-import fs from "node:fs";
-import { MongoClient, ObjectId, GridFSBucket } from "mongodb";
 import mysql from "mysql2/promise";
 import { legacy } from "./mapping.js";
 
@@ -14,96 +11,95 @@ function required(name) {
 }
 
 async function main() {
-  const mysqlConn = await mysql.createConnection({
-    host: required("MYSQL_HOST"),
-    port: Number(process.env.MYSQL_PORT || 3306),
-    user: required("MYSQL_USER"),
-    password: process.env.MYSQL_PASSWORD || "",
-    database: required("MYSQL_DATABASE")
+  const source = await mysql.createConnection({
+    host: required("LEGACY_MYSQL_HOST"),
+    port: Number(process.env.LEGACY_MYSQL_PORT || 3306),
+    user: required("LEGACY_MYSQL_USER"),
+    password: process.env.LEGACY_MYSQL_PASSWORD || "",
+    database: required("LEGACY_MYSQL_DATABASE")
   });
 
-  const mongo = new MongoClient(required("MONGODB_URI"));
-  await mongo.connect();
-  const db = mongo.db(); // db name from URI
-  const bucket = new GridFSBucket(db);
-  const filesRoot = process.env.LEGACY_FILES_ROOT || "";
+  const target = await mysql.createConnection({
+    host: required("TARGET_MYSQL_HOST"),
+    port: Number(process.env.TARGET_MYSQL_PORT || 3306),
+    user: required("TARGET_MYSQL_USER"),
+    password: process.env.TARGET_MYSQL_PASSWORD || "",
+    database: required("TARGET_MYSQL_DATABASE")
+  });
 
   try {
     console.log(`DRY_RUN=${DRY_RUN}`);
     console.log("Reading legacy events…");
-    const [eventRows] = await mysqlConn.execute(`SELECT * FROM \`${legacy.tables.events}\``);
+    const [eventRows] = await source.execute(`SELECT * FROM \`${legacy.tables.events}\``);
     console.log(`Events rows: ${eventRows.length}`);
 
-    const eventsCol = db.collection("events");
-    const pubsCol = db.collection("publications");
-
-    const legacyEventIdToMongoId = new Map();
+    const legacyEventIdToTargetId = new Map();
 
     for (const row of eventRows) {
-      const doc = legacy.mapEvent(row);
+      const event = legacy.mapEvent(row);
       if (DRY_RUN) continue;
-      const { insertedId } = await eventsCol.insertOne(doc);
-      legacyEventIdToMongoId.set(doc.legacyId, insertedId);
+      const [result] = await target.execute(
+        `INSERT INTO events (title, description, status, start_date, end_date, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          event.title,
+          event.description,
+          event.status,
+          event.startDate,
+          event.endDate,
+          event.createdAt,
+          event.updatedAt
+        ]
+      );
+      legacyEventIdToTargetId.set(event.legacyId, result.insertId);
     }
 
     console.log("Reading legacy publications…");
-    const [pubRows] = await mysqlConn.execute(`SELECT * FROM \`${legacy.tables.publications}\``);
+    const [pubRows] = await source.execute(`SELECT * FROM \`${legacy.tables.publications}\``);
     console.log(`Publications rows: ${pubRows.length}`);
 
     let created = 0;
-    let uploaded = 0;
-    let skippedFiles = 0;
 
     for (const row of pubRows) {
-      const doc = legacy.mapPublication(row);
+      const publication = legacy.mapPublication(row);
 
-      // resolve eventId
-      if (doc.legacyEventId && legacyEventIdToMongoId.has(doc.legacyEventId)) {
-        doc.eventId = String(legacyEventIdToMongoId.get(doc.legacyEventId));
+      if (publication.legacyEventId && legacyEventIdToTargetId.has(publication.legacyEventId)) {
+        publication.eventId = String(legacyEventIdToTargetId.get(publication.legacyEventId));
       } else {
-        doc.eventId = null;
+        publication.eventId = null;
       }
-      delete doc.legacyEventId;
-
-      // upload legacy file to GridFS if present
-      if (doc.legacyFilePath && filesRoot) {
-        const abs = path.resolve(filesRoot, doc.legacyFilePath);
-        if (fs.existsSync(abs) && fs.statSync(abs).isFile()) {
-          if (!DRY_RUN) {
-            const fileId = await uploadToGridFs(bucket, abs, path.basename(abs));
-            doc.posterUrl = `/api/files/${fileId}`;
-            uploaded++;
-          }
-        } else {
-          skippedFiles++;
-        }
-      }
-      delete doc.legacyFilePath;
-
-      if (!doc.title) doc.title = "(Sans titre)";
+      if (!publication.title) publication.title = "(Sans titre)";
 
       if (!DRY_RUN) {
-        await pubsCol.insertOne(doc);
+        await target.execute(
+          `INSERT INTO publications
+             (event_id, title, authors, description, status, session, category, room, poster_url, publish_date, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            publication.eventId,
+            publication.title,
+            publication.authors,
+            publication.description,
+            publication.status,
+            publication.session,
+            publication.category,
+            publication.room,
+            publication.posterUrl,
+            publication.publishDate,
+            publication.createdAt,
+            publication.updatedAt
+          ]
+        );
       }
       created++;
     }
 
     console.log("Done.");
-    console.log({ created, uploaded, skippedFiles });
+    console.log({ created });
   } finally {
-    await mongo.close();
-    await mysqlConn.end();
+    await source.end();
+    await target.end();
   }
-}
-
-function uploadToGridFs(bucket, absPath, filename) {
-  return new Promise((resolve, reject) => {
-    const uploadStream = bucket.openUploadStream(filename);
-    fs.createReadStream(absPath)
-      .pipe(uploadStream)
-      .on("error", reject)
-      .on("finish", () => resolve(uploadStream.id.toString()));
-  });
 }
 
 main().catch((e) => {

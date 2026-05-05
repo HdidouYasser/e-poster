@@ -2,8 +2,7 @@
  * Adapt these to your legacy schema.
  * Provide:
  * - table names
- * - how to map rows to Mongo docs
- * - how to locate legacy files for a publication row
+ * - how to map legacy rows to target MySQL rows
  */
 
 export const legacy = {
@@ -12,14 +11,13 @@ export const legacy = {
     publications: "publications"
   },
 
-  /**
-   * Map MySQL event row -> Mongo event document
-   */
+  // Map legacy event row -> target event row
   mapEvent(row) {
     return {
       legacyId: String(row.id),
       title: clean(row.title),
       description: clean(row.description),
+      status: clean(row.status) || "DRAFT",
       startDate: toInstant(row.start_date),
       endDate: toInstant(row.end_date),
       createdAt: toInstant(row.created_at) ?? new Date(),
@@ -27,27 +25,24 @@ export const legacy = {
     };
   },
 
-  /**
-   * Map MySQL publication row -> Mongo publication document.
-   * `eventId` will be resolved later from legacyId -> new _id.
-   */
+  // Map legacy publication row -> target publication row.
+  // `eventId` is resolved later from legacy event id -> inserted event id.
   mapPublication(row) {
     return {
       legacyId: String(row.id),
       legacyEventId: row.event_id != null ? String(row.event_id) : null,
+      eventId: null,
       title: clean(row.title),
+      authors: clean(row.authors),
       description: clean(row.description),
       status: clean(row.status) || "DRAFT",
       session: clean(row.session),
       category: clean(row.category),
       room: clean(row.room),
       publishDate: toInstant(row.publish_date),
-      // posterUrl will be filled after uploading to GridFS
-      posterUrl: null,
+      posterUrl: clean(row.poster_url) || clean(row.file_path),
       createdAt: toInstant(row.created_at) ?? new Date(),
-      updatedAt: toInstant(row.updated_at) ?? new Date(),
-      // legacy file info (adapt)
-      legacyFilePath: clean(row.file_path) // ex: "posters/abc.pdf"
+      updatedAt: toInstant(row.updated_at) ?? new Date()
     };
   }
 };

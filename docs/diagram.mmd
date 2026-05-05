@@ -1,0 +1,185 @@
+---
+title: E-Poster Platform - Class Diagram
+---
+erDiagram
+    %% Note: Toutes les entités incluent createdAt, updatedAt, deletedAt
+    %% Ces champs sont masqués pour la lisibilité mais présents dans l'implémentation JPA
+
+    %% ======================
+    %% AUTHENTIFICATION
+    %% ======================
+    
+    ROLES {
+        bigint id PK
+        varchar name UK
+        text description
+    }
+
+    USERS {
+        bigint id PK
+        varchar email UK
+        varchar password_hash
+        varchar first_name
+        varchar last_name
+        bigint role_id FK
+    }
+
+    %% ======================
+    %% ÉVÉNEMENTS
+    %% ======================
+
+    EVENTS {
+        bigint id PK
+        varchar title
+        text description
+        varchar status
+        timestamp start_date
+        timestamp end_date
+    }
+
+    %% ======================
+    %% ÉCRANS
+    %% ======================
+
+    SCREENS {
+        bigint id PK
+        varchar name
+        varchar location
+        varchar mode
+        varchar resolution
+        boolean is_active
+        bigint event_id FK
+    }
+
+    SCREEN_SECTIONS {
+        bigint id PK
+        varchar title
+        int position
+        int display_duration
+        bigint screen_id FK
+        bigint publication_id FK
+    }
+
+    %% ======================
+    %% PUBLICATIONS
+    %% ======================
+
+    PUBLICATIONS {
+        bigint id PK
+        varchar title
+        text abstract_text
+        text description
+        varchar status
+        varchar session
+        varchar room
+        varchar poster_url
+        bigint event_ref_id FK
+        timestamp publish_date
+    }
+
+    AUTHORS {
+        bigint id PK
+        varchar first_name
+        varchar last_name
+        varchar email
+        varchar affiliation
+        boolean is_corresponding
+    }
+
+    CATEGORIES {
+        bigint id PK
+        varchar name
+        varchar type
+        text description
+        bigint event_id FK
+    }
+
+    %% ======================
+    %% TABLES DE LIAISON
+    %% ======================
+
+    PUBLICATION_AUTHORS {
+        bigint id PK
+        bigint publication_id FK
+        bigint author_id FK
+        int author_order
+    }
+
+    PUBLICATION_CATEGORIES {
+        bigint id PK
+        bigint publication_id FK
+        bigint category_id FK
+    }
+
+    %% ======================
+    %% MÉDIAS
+    %% ======================
+
+    MEDIA {
+        bigint id PK
+        varchar file_path
+        varchar file_name
+        varchar file_type
+        bigint file_size
+        varchar thumbnail_path
+        bigint publication_id FK
+    }
+
+    FILES {
+        bigint id PK
+        varchar original_name
+        varchar content_type
+        varchar storage_path
+        bigint size_bytes
+    }
+
+    %% ======================
+    %% IMPORTS
+    %% ======================
+
+    IMPORT_RECORDS {
+        bigint id PK
+        varchar file_name
+        varchar file_type
+        int total_rows
+        int success_rows
+        int failed_rows
+        varchar status
+        text error_message
+    }
+
+    %% ======================
+    %% AUDIT
+    %% ======================
+
+    AUDIT_LOGS {
+        bigint id PK
+        varchar username
+        varchar entity_type
+        bigint entity_id
+        varchar action
+        text details
+    }
+
+    %% ======================
+    %% RELATIONS
+    %% ======================
+
+    %% Auth
+    USERS }o--|| ROLES : "possède"
+
+    %% Event
+    EVENTS ||--o{ SCREENS : "contient"
+    EVENTS ||--o{ PUBLICATIONS : "regroupe"
+    EVENTS ||--o{ CATEGORIES : "définit"
+
+    %% Screen
+    SCREENS ||--o{ SCREEN_SECTIONS : "compose"
+    SCREEN_SECTIONS }o--|| PUBLICATIONS : "affiche"
+
+    %% Publication (Normalisé)
+    PUBLICATIONS ||--o{ PUBLICATION_AUTHORS : "via"
+    AUTHORS ||--o{ PUBLICATION_AUTHORS : "via"
+    PUBLICATIONS ||--o{ PUBLICATION_CATEGORIES : "via"
+    CATEGORIES ||--o{ PUBLICATION_CATEGORIES : "via"
+    PUBLICATIONS ||--o{ MEDIA : "contient"

@@ -4,15 +4,21 @@ server:
 spring:
   datasource:
     url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:eposter}?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
-    username: ${MYSQL_USER:root}
+    username: ${MYSQL_USER:aymane}
     password: ${MYSQL_PASSWORD:}
   jpa:
+    defer-datasource-initialization: true
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
     open-in-view: false
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
   servlet:
     multipart:
       max-file-size: 25MB
@@ -20,7 +26,7 @@ spring:
 
 app:
   security:
-    jwt-secret: ${JWT_SECRET:change-me-please-change-me-please-change-me}
+    jwt-secret: ${JWT_SECRET:7ef0f1aeac8fe354cb09e933cfe2201faeb292987b35940d3094848a04789f00}
     jwt-expiration-ms: 86400000
   admin:
     username: ${ADMIN_USERNAME:admin}

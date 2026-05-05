@@ -1,0 +1,145 @@
+@startuml
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+'======================
+' ENTITÉS PRINCIPALES (Simplifié)
+'======================
+
+package "Authentification" {
+    class User {
+        - id: Long
+        - email: String
+        - passwordHash: String
+    }
+    
+    class Role {
+        - id: Long
+        - name: String
+    }
+}
+
+package "Événements & Écrans" {
+    class Event {
+        - id: Long
+        - title: String
+        - status: String
+    }
+    
+    class Screen {
+        - id: Long
+        - name: String
+        - mode: String
+    }
+    
+    class ScreenSection {
+        - id: Long
+        - title: String
+        - position: Integer
+    }
+}
+
+package "Publications" {
+    class Publication {
+        - id: Long
+        - title: String
+        - abstractText: String
+        - status: String
+    }
+    
+    class Author {
+        - id: Long
+        - firstName: String
+        - lastName: String
+        - email: String
+    }
+    
+    class Category {
+        - id: Long
+        - name: String
+        - type: String
+    }
+}
+
+package "Médias & Imports" {
+    class Media {
+        - id: Long
+        - filePath: String
+        - fileType: String
+    }
+    
+    class ImportRecord {
+        - id: Long
+        - fileName: String
+        - status: String
+    }
+}
+
+'======================
+' TABLES DE LIAISON
+'======================
+
+class PublicationAuthor {
+    - authorOrder: Integer
+}
+
+class PublicationCategory {
+}
+
+'======================
+' PATTERNS (Simplifié)
+'======================
+
+package "Design Patterns" {
+    class PlatformFacade <<Facade>> {
+        + getPublications()
+        + getEvents()
+        + getScreens()
+    }
+    
+    class PublicationBuilder <<Builder>> {
+        + build()
+    }
+    
+    class ImportParserFactory <<Factory>> {
+        + createParser()
+    }
+}
+
+'======================
+' RELATIONS PRINCIPALES
+'======================
+
+' Auth
+User "*" -- "*" Role
+
+' Event
+Event "1" -- "*" Screen
+Event "1" -- "*" Publication
+Event "1" -- "*" Category
+
+' Screen
+Screen "1" o-- "*" ScreenSection
+ScreenSection "*" -- "*" Publication
+
+' Publication (Normalisé)
+Publication "*" -- "*" Author : via PublicationAuthor
+Publication "*" -- "*" Category : via PublicationCategory
+Publication "1" -- "*" Media
+
+Publication "1" -- "*" PublicationAuthor
+Author "1" -- "*" PublicationAuthor
+
+Publication "1" -- "*" PublicationCategory
+Category "1" -- "*" PublicationCategory
+
+' Patterns
+PlatformFacade ..> Publication
+PlatformFacade ..> Event
+PlatformFacade ..> Screen
+
+PublicationBuilder --> Publication
+ImportParserFactory ..> ImportRecord
+
+@enduml

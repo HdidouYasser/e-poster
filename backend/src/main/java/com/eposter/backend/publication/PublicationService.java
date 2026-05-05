@@ -1,5 +1,6 @@
 package com.eposter.backend.publication;
 
+import com.eposter.backend.audit.AuditService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -10,33 +11,40 @@ import java.time.Instant;
 public class PublicationService {
 
     private final PublicationRepository repository;
+    private final AuditService auditService;
 
-    public PublicationService(PublicationRepository repository) {
+    public PublicationService(PublicationRepository repository, AuditService auditService) {
         this.repository = repository;
+        this.auditService = auditService;
     }
 
     public Page<Publication> list(Pageable pageable) {
-        return repository.findAll(pageable);
+        return repository.findByDeletedAtIsNull(pageable);
     }
 
     public Page<Publication> listByEventId(String eventId, Pageable pageable) {
-        return repository.findByEventId(eventId, pageable);
+        Long id = null;
+        try { id = Long.parseLong(eventId); } catch (NumberFormatException e) {}
+        return repository.findByEvent_IdAndDeletedAtIsNull(id, pageable);
     }
 
     public Page<Publication> search(String query, String eventId, String session, String category, String room, Pageable pageable) {
-        return repository.searchFullText(query, eventId, session, category, room, pageable);
+        return repository.searchFullText(query, eventId, session, room, pageable);
     }
 
     public Publication getById(Long id) {
-        return repository.findById(id).orElseThrow(() -> new IllegalArgumentException("Publication not found"));
+        return repository.findByIdAndDeletedAtIsNull(id).orElseThrow(() -> new IllegalArgumentException("Publication not found"));
     }
 
     public Publication create(Publication payload) {
         Instant now = Instant.now();
         payload.setId(null);
+        payload.setDeletedAt(null);
         payload.setCreatedAt(now);
         payload.setUpdatedAt(now);
-        return repository.save(payload);
+        Publication saved = repository.save(payload);
+        auditService.log("PUBLICATION", saved.getId(), "CREATE", saved.getTitle());
+        return saved;
     }
 
     public Publication update(Long id, Publication payload) {
@@ -52,10 +60,16 @@ public class PublicationService {
         existing.setPosterUrl(payload.getPosterUrl());
         existing.setPublishDate(payload.getPublishDate());
         existing.setUpdatedAt(Instant.now());
-        return repository.save(existing);
+        Publication saved = repository.save(existing);
+        auditService.log("PUBLICATION", saved.getId(), "UPDATE", saved.getTitle());
+        return saved;
     }
 
     public void delete(Long id) {
-        repository.deleteById(id);
+        Publication existing = getById(id);
+        existing.setDeletedAt(Instant.now());
+        existing.setUpdatedAt(Instant.now());
+        repository.save(existing);
+        auditService.log("PUBLICATION", id, "DELETE", existing.getTitle());
     }
 }

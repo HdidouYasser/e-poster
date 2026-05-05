@@ -1,0 +1,260 @@
+@startuml
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+' Note: Toutes les entités incluent createdAt, updatedAt, deletedAt (timestamps & soft delete)
+' Ces champs sont masqués pour la lisibilité du diagramme mais présents dans l'implémentation JPA
+
+'======================
+' ENTITÉS MÉTIER PRINCIPALES
+'======================
+
+package "Authentification & Sécurité" {
+    class User {
+        - id: Long
+        - email: String
+        - passwordHash: String
+        - firstName: String
+        - lastName: String
+    }
+    
+    class Role {
+        - id: Long
+        - name: String
+        - description: String
+    }
+}
+
+package "Gestion des Événements" {
+    class Event {
+        - id: Long
+        - title: String
+        - description: String
+        - status: String
+        - startDate: Instant
+        - endDate: Instant
+    }
+}
+
+package "Gestion des Écrans" {
+    class Screen {
+        - id: Long
+        - name: String
+        - location: String
+        - mode: String
+        - resolution: String
+        - isActive: Boolean
+    }
+    
+    class ScreenSection {
+        - id: Long
+        - title: String
+        - position: Integer
+        - displayDuration: Integer
+    }
+    
+    interface ScreenComponent <<interface>> {
+        + display()
+    }
+}
+
+package "Gestion des Publications" {
+    class Publication {
+        - id: Long
+        - title: String
+        - abstract: String
+        - description: String
+        - status: String
+        - session: String
+        - room: String
+        - posterUrl: String
+    }
+    
+    class Author {
+        - id: Long
+        - firstName: String
+        - lastName: String
+        - email: String
+        - affiliation: String
+        - isCorresponding: Boolean
+    }
+    
+    class Category {
+        - id: Long
+        - name: String
+        - type: String
+        - description: String
+    }
+}
+
+package "Gestion des Médias" {
+    class Media {
+        - id: Long
+        - filePath: String
+        - fileName: String
+        - fileType: String
+        - fileSize: Long
+        - thumbnailPath: String
+    }
+    
+    class FileEntity {
+        - id: Long
+        - originalName: String
+        - contentType: String
+        - storagePath: String
+        - sizeBytes: Long
+    }
+}
+
+package "Gestion des Imports" {
+    class ImportRecord {
+        - id: Long
+        - fileName: String
+        - fileType: String
+        - totalRows: Integer
+        - successRows: Integer
+        - failedRows: Integer
+        - status: String
+        - errorMessage: String
+    }
+    
+    interface ImportParser <<interface>> {
+        + parse(file, eventId)
+    }
+    
+    class CsvAdapter {
+        + parse(file, eventId)
+    }
+    
+    class ExcelAdapter {
+        + parse(file, eventId)
+    }
+    
+    class ImportParserFactory <<Factory>> {
+        + createParser(filename)
+    }
+}
+
+package "Audit & Traçabilité" {
+    class AuditLog {
+        - id: Long
+        - username: String
+        - entityType: String
+        - entityId: Long
+        - action: String
+        - details: String
+    }
+}
+
+'======================
+' PATTERNS TECHNIQUES
+'======================
+
+package "Design Patterns" {
+    class PlatformFacade <<Facade>> {
+        + getPublications()
+        + getPublicationDetail()
+        + getScreens()
+        + getEvents()
+    }
+    
+    class PublicationBuilder <<Builder>> {
+        + title()
+        + authors()
+        + description()
+        + category()
+        + media()
+        + build()
+    }
+}
+
+'======================
+' RELATIONS D'AUTHENTIFICATION
+'======================
+
+User "*" -- "*" Role : "possède"
+
+'======================
+' RELATIONS D'ÉVÉNEMENT
+'======================
+
+Event "1" o-- "*" Screen : "contient"
+Event "1" o-- "*" Publication : "regroupe"
+Event "1" o-- "*" Category : "définit"
+
+'======================
+' RELATIONS DE PUBLICATION (NORMALISÉES)
+'======================
+
+Publication "*" -- "*" Author : "écrit par"
+Publication "*" -- "*" Category : "appartient à"
+Publication "1" o-- "*" Media : "contient"
+
+' Tables de liaison explicites
+class PublicationAuthor {
+    - publicationId: Long
+    - authorId: Long
+    - authorOrder: Integer
+}
+
+class PublicationCategory {
+    - publicationId: Long
+    - categoryId: Long
+}
+
+Publication "1" -- "*" PublicationAuthor : "via"
+Author "1" -- "*" PublicationAuthor : "via"
+
+Publication "1" -- "*" PublicationCategory : "via"
+Category "1" -- "*" PublicationCategory : "via"
+
+'======================
+' RELATIONS D'ÉCRAN
+'======================
+
+Screen "1" o-- "*" ScreenSection : "compose"
+ScreenSection "*" -- "*" Publication : "affiche"
+
+ScreenComponent <|.. Screen
+ScreenComponent <|.. ScreenSection
+
+'======================
+' RELATIONS DES MÉDIAS
+'======================
+
+Media "1" -- "1" FileEntity : "basé sur"
+
+'======================
+' RELATIONS D'IMPORT
+'======================
+
+ImportParserFactory ..> ImportParser : "crée"
+ImportParser <|.. CsvAdapter
+ImportParser <|.. ExcelAdapter
+
+ImportRecord "1" -- "*" Publication : "importe"
+
+'======================
+' RELATIONS DES PATTERNS
+'======================
+
+PlatformFacade --> Event : "orchestre"
+PlatformFacade --> Screen : "orchestre"
+PlatformFacade --> Publication : "orchestre"
+PlatformFacade --> Category : "orchestre"
+
+PublicationBuilder --> Publication : "construit"
+PublicationBuilder --> Author : "associe"
+PublicationBuilder --> Media : "associe"
+
+'======================
+' RELATIONS D'AUDIT
+'======================
+
+AuditLog ..> User : "trace"
+AuditLog ..> Event : "trace"
+AuditLog ..> Publication : "trace"
+AuditLog ..> Screen : "trace"
+
+@enduml

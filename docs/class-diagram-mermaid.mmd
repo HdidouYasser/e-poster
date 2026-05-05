@@ -1,0 +1,309 @@
+---
+title: E-Poster Platform - UML Class Diagram (Final Version)
+---
+classDiagram
+    %% ========================================
+    %% NOTE: Toutes les entités incluent les timestamps 
+    %% (createdAt, updatedAt, deletedAt) pour 
+    %% l'audit et le soft delete
+    %% ========================================
+
+    %% ======================
+    %% AUTHENTIFICATION
+    %% ======================
+    
+    class User {
+        -Long id
+        -String email
+        -String passwordHash
+        -String firstName
+        -String lastName
+        -Long roleId FK
+        +getEmail()
+        +getRole()
+    }
+
+    class Role {
+        -Long id
+        -String name
+        -String description
+        +getName()
+    }
+
+    %% ======================
+    %% ÉVÉNEMENTS
+    %% ======================
+
+    class Event {
+        -Long id
+        -String title
+        -String description
+        -String status
+        -Instant startDate
+        -Instant endDate
+        +getTitle()
+        +getStatus()
+    }
+
+    %% ======================
+    %% ÉCRANS (Pattern Composite)
+    %% ======================
+
+    class Screen {
+        -Long id
+        -String name
+        -String location
+        -String mode
+        -String resolution
+        -Boolean isActive
+        -Long eventId FK
+        +display()
+        +getName()
+        +getMode()
+    }
+
+    class ScreenSection {
+        -Long id
+        -String title
+        -Integer position
+        -Integer displayDuration
+        -Long screenId FK
+        -Long publicationId FK
+        +display()
+        +getTitle()
+    }
+
+    class ScreenComponent <<interface>> {
+        <<interface>>
+        +display()
+    }
+
+    %% ======================
+    %% PUBLICATIONS (Normalisé)
+    %% ======================
+
+    class Publication {
+        -Long id
+        -String title
+        -String abstractText
+        -String description
+        -String status
+        -String session
+        -String room
+        -String posterUrl
+        -Long eventRefId FK
+        -Instant publishDate
+        +getTitle()
+        +getStatus()
+        +getAuthors()
+        +getCategories()
+    }
+
+    class Author {
+        -Long id
+        -String firstName
+        -String lastName
+        -String email
+        -String affiliation
+        -Boolean isCorresponding
+        +getFullName()
+        +getEmail()
+    }
+
+    class Category {
+        -Long id
+        -String name
+        -String type
+        -String description
+        -Long eventId FK
+        +getName()
+        +getType()
+    }
+
+    %% ======================
+    %% TABLES DE LIAISON (FK Explicit)
+    %% ======================
+
+    class PublicationAuthor {
+        -Long id
+        -Long publicationId FK
+        -Long authorId FK
+        -Integer authorOrder
+        +getAuthor()
+        +getPublication()
+    }
+
+    class PublicationCategory {
+        -Long id
+        -Long publicationId FK
+        -Long categoryId FK
+        +getCategory()
+        +getPublication()
+    }
+
+    %% ======================
+    %% MÉDIAS
+    %% ======================
+
+    class Media {
+        -Long id
+        -String filePath
+        -String fileName
+        -String fileType
+        -Long fileSize
+        -String thumbnailPath
+        -Long publicationId FK
+        +getFilePath()
+        +getFileType()
+    }
+
+    class FileEntity {
+        -Long id
+        -String originalName
+        -String contentType
+        -String storagePath
+        -Long sizeBytes
+        +getStoragePath()
+    }
+
+    %% ======================
+    %% IMPORTS (Pattern Strategy + Adapter)
+    %% ======================
+
+    class ImportRecord {
+        -Long id
+        -String fileName
+        -String fileType
+        -Integer totalRows
+        -Integer successRows
+        -Integer failedRows
+        -String status
+        -String errorMessage
+        +getStatus()
+        +getFileName()
+    }
+
+    class ImportParser <<interface>> {
+        <<interface>>
+        +parse(file, eventId)
+    }
+
+    class CsvAdapter {
+        +parse(file, eventId)
+    }
+
+    class ExcelAdapter {
+        +parse(file, eventId)
+    }
+
+    class ImportParserFactory <<Factory>> {
+        +createParser(filename)
+    }
+
+    %% ======================
+    %% AUDIT
+    %% ======================
+
+    class AuditLog {
+        -Long id
+        -String username
+        -String entityType
+        -Long entityId
+        -String action
+        -String details
+        +getAction()
+        +getEntityType()
+    }
+
+    %% ======================
+    %% DESIGN PATTERNS
+    %% ======================
+
+    class PlatformFacade <<Facade>> {
+        +getPublications(page, size, sort)
+        +getPublicationDetail(id)
+        +getEvents()
+        +getScreens(eventId)
+        +getCategories(eventId)
+    }
+
+    class PublicationBuilder <<Builder>> {
+        +title(title)
+        +abstractText(text)
+        +description(desc)
+        +addAuthor(author, order)
+        +addMedia(media)
+        +build()
+    }
+
+    %% ======================
+    %% RELATIONS D'AUTHENTIFICATION
+    %% ======================
+    
+    User "*" -- "*" Role : "possède (FK: role_id)"
+
+    %% ======================
+    %% RELATIONS D'ÉVÉNEMENT (FK)
+    %% ======================
+
+    Event "1" o-- "*" Screen : "contient (FK: screen.event_id)"
+    Event "1" o-- "*" Publication : "regroupe (FK: publication.event_ref_id)"
+    Event "1" o-- "*" Category : "définit (FK: category.event_id)"
+
+    %% ======================
+    %% RELATIONS D'ÉCRAN (Composite + FK)
+    %% ======================
+
+    ScreenComponent <|.. Screen
+    ScreenComponent <|.. ScreenSection
+    Screen "1" o-- "*" ScreenSection : "compose (FK: screen_section.screen_id)"
+    ScreenSection "*" -- "*" Publication : "affiche (FK: screen_section.publication_id)"
+
+    %% ======================
+    %% RELATIONS DE PUBLICATION (NORMALISÉES + FK)
+    %% ======================
+
+    Publication "1" -- "*" PublicationAuthor : "via (FK: pub_author.publication_id)"
+    Author "1" -- "*" PublicationAuthor : "via (FK: pub_author.author_id)"
+    
+    Publication "1" -- "*" PublicationCategory : "via (FK: pub_cat.publication_id)"
+    Category "1" -- "*" PublicationCategory : "via (FK: pub_cat.category_id)"
+    
+    Publication "1" o-- "*" Media : "contient (FK: media.publication_id)"
+
+    %% ======================
+    %% RELATIONS DES MÉDIAS
+    %% ======================
+
+    Media "1" -- "1" FileEntity : "basé sur"
+
+    %% ======================
+    %% RELATIONS D'IMPORT
+    %% ======================
+
+    ImportParser <|.. CsvAdapter : "adapte"
+    ImportParser <|.. ExcelAdapter : "adapte"
+    ImportParserFactory ..> ImportParser : "crée"
+    ImportRecord "1" -- "*" Publication : "importe"
+
+    %% ======================
+    %% RELATIONS DES PATTERNS
+    %% ======================
+
+    PlatformFacade --> Event : "orchestre"
+    PlatformFacade --> Screen : "orchestre"
+    PlatformFacade --> Publication : "orchestre"
+    PlatformFacade --> Category : "orchestre"
+
+    PublicationBuilder --> Publication : "construit"
+    PublicationBuilder --> Author : "associe"
+    PublicationBuilder --> Media : "associe"
+
+    %% ======================
+    %% RELATIONS D'AUDIT
+    %% ======================
+
+    AuditLog ..> User : "trace"
+    AuditLog ..> Event : "trace"
+    AuditLog ..> Publication : "trace"
+    AuditLog ..> Screen : "trace"
