@@ -32,8 +32,10 @@ public class Event {
     private Instant updatedAt;
     private Instant deletedAt;
     @OneToMany(mappedBy = "event")
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Publication> publications = new ArrayList<>();
     @OneToMany(mappedBy = "event")
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Screen> screens = new ArrayList<>();
 
     public Long getId() { return id; }
@@ -54,8 +56,10 @@ public class Event {
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
     public Instant getDeletedAt() { return deletedAt; }
     public void setDeletedAt(Instant deletedAt) { this.deletedAt = deletedAt; }
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public List<Publication> getPublications() { return publications; }
     public void setPublications(List<Publication> publications) { this.publications = publications; }
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public List<Screen> getScreens() { return screens; }
     public void setScreens(List<Screen> screens) { this.screens = screens; }
 }

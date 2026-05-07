@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuthStore } from "../stores/authStore";
-import { Lock, User } from "lucide-react";
+import { Lock, User, FileText } from "lucide-react";
 
 export default function LoginPage() {
   const login = useAuthStore((s) => s.login);
@@ -23,44 +23,44 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4 relative overflow-hidden">
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-600/20 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/20 blur-[120px] rounded-full pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] p-4 relative overflow-hidden font-sans">
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
       
-      <div className="w-full max-w-md bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 shadow-2xl relative z-10">
+      <div className="w-full max-w-md bg-neutral-900/50 backdrop-blur-xl border border-neutral-800 rounded-3xl p-8 shadow-2xl relative z-10">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-indigo-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/30">
-            <Lock className="text-indigo-400" size={32} />
+          <div className="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/20">
+            <FileText className="text-black" size={32} />
           </div>
           <h2 className="text-2xl font-bold text-white">E-Poster Back Office</h2>
-          <p className="text-slate-400 mt-2">Connectez-vous pour gérer les contenus</p>
+          <p className="text-neutral-400 mt-2">Connectez-vous pour gérer les contenus</p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-2">Nom d'utilisateur</label>
+            <label className="block text-sm font-medium text-neutral-400 mb-2">Nom d'utilisateur</label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={20} />
               <input 
                 value={username} 
                 onChange={(e) => setUsername(e.target.value)} 
                 placeholder="Ex: admin" 
-                className="w-full bg-slate-950 border border-slate-800 text-white pl-10 pr-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                className="w-full bg-[#0a0a0a] border border-neutral-800 text-white pl-10 pr-4 py-3 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
                 required
               />
             </div>
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-2">Mot de passe</label>
+            <label className="block text-sm font-medium text-neutral-400 mb-2">Mot de passe</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={20} />
               <input 
                 type="password"
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)} 
                 placeholder="••••••••" 
-                className="w-full bg-slate-950 border border-slate-800 text-white pl-10 pr-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                className="w-full bg-[#0a0a0a] border border-neutral-800 text-white pl-10 pr-4 py-3 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
                 required
               />
             </div>
@@ -75,7 +75,7 @@ export default function LoginPage() {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/25 disabled:opacity-50"
+            className="w-full bg-emerald-500 hover:bg-emerald-400 text-black py-3 rounded-xl font-bold transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50"
           >
             {loading ? "Connexion..." : "Se connecter"}
           </button>
