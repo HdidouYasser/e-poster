@@ -14,15 +14,22 @@ export default function TotemPublications() {
   const screen = params.get("screen") || "1";
   const eventId = params.get("eventId") || "";
   const [page, setPage] = useState(Number(params.get("page") || 0));
+  const [category, setCategory] = useState(params.get("category") || "");
   const size = 12;
 
   const [q, setQ] = useState(params.get("q") || "");
   const endpoint = useMemo(() => {
-    const base = q.trim()
-      ? `/publications/search?q=${encodeURIComponent(q)}&page=${page}&size=${size}`
-      : `/publications?page=${page}&size=${size}`;
-    return eventId ? `${base}&eventId=${encodeURIComponent(eventId)}` : base;
-  }, [q, page, size, eventId]);
+    let base = `/publications?page=${page}&size=${size}`;
+    if (q.trim()) {
+      base = `/publications/search?q=${encodeURIComponent(q)}&page=${page}&size=${size}`;
+    } else if (category || eventId) {
+      base = `/publications?page=${page}&size=${size}`;
+    }
+    
+    if (eventId) base += `&eventId=${encodeURIComponent(eventId)}`;
+    if (category) base += `&category=${encodeURIComponent(category)}`;
+    return base;
+  }, [q, page, size, eventId, category]);
 
   const pubsQuery = useQuery({
     queryKey: ["totem-pubs", page, size, q, eventId],
@@ -31,16 +38,27 @@ export default function TotemPublications() {
 
   const data = pubsQuery.data || { items: [], page: 0, totalPages: 1 };
 
+  const { data: categoriesData } = useQuery({
+    queryKey: ["totem-categories", eventId],
+    queryFn: async () => (await api.get(`/categories`)).data
+  });
+
+  const eventCategories = useMemo(() => {
+    if (!categoriesData) return [];
+    if (!eventId) return categoriesData;
+    return categoriesData.filter(c => !c.event || String(c.event.id) === String(eventId));
+  }, [categoriesData, eventId]);
+
   useEffect(() => {
     setParams((p) => {
       p.set("page", String(page));
       p.set("screen", screen);
       if (eventId) p.set("eventId", eventId);
-      if (q) p.set("q", q);
-      else p.delete("q");
+      if (q) p.set("q", q); else p.delete("q");
+      if (category) p.set("category", category); else p.delete("category");
       return p;
     });
-  }, [page, q, eventId, screen, setParams]);
+  }, [page, q, category, eventId, screen, setParams]);
 
   useIdleTimer({
     timeoutMs: 60_000,
@@ -82,11 +100,32 @@ export default function TotemPublications() {
         </div>
         <button
           onClick={() => window.open(`${window.location.origin}/totem/publications?screen=${Number(screen) + 1}`, `totem-screen-${Number(screen) + 1}`)}
-          className="px-6 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 rounded-2xl text-lg font-bold transition-all flex items-center gap-3"
+          className="px-6 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 rounded-2xl text-lg font-bold transition-all flex items-center gap-3 shrink-0"
         >
           <MonitorPlay size={24} /> Lier Écran
         </button>
       </header>
+
+      {/* Categories Filter */}
+      {eventCategories?.length > 0 && (
+        <div className="flex items-center gap-3 mb-6 overflow-x-auto pb-2 custom-scrollbar relative z-10">
+          <button
+            onClick={() => { setCategory(""); setPage(0); }}
+            className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap shadow-sm border ${!category ? 'bg-emerald-500 text-white border-emerald-600 shadow-emerald-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+          >
+            Tous les posters
+          </button>
+          {eventCategories.map(c => (
+            <button
+              key={c.id}
+              onClick={() => { setCategory(c.name); setPage(0); }}
+              className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap shadow-sm border ${category === c.name ? 'bg-emerald-500 text-white border-emerald-600 shadow-emerald-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Grid */}
       <main className="flex-1 relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">

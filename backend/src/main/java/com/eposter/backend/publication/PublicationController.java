@@ -45,11 +45,7 @@ public class PublicationController {
         if ((eventId == null || eventId.isBlank()) && (session == null || session.isBlank()) && (category == null || category.isBlank()) && (room == null || room.isBlank())) {
             return ApiPageResponse.from(service.list(pageable));
         }
-        // Without a search term, we fallback to a very light filter:
-        if (eventId != null && !eventId.isBlank() && (session == null || session.isBlank()) && (category == null || category.isBlank()) && (room == null || room.isBlank())) {
-            return ApiPageResponse.from(service.listByEventId(eventId, pageable));
-        }
-        throw new IllegalArgumentException("For combined filters, use /api/publications/search with q");
+        return ApiPageResponse.from(service.search(null, eventId, session, category, room, pageable));
     }
 
     @GetMapping("/{id}")
@@ -59,7 +55,7 @@ public class PublicationController {
 
     @GetMapping("/search")
     public ApiPageResponse<Publication> search(
-            @RequestParam @NotBlank String q,
+            @RequestParam(required = false) String q,
             @RequestParam(required = false) String eventId,
             @RequestParam(required = false) String session,
             @RequestParam(required = false) String category,

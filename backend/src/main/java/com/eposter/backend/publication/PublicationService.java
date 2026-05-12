@@ -1,6 +1,8 @@
 package com.eposter.backend.publication;
 
 import com.eposter.backend.audit.AuditService;
+import com.eposter.backend.event.Event;
+import com.eposter.backend.event.EventRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -11,10 +13,12 @@ import java.time.Instant;
 public class PublicationService {
 
     private final PublicationRepository repository;
+    private final EventRepository eventRepository;
     private final AuditService auditService;
 
-    public PublicationService(PublicationRepository repository, AuditService auditService) {
+    public PublicationService(PublicationRepository repository, EventRepository eventRepository, AuditService auditService) {
         this.repository = repository;
+        this.eventRepository = eventRepository;
         this.auditService = auditService;
     }
 
@@ -29,7 +33,7 @@ public class PublicationService {
     }
 
     public Page<Publication> search(String query, String eventId, String session, String category, String room, Pageable pageable) {
-        return repository.searchFullText(query, eventId, session, room, pageable);
+        return repository.searchFullText(query, eventId, session, room, category, pageable);
     }
 
     public Publication getById(Long id) {
@@ -42,6 +46,12 @@ public class PublicationService {
         payload.setDeletedAt(null);
         payload.setCreatedAt(now);
         payload.setUpdatedAt(now);
+        if (payload.getEventId() != null && !payload.getEventId().isBlank()) {
+            Long eventId = Long.parseLong(payload.getEventId());
+            Event event = eventRepository.findById(eventId)
+                    .orElseThrow(() -> new IllegalArgumentException("Event not found"));
+            payload.setEvent(event);
+        }
         Publication saved = repository.save(payload);
         auditService.log("PUBLICATION", saved.getId(), "CREATE", saved.getTitle());
         return saved;
@@ -49,8 +59,16 @@ public class PublicationService {
 
     public Publication update(Long id, Publication payload) {
         Publication existing = getById(id);
-        existing.setEventId(payload.getEventId());
+        if (payload.getEventId() != null && !payload.getEventId().isBlank()) {
+            Long eventId = Long.parseLong(payload.getEventId());
+            Event event = eventRepository.findById(eventId)
+                    .orElseThrow(() -> new IllegalArgumentException("Event not found"));
+            existing.setEvent(event);
+        } else {
+            existing.setEvent(null);
+        }
         existing.setTitle(payload.getTitle());
+        existing.setAbstractText(payload.getAbstractText());
         existing.setAuthors(payload.getAuthors());
         existing.setDescription(payload.getDescription());
         existing.setStatus(payload.getStatus());

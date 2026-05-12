@@ -26,6 +26,13 @@ export default function TotemHome() {
     [activeEventQuery.data, eventsQuery.data]
   );
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return null;
+    return new Date(dateStr).toLocaleDateString('fr-FR', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    });
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col relative overflow-hidden">
       {/* Soft background blobs */}
@@ -82,6 +89,17 @@ export default function TotemHome() {
                 Événement en cours
               </div>
               <h2 className="text-5xl font-extrabold text-slate-800 mb-5 leading-tight">{selectedEvent.title}</h2>
+              
+              {(selectedEvent.startDate || selectedEvent.endDate) && (
+                <div className="flex items-center gap-2 text-emerald-600 font-medium mb-6 bg-emerald-50 w-fit px-4 py-2 rounded-xl border border-emerald-100">
+                  <Calendar size={20} />
+                  <span>
+                    {formatDate(selectedEvent.startDate)} 
+                    {selectedEvent.endDate && ` - ${formatDate(selectedEvent.endDate)}`}
+                  </span>
+                </div>
+              )}
+
               <p className="text-xl text-slate-500 mb-12 leading-relaxed">{selectedEvent.description}</p>
 
               <button

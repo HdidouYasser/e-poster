@@ -12,6 +12,7 @@ const pubSchema = z.object({
   title: z.string().min(1, "Le titre est requis"),
   authors: z.string().optional(),
   description: z.string().optional(),
+  abstractText: z.string().optional(),
   status: z.string().default("DRAFT"),
   session: z.string().optional(),
   category: z.string().optional(),
@@ -76,7 +77,7 @@ export default function PublicationsAdmin() {
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
     resolver: zodResolver(pubSchema),
-    defaultValues: { eventId: "", title: "", description: "", authors: "", status: "DRAFT", posterUrl: "" }
+    defaultValues: { eventId: "", title: "", description: "", abstractText: "", authors: "", status: "DRAFT", posterUrl: "", session: "", room: "", category: "" }
   });
 
   const posterUrlValue = watch("posterUrl");
@@ -87,11 +88,15 @@ export default function PublicationsAdmin() {
       eventId: pub.event?.id ? String(pub.event.id) : "",
       title: pub.title,
       description: pub.description || "",
+      abstractText: pub.abstractText || "",
       authors: pub.authors || "",
       status: pub.status || "DRAFT",
-      posterUrl: pub.posterUrl || ""
+      posterUrl: pub.posterUrl || "",
+      session: pub.session || "",
+      room: pub.room || "",
+      category: pub.category || ""
     });
-    else reset({ eventId: "", title: "", description: "", authors: "", status: "DRAFT", posterUrl: "" });
+    else reset({ eventId: "", title: "", description: "", abstractText: "", authors: "", status: "DRAFT", posterUrl: "", session: "", room: "", category: "" });
     setIsFormOpen(true);
   };
 
@@ -168,6 +173,22 @@ export default function PublicationsAdmin() {
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-slate-600 mb-1">Description / Résumé</label>
               <textarea {...register("description")} placeholder="Résumé de l'étude..." rows={4} className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-3 rounded-xl focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 outline-none" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-600 mb-1">Résumé (Abstract)</label>
+              <textarea {...register("abstractText")} placeholder="Résumé scientifique long..." rows={6} className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-3 rounded-xl focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 outline-none" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-600 mb-1">Catégorie</label>
+              <input {...register("category")} placeholder="Ex: Santé, Technologie..." className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 outline-none" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-600 mb-1">Session</label>
+              <input {...register("session")} placeholder="Ex: Session 1" className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 outline-none" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-600 mb-1">Salle</label>
+              <input {...register("room")} placeholder="Ex: Salle A" className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 outline-none" />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-600 mb-1">Statut</label>

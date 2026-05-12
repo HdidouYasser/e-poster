@@ -79,9 +79,11 @@ public class Publication {
 
     @Transient
     private String eventId;
-    @Transient
+    
+    @Column(name = "authors_str")
     private String authors;
-    @Transient
+    
+    @Column(name = "category_str")
     private String category;
 
     public Long getId() { return id; }

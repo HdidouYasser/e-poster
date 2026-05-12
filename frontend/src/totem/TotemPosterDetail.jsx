@@ -4,7 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "../api";
 import { useIdleTimer } from "../hooks/useIdleTimer";
 import { createTotemSync } from "./totemSync";
-import { ArrowLeft, ZoomIn, ZoomOut, Maximize, Minimize, RefreshCcw, FileImage } from "lucide-react";
+import { ArrowLeft, ZoomIn, ZoomOut, Maximize, Minimize, RefreshCcw, FileImage, Tag, MapPin, Clock } from "lucide-react";
+import { QRCodeCanvas } from "qrcode.react";
 
 const sync = createTotemSync();
 
@@ -112,22 +113,78 @@ export default function TotemPosterDetail() {
               )}
             </div>
 
-            <div className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl overflow-auto flex items-start justify-center p-8 shadow-inner relative">
-              {posterUrl ? (
-                <img
-                  src={posterUrl}
-                  alt={pubQuery.data.title}
-                  className="max-w-none origin-top transition-transform duration-200 ease-out shadow-lg rounded-lg"
-                  style={{ transform: `scale(${zoom})` }}
-                  draggable={false}
-                />
-              ) : (
-                <div className="flex flex-col items-center justify-center text-center p-12 max-w-lg mx-auto my-auto text-slate-400">
-                  <FileImage size={96} className="mb-6 text-slate-300" />
-                  <h3 className="text-2xl font-bold mb-4 text-slate-600">Aucun fichier média fourni</h3>
-                  <p className="text-lg">Ce poster ne possède pas d'image ou de document PDF associé.</p>
+            <div className="flex flex-col xl:flex-row gap-6 flex-1 overflow-hidden">
+              {/* Image Container */}
+              <div className="flex-[2] bg-slate-50 border border-slate-200 rounded-2xl overflow-auto flex items-start justify-center p-8 shadow-inner relative">
+                {posterUrl ? (
+                  <img
+                    src={posterUrl}
+                    alt={pubQuery.data.title}
+                    className="max-w-none origin-top transition-transform duration-200 ease-out shadow-lg rounded-lg"
+                    style={{ transform: `scale(${zoom})` }}
+                    draggable={false}
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-center p-12 max-w-lg mx-auto my-auto text-slate-400">
+                    <FileImage size={96} className="mb-6 text-slate-300" />
+                    <h3 className="text-2xl font-bold mb-4 text-slate-600">Aucun fichier média fourni</h3>
+                    <p className="text-lg">Ce poster ne possède pas d'image ou de document PDF associé.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Sidebar with Abstract and QR Code */}
+              <div className="flex-1 w-full xl:w-96 flex flex-col gap-6 overflow-y-auto pr-2">
+                
+                {/* QR Code */}
+                {posterUrl && (
+                  <div className="bg-white border border-emerald-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center shadow-sm shrink-0">
+                    <div className="p-3 bg-white border-4 border-emerald-100 rounded-2xl shadow-sm mb-4">
+                      <QRCodeCanvas value={posterUrl} size={140} level="H" fgColor="#0f172a" />
+                    </div>
+                    <h4 className="font-bold text-slate-800 text-lg">Scanner le poster</h4>
+                    <p className="text-slate-500 text-sm mt-1">Téléchargez le fichier complet sur votre appareil</p>
+                  </div>
+                )}
+
+                {/* Metadata */}
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 space-y-4 shrink-0 shadow-sm">
+                  <h4 className="font-bold text-slate-800 text-lg border-b border-slate-200 pb-2">Informations</h4>
+                  {pubQuery.data.category && (
+                    <div className="flex items-center gap-3 text-slate-600">
+                      <Tag size={18} className="text-emerald-500" />
+                      <span className="font-medium">{pubQuery.data.category}</span>
+                    </div>
+                  )}
+                  {pubQuery.data.session && (
+                    <div className="flex items-center gap-3 text-slate-600">
+                      <Clock size={18} className="text-emerald-500" />
+                      <span className="font-medium">{pubQuery.data.session}</span>
+                    </div>
+                  )}
+                  {pubQuery.data.room && (
+                    <div className="flex items-center gap-3 text-slate-600">
+                      <MapPin size={18} className="text-emerald-500" />
+                      <span className="font-medium">{pubQuery.data.room}</span>
+                    </div>
+                  )}
+                  {!pubQuery.data.category && !pubQuery.data.session && !pubQuery.data.room && (
+                    <p className="text-slate-400 italic text-sm">Aucune information supplémentaire</p>
+                  )}
                 </div>
-              )}
+
+                {/* Abstract */}
+                {(pubQuery.data.abstractText || pubQuery.data.description) && (
+                  <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex-1">
+                    <h4 className="font-bold text-slate-800 text-lg border-b border-slate-200 pb-2 mb-4">Résumé</h4>
+                    <div className="prose prose-slate prose-sm text-slate-600">
+                      <p className="whitespace-pre-wrap leading-relaxed">
+                        {pubQuery.data.abstractText || pubQuery.data.description}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </>
         )}

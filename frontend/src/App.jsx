@@ -8,6 +8,10 @@ import LoginPage from "./admin/LoginPage";
 import AdminLayout from "./admin/AdminLayout";
 import EventsAdmin from "./admin/EventsAdmin";
 import PublicationsAdmin from "./admin/PublicationsAdmin";
+import CategoriesAdmin from "./admin/CategoriesAdmin";
+import AuthorsAdmin from "./admin/AuthorsAdmin";
+import ImportAdmin from "./admin/ImportAdmin";
+import AuditAdmin from "./admin/AuditAdmin";
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -47,6 +51,10 @@ export default function App() {
           <Route index element={<Navigate to="/admin/publications" replace />} />
           <Route path="events" element={<EventsAdmin />} />
           <Route path="publications" element={<PublicationsAdmin />} />
+          <Route path="categories" element={<CategoriesAdmin />} />
+          <Route path="authors" element={<AuthorsAdmin />} />
+          <Route path="import" element={<ImportAdmin />} />
+          <Route path="audit" element={<AuditAdmin />} />
         </Route>
       </Routes>
     </>

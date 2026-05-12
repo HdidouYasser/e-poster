@@ -1,10 +1,11 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
-import { LogOut, Calendar, FileText, Search, Plus, Bell } from "lucide-react";
+import { LogOut, Calendar, FileText, Search, Users, Tags, UploadCloud, Activity } from "lucide-react";
 import clsx from "clsx";
 
 export default function AdminLayout() {
   const logout = useAuthStore((s) => s.logout);
+  const username = useAuthStore((s) => s.username);
   const location = useLocation();
 
   const navItemClass = (path) => clsx(
@@ -34,6 +35,18 @@ export default function AdminLayout() {
           <Link to="/admin/events" className={navItemClass("/admin/events")}>
             <Calendar size={20} /> Événements
           </Link>
+          <Link to="/admin/categories" className={navItemClass("/admin/categories")}>
+            <Tags size={20} /> Catégories
+          </Link>
+          <Link to="/admin/authors" className={navItemClass("/admin/authors")}>
+            <Users size={20} /> Auteurs
+          </Link>
+          <Link to="/admin/import" className={navItemClass("/admin/import")}>
+            <UploadCloud size={20} /> Import Bulk
+          </Link>
+          <Link to="/admin/audit" className={navItemClass("/admin/audit")}>
+            <Activity size={20} /> Audit Logs
+          </Link>
         </nav>
 
         <div className="mt-auto space-y-1 mb-4 border-b border-slate-200 pb-4">
@@ -43,11 +56,11 @@ export default function AdminLayout() {
         </div>
 
         <div className="flex items-center gap-3 px-2 pb-2">
-          <div className="w-10 h-10 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center text-sm font-bold text-emerald-700">
-            AD
+          <div className="w-10 h-10 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center text-sm font-bold text-emerald-700 uppercase">
+            {username ? username.substring(0, 2) : "AD"}
           </div>
           <div className="overflow-hidden">
-            <div className="text-sm font-medium text-slate-800 truncate">Admin</div>
+            <div className="text-sm font-medium text-slate-800 truncate">{username || "Admin"}</div>
           </div>
         </div>
       </aside>
@@ -56,21 +69,11 @@ export default function AdminLayout() {
       <main className="flex-1 flex flex-col overflow-hidden bg-slate-50">
         {/* Topbar */}
         <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-8 shrink-0 shadow-sm">
-          <div className="relative w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input
-              type="text"
-              placeholder="Rechercher un poster, auteur..."
-              className="w-full bg-slate-50 border border-slate-200 text-sm text-slate-800 pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors"
-            />
+          <div className="flex items-center gap-4 text-slate-500 font-medium">
+            Tableau de Bord Administration
           </div>
           <div className="flex items-center gap-4">
-            <button className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
-              <Plus size={16} /> Nouveau
-            </button>
-            <button className="text-slate-400 hover:text-slate-700 transition-colors">
-              <Bell size={20} />
-            </button>
+            
           </div>
         </header>
 
