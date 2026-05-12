@@ -23,59 +23,60 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] p-4 relative overflow-hidden font-sans">
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
-      
-      <div className="w-full max-w-md bg-neutral-900/50 backdrop-blur-xl border border-neutral-800 rounded-3xl p-8 shadow-2xl relative z-10">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 relative overflow-hidden font-sans">
+      {/* Soft background accents */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-100 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-100 blur-[120px] rounded-full pointer-events-none" />
+
+      <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-8 shadow-xl relative z-10">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/20">
-            <FileText className="text-black" size={32} />
+          <div className="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md shadow-emerald-200">
+            <FileText className="text-white" size={32} />
           </div>
-          <h2 className="text-2xl font-bold text-white">E-Poster Back Office</h2>
-          <p className="text-neutral-400 mt-2">Connectez-vous pour gérer les contenus</p>
+          <h2 className="text-2xl font-bold text-slate-800">E-Poster Back Office</h2>
+          <p className="text-slate-500 mt-2">Connectez-vous pour gérer les contenus</p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-neutral-400 mb-2">Nom d'utilisateur</label>
+            <label className="block text-sm font-medium text-slate-600 mb-2">Nom d'utilisateur</label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={20} />
-              <input 
-                value={username} 
-                onChange={(e) => setUsername(e.target.value)} 
-                placeholder="Ex: admin" 
-                className="w-full bg-[#0a0a0a] border border-neutral-800 text-white pl-10 pr-4 py-3 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+              <input
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Ex: admin"
+                className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-10 pr-4 py-3 rounded-xl focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all"
                 required
               />
             </div>
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-neutral-400 mb-2">Mot de passe</label>
+            <label className="block text-sm font-medium text-slate-600 mb-2">Mot de passe</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={20} />
-              <input 
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+              <input
                 type="password"
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                placeholder="••••••••" 
-                className="w-full bg-[#0a0a0a] border border-neutral-800 text-white pl-10 pr-4 py-3 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-10 pr-4 py-3 rounded-xl focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all"
                 required
               />
             </div>
           </div>
 
           {error && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm text-center">
+            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm text-center">
               {error}
             </div>
           )}
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
-            className="w-full bg-emerald-500 hover:bg-emerald-400 text-black py-3 rounded-xl font-bold transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50"
+            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-xl font-bold transition-all shadow-md shadow-emerald-200 disabled:opacity-50"
           >
             {loading ? "Connexion..." : "Se connecter"}
           </button>

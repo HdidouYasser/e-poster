@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api";
-import { Presentation, MonitorPlay, ArrowRight } from "lucide-react";
+import { Presentation, MonitorPlay, ArrowRight, Calendar } from "lucide-react";
 
 export default function TotemHome() {
   const navigate = useNavigate();
@@ -27,57 +27,69 @@ export default function TotemHome() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col relative overflow-hidden">
-      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-blue-600/10 blur-[150px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-indigo-600/10 blur-[150px] rounded-full pointer-events-none" />
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col relative overflow-hidden">
+      {/* Soft background blobs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-emerald-100/60 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-100/40 blur-[100px] rounded-full pointer-events-none" />
 
-      <header className="flex items-center justify-between p-8 relative z-10 border-b border-slate-800/50 bg-slate-950/50 backdrop-blur-md">
+      {/* Header */}
+      <header className="flex items-center justify-between px-10 py-6 relative z-10 bg-white border-b border-slate-200 shadow-sm">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
-            <Presentation size={32} className="text-white" />
+          <div className="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-md shadow-emerald-200">
+            <Presentation size={30} className="text-white" />
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white">E-Poster <span className="text-indigo-400">Totem</span></h1>
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-800">
+              E-Poster <span className="text-emerald-600">Platform</span>
+            </h1>
+            <p className="text-sm text-slate-400">Système d'affichage scientifique</p>
+          </div>
         </div>
-        <div className="flex gap-4">
-          <Link to={`/totem/publications?screen=${screen}`} className="px-8 py-4 bg-slate-900 border border-slate-700 hover:border-slate-500 rounded-2xl text-xl font-semibold transition-all hover:bg-slate-800 flex items-center gap-3">
+        <div className="flex gap-3">
+          <Link
+            to={`/totem/publications?screen=${screen}`}
+            className="px-6 py-3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl text-base font-semibold transition-all flex items-center gap-2"
+          >
             Explorer les Posters
           </Link>
           <button
             onClick={() => window.open(`${window.location.origin}/totem?screen=2`, "totem-screen-2")}
-            className="px-8 py-4 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-600/30 rounded-2xl text-xl font-semibold transition-all flex items-center gap-3"
+            className="px-6 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 rounded-xl text-base font-semibold transition-all flex items-center gap-2"
           >
-            <MonitorPlay size={24} /> Mode 2nd Écran
+            <MonitorPlay size={20} /> Mode 2nd Écran
           </button>
         </div>
       </header>
 
-      <main className="flex-1 flex items-center justify-center p-8 relative z-10">
-        <div className="max-w-4xl w-full">
+      {/* Main */}
+      <main className="flex-1 flex items-center justify-center p-10 relative z-10">
+        <div className="max-w-3xl w-full">
           {(activeEventQuery.isLoading || eventsQuery.isLoading) ? (
-            <div className="flex flex-col items-center justify-center space-y-6 animate-pulse">
-              <div className="w-24 h-24 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
-              <div className="text-2xl text-slate-400">Chargement de l'événement...</div>
+            <div className="flex flex-col items-center justify-center space-y-6">
+              <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin" />
+              <div className="text-xl text-slate-400 font-medium">Chargement de l'événement...</div>
             </div>
           ) : !selectedEvent ? (
-            <div className="text-center p-16 bg-slate-900/50 border border-slate-800 rounded-3xl backdrop-blur-sm">
-              <Presentation size={64} className="mx-auto text-slate-600 mb-6" />
-              <h2 className="text-3xl font-bold text-white mb-4">Aucun événement actif</h2>
-              <p className="text-xl text-slate-400">Veuillez configurer un événement dans l'interface d'administration.</p>
+            <div className="text-center p-16 bg-white border border-slate-200 rounded-3xl shadow-sm">
+              <Calendar size={64} className="mx-auto text-slate-300 mb-6" />
+              <h2 className="text-3xl font-bold text-slate-700 mb-4">Aucun événement actif</h2>
+              <p className="text-lg text-slate-400">Veuillez configurer un événement dans l'interface d'administration.</p>
             </div>
           ) : (
-            <div className="bg-slate-900/60 border border-slate-800/80 rounded-[2rem] p-12 backdrop-blur-xl shadow-2xl hover:border-indigo-500/30 transition-all duration-500">
-              <div className="inline-block px-4 py-1.5 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold text-sm mb-6 border border-indigo-500/20">
+            <div className="bg-white border border-slate-200 rounded-[2rem] p-12 shadow-lg hover:shadow-xl hover:border-emerald-200 transition-all duration-500">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold text-sm mb-6 border border-emerald-200">
+                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
                 Événement en cours
               </div>
-              <h2 className="text-5xl font-extrabold text-white mb-6 leading-tight">{selectedEvent.title}</h2>
-              <p className="text-2xl text-slate-400 mb-12 leading-relaxed">{selectedEvent.description}</p>
-              
+              <h2 className="text-5xl font-extrabold text-slate-800 mb-5 leading-tight">{selectedEvent.title}</h2>
+              <p className="text-xl text-slate-500 mb-12 leading-relaxed">{selectedEvent.description}</p>
+
               <button
                 onClick={() => navigate(`/totem/publications?eventId=${selectedEvent.id}&screen=${screen}`)}
-                className="w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white rounded-2xl text-2xl font-bold transition-all shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-4 group"
+                className="w-full sm:w-auto px-10 py-5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl text-xl font-bold transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-4 group"
               >
                 Voir les publications
-                <ArrowRight size={28} className="group-hover:translate-x-2 transition-transform" />
+                <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />
               </button>
             </div>
           )}

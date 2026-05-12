@@ -20,15 +20,16 @@ export default function App() {
 
   return (
     <>
-      <Toaster 
-        position="top-right" 
+      <Toaster
+        position="top-right"
         toastOptions={{
           style: {
-            background: '#171717',
-            color: '#fff',
-            border: '1px solid #262626',
+            background: '#ffffff',
+            color: '#0f172a',
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)',
           },
-        }} 
+        }}
       />
       <Routes>
         {/* Front-Office : Visiteurs Totem */}

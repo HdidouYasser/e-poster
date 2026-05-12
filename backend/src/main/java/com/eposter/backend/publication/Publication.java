@@ -2,6 +2,7 @@ package com.eposter.backend.publication;
 
 import com.eposter.backend.event.Event;
 import com.eposter.backend.media.Media;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -52,12 +53,15 @@ public class Publication {
     @Column(name = "poster_url")
     private String posterUrl;
     
+    @JsonIgnore
     @OneToMany(mappedBy = "publication", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Media> mediaList = new ArrayList<>();
     
+    @JsonIgnore
     @OneToMany(mappedBy = "publication", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PublicationAuthor> publicationAuthors = new ArrayList<>();
     
+    @JsonIgnore
     @OneToMany(mappedBy = "publication", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PublicationCategory> publicationCategories = new ArrayList<>();
     
