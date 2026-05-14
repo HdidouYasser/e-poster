@@ -4,6 +4,7 @@ import { Toaster } from "react-hot-toast";
 import TotemHome from "./totem/TotemHome";
 import TotemPublications from "./totem/TotemPublications";
 import TotemPosterDetail from "./totem/TotemPosterDetail";
+import TotemSlideshow from "./totem/TotemSlideshow";
 import LoginPage from "./admin/LoginPage";
 import AdminLayout from "./admin/AdminLayout";
 import EventsAdmin from "./admin/EventsAdmin";
@@ -40,6 +41,7 @@ export default function App() {
         <Route path="/totem" element={<TotemHome />} />
         <Route path="/totem/publications" element={<TotemPublications />} />
         <Route path="/totem/publications/:id" element={<TotemPosterDetail />} />
+        <Route path="/totem/slideshow" element={<TotemSlideshow />} />
         
         {/* Redirection racine vers totem par défaut */}
         <Route path="/" element={<Navigate to="/totem" replace />} />

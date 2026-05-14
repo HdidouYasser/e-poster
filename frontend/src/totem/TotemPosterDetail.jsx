@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "../api";
 import { useIdleTimer } from "../hooks/useIdleTimer";
 import { createTotemSync } from "./totemSync";
-import { ArrowLeft, ZoomIn, ZoomOut, Maximize, Minimize, RefreshCcw, FileImage, Tag, MapPin, Clock } from "lucide-react";
+import { ArrowLeft, ZoomIn, ZoomOut, Maximize, Minimize, RefreshCcw, FileImage, Tag, MapPin, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
 
 const sync = createTotemSync();
@@ -14,6 +14,10 @@ export default function TotemPosterDetail() {
   const { id } = useParams();
   const [params] = useSearchParams();
   const screen = params.get("screen") || "1";
+  const page = Number(params.get("page") || 0);
+  const q = params.get("q") || "";
+  const category = params.get("category") || "";
+  const eventId = params.get("eventId") || "";
 
   const [zoom, setZoom] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -23,7 +27,34 @@ export default function TotemPosterDetail() {
     queryFn: async () => (await api.get(`/publications/${id}`)).data
   });
 
+  // Fetch current page of publications to get next/prev
+  const endpoint = useMemo(() => {
+    let base = `/publications?page=${page}&size=12`;
+    if (q.trim()) {
+      base = `/publications/search?q=${encodeURIComponent(q)}&page=${page}&size=12`;
+    }
+    if (eventId) base += `&eventId=${encodeURIComponent(eventId)}`;
+    if (category) base += `&category=${encodeURIComponent(category)}`;
+    return base;
+  }, [q, page, eventId, category]);
+
+  const pubsQuery = useQuery({
+    queryKey: ["totem-pubs-nav", endpoint],
+    queryFn: async () => (await api.get(endpoint)).data
+  });
+
   const posterUrl = useMemo(() => pubQuery.data?.posterUrl, [pubQuery.data]);
+
+  // Get next and previous publication
+  const { nextPub, prevPub, currentIndex } = useMemo(() => {
+    const items = pubsQuery.data?.items || [];
+    const currentIndex = items.findIndex(p => Number(p.id) === Number(id));
+    
+    let prevPub = currentIndex > 0 ? items[currentIndex - 1] : null;
+    let nextPub = currentIndex >= 0 && currentIndex < items.length - 1 ? items[currentIndex + 1] : null;
+    
+    return { nextPub, prevPub, currentIndex };
+  }, [pubsQuery.data, id]);
 
   useIdleTimer({
     timeoutMs: 45_000,
@@ -53,15 +84,23 @@ export default function TotemPosterDetail() {
     }
   };
 
+  const buildSearchParams = () => {
+    let params = `?screen=${screen}&page=${page}`;
+    if (q) params += `&q=${encodeURIComponent(q)}`;
+    if (category) params += `&category=${encodeURIComponent(category)}`;
+    if (eventId) params += `&eventId=${encodeURIComponent(eventId)}`;
+    return params;
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 p-6 flex flex-col relative overflow-hidden">
       {/* Soft accent */}
       <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-emerald-100/40 blur-[100px] rounded-full pointer-events-none" />
 
       {/* Header toolbar */}
-      <header className="flex items-center justify-between mb-6 relative z-10 bg-white p-4 rounded-3xl border border-slate-200 shadow-sm">
+      <header className="flex items-center justify-between mb-6 relative z-10 bg-white/80 backdrop-blur-xl p-4 rounded-3xl border border-white/50 shadow-soft">
         <Link
-          to={`/totem/publications?screen=${screen}`}
+          to={`/totem/publications${buildSearchParams()}`}
           className="px-6 py-3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-2xl text-lg font-bold transition-all flex items-center gap-3 shadow-sm"
         >
           <ArrowLeft size={24} /> Retour à la galerie
@@ -90,7 +129,7 @@ export default function TotemPosterDetail() {
       </header>
 
       {/* Poster content */}
-      <main className="flex-1 bg-white border border-slate-200 rounded-[2rem] p-6 relative z-10 flex flex-col shadow-sm">
+      <main className="flex-1 bg-white/95 backdrop-blur-md border border-white/60 rounded-[2rem] p-6 relative z-10 flex flex-col shadow-soft animate-fade-in">
         {pubQuery.isLoading ? (
           <div className="flex-1 flex flex-col items-center justify-center space-y-6">
             <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin" />
@@ -138,8 +177,8 @@ export default function TotemPosterDetail() {
                 
                 {/* QR Code */}
                 {posterUrl && (
-                  <div className="bg-white border border-emerald-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center shadow-sm shrink-0">
-                    <div className="p-3 bg-white border-4 border-emerald-100 rounded-2xl shadow-sm mb-4">
+                  <div className="bg-white/80 backdrop-blur border border-white rounded-2xl p-6 flex flex-col items-center justify-center text-center shadow-soft shrink-0">
+                    <div className="p-3 bg-white border-4 border-emerald-50 rounded-2xl shadow-sm mb-4">
                       <QRCodeCanvas value={posterUrl} size={140} level="H" fgColor="#0f172a" />
                     </div>
                     <h4 className="font-bold text-slate-800 text-lg">Scanner le poster</h4>
@@ -148,8 +187,8 @@ export default function TotemPosterDetail() {
                 )}
 
                 {/* Metadata */}
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 space-y-4 shrink-0 shadow-sm">
-                  <h4 className="font-bold text-slate-800 text-lg border-b border-slate-200 pb-2">Informations</h4>
+                <div className="bg-white/60 backdrop-blur border border-white rounded-2xl p-6 space-y-4 shrink-0 shadow-soft">
+                  <h4 className="font-bold text-slate-800 text-lg border-b border-slate-200/50 pb-2">Informations</h4>
                   {pubQuery.data.category && (
                     <div className="flex items-center gap-3 text-slate-600">
                       <Tag size={18} className="text-emerald-500" />
@@ -175,8 +214,8 @@ export default function TotemPosterDetail() {
 
                 {/* Abstract */}
                 {(pubQuery.data.abstractText || pubQuery.data.description) && (
-                  <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex-1">
-                    <h4 className="font-bold text-slate-800 text-lg border-b border-slate-200 pb-2 mb-4">Résumé</h4>
+                  <div className="bg-white/80 backdrop-blur border border-white rounded-2xl p-6 shadow-soft flex-1">
+                    <h4 className="font-bold text-slate-800 text-lg border-b border-slate-200/50 pb-2 mb-4">Résumé</h4>
                     <div className="prose prose-slate prose-sm text-slate-600">
                       <p className="whitespace-pre-wrap leading-relaxed">
                         {pubQuery.data.abstractText || pubQuery.data.description}
@@ -186,6 +225,35 @@ export default function TotemPosterDetail() {
                 )}
               </div>
             </div>
+
+            {/* Navigation footer */}
+            <footer className="mt-8 flex justify-between items-center gap-4">
+              {prevPub ? (
+                <button
+                  onClick={() => navigate(`/totem/publications/${prevPub.id}${buildSearchParams()}`)}
+                  className="px-8 py-4 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-2xl text-lg font-bold transition-all flex items-center gap-3 shadow-sm"
+                >
+                  <ChevronLeft size={28} /> Précédent
+                </button>
+              ) : (
+                <div className="flex-1" />
+              )}
+              
+              <div className="text-lg font-bold text-slate-600 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-200">
+                {currentIndex >= 0 ? `${currentIndex + 1} / ${pubsQuery.data?.totalElements || "?"}` : "Navigation"}
+              </div>
+
+              {nextPub ? (
+                <button
+                  onClick={() => navigate(`/totem/publications/${nextPub.id}${buildSearchParams()}`)}
+                  className="px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl text-lg font-bold transition-all flex items-center gap-3 shadow-sm"
+                >
+                  Suivant <ChevronRight size={28} />
+                </button>
+              ) : (
+                <div className="flex-1" />
+              )}
+            </footer>
           </>
         )}
       </main>

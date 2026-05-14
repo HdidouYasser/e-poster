@@ -20,6 +20,7 @@
     "react-hook-form": "^7.74.0",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^6.27.0",
+    "react-simple-keyboard": "^3.8.206",
     "tailwind-merge": "^3.5.0",
     "zod": "^4.4.1",
     "zustand": "^5.0.0"

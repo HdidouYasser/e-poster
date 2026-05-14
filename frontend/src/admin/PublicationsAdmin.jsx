@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { api } from "../api";
-import { Plus, Edit2, Trash2, Search, Loader2, UploadCloud, FileImage } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, Loader2, UploadCloud, FileImage, Download } from "lucide-react";
 import toast from "react-hot-toast";
 
 const pubSchema = z.object({
@@ -129,13 +129,58 @@ export default function PublicationsAdmin() {
     }
   };
 
+  const exportCSV = async () => {
+    try {
+      toast.loading("Génération du CSV...", { id: "export" });
+      const res = await api.get("/publications?page=0&size=10000");
+      const items = res.data.items || [];
+      if (items.length === 0) {
+        toast.error("Aucune donnée à exporter", { id: "export" });
+        return;
+      }
+
+      const headers = ["ID", "Titre", "Auteurs", "Catégorie", "Session", "Salle", "Statut", "Événement"];
+      const rows = items.map(p => [
+        p.id,
+        `"${p.title?.replace(/"/g, '""') || ''}"`,
+        `"${p.authors?.replace(/"/g, '""') || ''}"`,
+        `"${p.category || ''}"`,
+        `"${p.session || ''}"`,
+        `"${p.room || ''}"`,
+        p.status,
+        `"${p.event?.title || ''}"`
+      ]);
+
+      const csvContent = "data:text/csv;charset=utf-8," 
+        + headers.join(",") + "\n" 
+        + rows.map(e => e.join(",")).join("\n");
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "publications_export.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success("Export réussi", { id: "export" });
+    } catch (e) {
+      toast.error("Erreur lors de l'export", { id: "export" });
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <h2 className="text-3xl font-bold text-slate-800">Publications</h2>
-        <button onClick={() => openForm()} className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors shadow-sm">
-          <Plus size={20} /> Nouvelle Publication
-        </button>
+        <div className="flex gap-3">
+          <button onClick={exportCSV} className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors shadow-sm">
+            <Download size={20} /> Exporter CSV
+          </button>
+          <button onClick={() => openForm()} className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors shadow-sm">
+            <Plus size={20} /> Nouvelle Publication
+          </button>
+        </div>
       </div>
 
       <div className="relative">
@@ -233,7 +278,7 @@ export default function PublicationsAdmin() {
         </form>
       )}
 
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-soft">
         <table className="w-full text-left text-sm text-slate-700">
           <thead className="bg-slate-50 border-b border-slate-200 text-slate-500">
             <tr>

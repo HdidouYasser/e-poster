@@ -1,5 +1,12 @@
 package com.eposter.backend.event;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.eposter.backend.publication.Publication;
+import com.eposter.backend.screen.Screen;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -7,13 +14,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.eposter.backend.publication.Publication;
-import com.eposter.backend.screen.Screen;
 
 @Entity
 @Table(name = "events")
@@ -31,6 +31,14 @@ public class Event {
     private Instant createdAt;
     private Instant updatedAt;
     private Instant deletedAt;
+    @Column(columnDefinition = "TEXT")
+    private String logoUrl;
+    @Column(length = 7)
+    private String colorPrimary;
+    @Column(length = 7)
+    private String colorSecondary;
+    @Column(columnDefinition = "TEXT")
+    private String bannerUrl;
     @OneToMany(mappedBy = "event")
     @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Publication> publications = new ArrayList<>();
@@ -56,6 +64,14 @@ public class Event {
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
     public Instant getDeletedAt() { return deletedAt; }
     public void setDeletedAt(Instant deletedAt) { this.deletedAt = deletedAt; }
+    public String getLogoUrl() { return logoUrl; }
+    public void setLogoUrl(String logoUrl) { this.logoUrl = logoUrl; }
+    public String getColorPrimary() { return colorPrimary; }
+    public void setColorPrimary(String colorPrimary) { this.colorPrimary = colorPrimary; }
+    public String getColorSecondary() { return colorSecondary; }
+    public void setColorSecondary(String colorSecondary) { this.colorSecondary = colorSecondary; }
+    public String getBannerUrl() { return bannerUrl; }
+    public void setBannerUrl(String bannerUrl) { this.bannerUrl = bannerUrl; }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public List<Publication> getPublications() { return publications; }
     public void setPublications(List<Publication> publications) { this.publications = publications; }
