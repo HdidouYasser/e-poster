@@ -61,9 +61,7 @@ public class EventService {
 
     public void delete(Long id) {
         Event existing = getById(id);
-        existing.setDeletedAt(Instant.now());
-        existing.setUpdatedAt(Instant.now());
-        repository.save(existing);
+        repository.delete(existing);
         auditService.log("EVENT", id, "DELETE", existing.getTitle());
     }
 }

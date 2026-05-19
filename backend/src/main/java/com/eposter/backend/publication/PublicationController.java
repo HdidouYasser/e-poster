@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/publications")
@@ -42,8 +43,17 @@ public class PublicationController {
             @RequestParam(defaultValue = "createdAt,desc") String sort
     ) {
         Pageable pageable = pageable(page, size, sort);
-        if ((eventId == null || eventId.isBlank()) && (session == null || session.isBlank()) && (category == null || category.isBlank()) && (room == null || room.isBlank())) {
+        boolean hasEventId = eventId != null && !eventId.isBlank();
+        boolean hasSession = session != null && !session.isBlank();
+        boolean hasCategory = category != null && !category.isBlank();
+        boolean hasRoom = room != null && !room.isBlank();
+
+        if (!hasEventId && !hasSession && !hasCategory && !hasRoom) {
             return ApiPageResponse.from(service.list(pageable));
+        }
+        // Simple event-only filter uses the JPA derived query (no FULLTEXT needed)
+        if (hasEventId && !hasSession && !hasCategory && !hasRoom) {
+            return ApiPageResponse.from(service.listByEventId(eventId, pageable));
         }
         return ApiPageResponse.from(service.search(null, eventId, session, category, room, pageable));
     }
@@ -111,7 +121,9 @@ public class PublicationController {
             String category,
             String room,
             String posterUrl,
-            Instant publishDate
+            Instant publishDate,
+            List<Long> authorIds,
+            List<Long> categoryIds
     ) {
         Publication toModel() {
             Publication model = new Publication();
@@ -125,6 +137,8 @@ public class PublicationController {
             model.setRoom(room);
             model.setPosterUrl(posterUrl);
             model.setPublishDate(publishDate);
+            model.setAuthorIds(authorIds);
+            model.setCategoryIds(categoryIds);
             return model;
         }
     }

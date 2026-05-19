@@ -84,9 +84,7 @@ public class ScreenService {
 
     public void delete(Long id) {
         Screen existing = getById(id);
-        existing.setDeletedAt(Instant.now());
-        existing.setUpdatedAt(Instant.now());
-        repository.save(existing);
+        repository.delete(existing);
         auditService.log("SCREEN", id, "DELETE", existing.getName());
     }
 

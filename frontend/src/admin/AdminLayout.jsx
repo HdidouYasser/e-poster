@@ -9,71 +9,68 @@ export default function AdminLayout() {
   const location = useLocation();
 
   const navItemClass = (path) => clsx(
-    "flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium",
+    "flex items-center gap-3 px-3 py-2 rounded-md transition-colors font-medium text-sm",
     location.pathname.startsWith(path)
-      ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
-      : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+      ? "bg-zinc-100 text-zinc-900 font-semibold"
+      : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
   );
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-800 font-sans">
+    <div className="flex h-screen bg-zinc-50 text-zinc-900 font-sans">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-slate-200 bg-white flex flex-col p-4 shrink-0 shadow-sm">
-        <div className="flex items-center gap-3 mb-8 px-2 mt-2">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-white font-bold shadow-sm">
-            <FileText size={18} />
+      <aside className="w-64 border-r border-zinc-200 bg-white flex flex-col px-4 py-6 shrink-0">
+        <div className="flex items-center gap-3 mb-8 px-2">
+          <div className="w-8 h-8 rounded-md bg-zinc-900 flex items-center justify-center text-white font-bold">
+            <FileText size={16} />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-slate-800 leading-none">E-Poster</h1>
+            <h1 className="text-base font-bold text-zinc-900 leading-none">E-Poster</h1>
           </div>
         </div>
 
         <nav className="flex-1 space-y-1">
           <Link to="/admin/publications" className={navItemClass("/admin/publications")}>
-            <FileText size={20} /> E-Posters
+            <FileText size={18} /> E-Posters
           </Link>
           <Link to="/admin/events" className={navItemClass("/admin/events")}>
-            <Calendar size={20} /> Événements
+            <Calendar size={18} /> Événements
           </Link>
           <Link to="/admin/categories" className={navItemClass("/admin/categories")}>
-            <Tags size={20} /> Catégories
+            <Tags size={18} /> Catégories
           </Link>
           <Link to="/admin/authors" className={navItemClass("/admin/authors")}>
-            <Users size={20} /> Auteurs
+            <Users size={18} /> Auteurs
           </Link>
           <Link to="/admin/import" className={navItemClass("/admin/import")}>
-            <UploadCloud size={20} /> Import Bulk
+            <UploadCloud size={18} /> Import Bulk
           </Link>
           <Link to="/admin/audit" className={navItemClass("/admin/audit")}>
-            <Activity size={20} /> Audit Logs
+            <Activity size={18} /> Audit Logs
           </Link>
         </nav>
 
-        <div className="mt-auto space-y-1 mb-4 border-b border-slate-200 pb-4">
-          <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors font-medium">
-            <LogOut size={20} /> Déconnexion
+        <div className="mt-auto space-y-1 mb-6 border-b border-zinc-200 pb-6">
+          <button onClick={logout} className="w-full flex items-center gap-3 px-3 py-2 text-zinc-500 hover:bg-zinc-50 hover:text-red-600 rounded-md transition-colors font-medium text-sm">
+            <LogOut size={18} /> Déconnexion
           </button>
         </div>
 
-        <div className="flex items-center gap-3 px-2 pb-2">
-          <div className="w-10 h-10 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center text-sm font-bold text-emerald-700 uppercase">
+        <div className="flex items-center gap-3 px-2">
+          <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-xs font-bold text-zinc-700 uppercase">
             {username ? username.substring(0, 2) : "AD"}
           </div>
           <div className="overflow-hidden">
-            <div className="text-sm font-medium text-slate-800 truncate">{username || "Admin"}</div>
+            <div className="text-sm font-semibold text-zinc-900 truncate">{username || "Admin"}</div>
           </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden bg-slate-50">
+      <main className="flex-1 flex flex-col overflow-hidden bg-zinc-50">
         {/* Topbar */}
-        <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-8 shrink-0 shadow-sm">
-          <div className="flex items-center gap-4 text-slate-500 font-medium">
+        <header className="h-14 border-b border-zinc-200 bg-white flex items-center justify-between px-8 shrink-0">
+          <div className="flex items-center gap-4 text-zinc-500 font-medium text-sm">
             Tableau de Bord Administration
-          </div>
-          <div className="flex items-center gap-4">
-            
           </div>
         </header>
 

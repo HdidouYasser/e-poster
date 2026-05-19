@@ -19,7 +19,7 @@ export default function ImportAdmin() {
       const formData = new FormData();
       formData.append("file", file);
       if (eventId) formData.append("eventId", eventId);
-      
+
       const res = await api.post("/import/publications", formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
@@ -49,78 +49,77 @@ export default function ImportAdmin() {
   };
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div className="space-y-6 max-w-3xl mx-auto font-sans">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold text-slate-800">Import en Masse</h2>
+        <h2 className="text-2xl font-bold text-zinc-900 tracking-tight">Import en Masse</h2>
       </div>
 
-      <div className="bg-white border border-slate-200 p-8 rounded-2xl shadow-sm">
-        <p className="text-slate-500 mb-6">
-          Importez des publications à partir d'un fichier Excel (.xlsx) ou CSV. 
-          Les colonnes attendues sont : <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded">eventId, title, description, status, posterUrl, publishDate</span>.
+      <div className="bg-white border border-zinc-200 p-8 rounded-lg shadow-sm">
+        <p className="text-zinc-500 mb-6 text-sm">
+          Importez des publications à partir d'un fichier Excel (.xlsx) ou CSV.
         </p>
 
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-slate-600 mb-2">Événement par défaut (optionnel)</label>
-            <select 
+            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Événement par défaut (optionnel)</label>
+            <select
               value={eventId}
               onChange={(e) => setEventId(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-3 rounded-xl focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 outline-none transition-colors"
+              className="w-full bg-white border border-zinc-200 text-zinc-900 px-3 py-2 rounded-md focus:border-zinc-400 outline-none transition-colors text-sm"
             >
               <option value="">-- Aucun événement par défaut --</option>
               {eventsData?.items?.map(e => <option key={e.id} value={e.id}>{e.title}</option>)}
             </select>
-            <p className="text-xs text-slate-400 mt-2">Sera utilisé si la colonne eventId est vide dans le fichier.</p>
+            <p className="text-xs text-zinc-500 mt-1.5">Sera utilisé si la colonne eventId est vide dans le fichier.</p>
           </div>
 
-          <div className="border-2 border-dashed border-slate-200 rounded-2xl p-10 flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer relative">
-            <input 
-              type="file" 
-              accept=".xlsx,.csv" 
+          <div className="border border-dashed border-zinc-300 rounded-lg p-10 flex flex-col items-center justify-center bg-zinc-50 hover:bg-zinc-100 transition-colors cursor-pointer relative">
+            <input
+              type="file"
+              accept=".xlsx,.csv"
               onChange={handleFileChange}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
-            
+
             {file ? (
               <div className="flex flex-col items-center">
-                {file.name.endsWith('.csv') ? <FileText size={48} className="text-emerald-500 mb-4" /> : <FileSpreadsheet size={48} className="text-emerald-500 mb-4" />}
-                <p className="font-medium text-slate-800 text-lg">{file.name}</p>
-                <p className="text-sm text-slate-500">{(file.size / 1024).toFixed(2)} KB</p>
-                <button 
+                {file.name.endsWith('.csv') ? <FileText size={32} className="text-zinc-900 mb-3" /> : <FileSpreadsheet size={32} className="text-zinc-900 mb-3" />}
+                <p className="font-semibold text-zinc-900 text-sm">{file.name}</p>
+                <p className="text-xs text-zinc-500">{(file.size / 1024).toFixed(2)} KB</p>
+                <button
                   onClick={(e) => { e.preventDefault(); setFile(null); }}
-                  className="mt-4 text-sm text-red-500 hover:text-red-600 font-medium z-10"
+                  className="mt-3 text-xs text-red-600 hover:text-red-700 font-semibold z-10"
                 >
                   Retirer le fichier
                 </button>
               </div>
             ) : (
-              <div className="flex flex-col items-center text-slate-400">
-                <UploadCloud size={48} className="mb-4" />
-                <p className="font-medium text-slate-600 text-lg mb-1">Cliquez ou glissez-déposez</p>
-                <p className="text-sm">Fichiers .xlsx ou .csv uniquement</p>
+               <div className="flex flex-col items-center text-zinc-500">
+                <UploadCloud size={32} className="mb-3 text-zinc-400" />
+                <p className="font-semibold text-zinc-700 text-sm mb-0.5">Cliquez ou glissez-déposez</p>
+                <p className="text-xs">Fichiers .xlsx ou .csv uniquement</p>
               </div>
             )}
           </div>
 
-          <button 
+          <button
             onClick={handleImport}
             disabled={!file || importMutation.isPending}
-            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-sm disabled:opacity-50"
+            className="w-full bg-zinc-900 hover:bg-zinc-800 text-white px-6 py-2.5 rounded-md font-semibold text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
           >
-            {importMutation.isPending ? <Loader2 className="animate-spin" size={24} /> : <UploadCloud size={24} />}
+            {importMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <UploadCloud size={16} />}
             {importMutation.isPending ? "Importation en cours..." : "Lancer l'import"}
           </button>
         </div>
       </div>
 
       {importResult && (
-        <div className="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl flex items-start gap-4 shadow-sm animate-in fade-in slide-in-from-bottom-4">
-          <CheckCircle2 className="text-emerald-500 mt-1" size={24} />
+        <div className="bg-zinc-50 border border-zinc-200 p-6 rounded-lg flex items-start gap-4 shadow-sm animate-in fade-in slide-in-from-bottom-4">
+          <CheckCircle2 className="text-zinc-900 mt-0.5" size={20} />
           <div>
-            <h3 className="font-bold text-emerald-800 text-lg">Import terminé avec succès</h3>
-            <p className="text-emerald-700 mt-1">
-              <strong>{importResult.created}</strong> publications ont été créées.
+            <h3 className="font-bold text-zinc-900 text-sm">Import terminé avec succès</h3>
+            <p className="text-zinc-600 mt-1 text-sm">
+              <strong className="text-zinc-900">{importResult.created}</strong> publications ont été créées.
             </p>
           </div>
         </div>

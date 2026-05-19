@@ -34,6 +34,7 @@ public class Category {
     private Event event;
     
     @OneToMany(mappedBy = "category")
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<PublicationCategory> publicationCategories = new ArrayList<>();
     
     @Column(name = "created_at")

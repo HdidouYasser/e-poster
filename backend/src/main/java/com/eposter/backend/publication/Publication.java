@@ -86,6 +86,12 @@ public class Publication {
     @Column(name = "category_str")
     private String category;
 
+    @Transient
+    private List<Long> authorIds;
+    
+    @Transient
+    private List<Long> categoryIds;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Event getEvent() { return event; }
@@ -124,4 +130,8 @@ public class Publication {
     public void setAuthors(String authors) { this.authors = authors; }
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
+    public List<Long> getAuthorIds() { return authorIds; }
+    public void setAuthorIds(List<Long> authorIds) { this.authorIds = authorIds; }
+    public List<Long> getCategoryIds() { return categoryIds; }
+    public void setCategoryIds(List<Long> categoryIds) { this.categoryIds = categoryIds; }
 }

@@ -60,8 +60,7 @@ public class CategoryService {
 
     public void delete(Long id) {
         Category existing = getById(id);
-        existing.setDeletedAt(Instant.now());
-        repository.save(existing);
+        repository.delete(existing);
         auditService.log("CATEGORY", id, "DELETE", existing.getName());
     }
 

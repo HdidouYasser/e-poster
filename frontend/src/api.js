@@ -20,3 +20,12 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+/**
+ * Public Axios instance for the Totem (no auth interceptors).
+ * Use this in all Totem components to avoid triggering logout()
+ * on public endpoints that don't require a JWT.
+ */
+export const publicApi = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api"
+});

@@ -48,14 +48,14 @@ export default function AuthorsAdmin() {
 
   const confirmDelete = (id) => {
     toast((t) => (
-      <div className="flex flex-col gap-3">
-        <p className="font-medium text-slate-800">Confirmer la suppression ?</p>
+      <div className="flex flex-col gap-3 font-sans">
+        <p className="font-semibold text-zinc-900 text-sm">Confirmer la suppression ?</p>
         <div className="flex gap-2 justify-end">
-          <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1 bg-slate-100 border border-slate-200 rounded-md text-sm hover:bg-slate-200 transition-colors text-slate-700">Annuler</button>
-          <button onClick={() => { toast.dismiss(t.id); deleteMutation.mutate(id); }} className="px-3 py-1 bg-red-50 text-red-600 border border-red-200 rounded-md text-sm hover:bg-red-100 transition-colors">Supprimer</button>
+          <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1.5 bg-white border border-zinc-200 rounded-md text-xs font-semibold hover:bg-zinc-50 transition-colors text-zinc-700">Annuler</button>
+          <button onClick={() => { toast.dismiss(t.id); deleteMutation.mutate(id); }} className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-md text-xs font-semibold hover:bg-red-100 transition-colors">Supprimer</button>
         </div>
       </div>
-    ), { duration: 5000, style: { background: '#fff', color: '#0f172a', border: '1px solid #e2e8f0' } });
+    ), { duration: 5000, style: { background: '#fff', color: '#18181b', border: '1px solid #e4e4e7', borderRadius: '0.5rem' } });
   };
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
@@ -82,81 +82,81 @@ export default function AuthorsAdmin() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto font-sans">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold text-slate-800">Auteurs</h2>
-        <button onClick={() => openForm()} className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors shadow-sm">
-          <Plus size={20} /> Nouvel Auteur
+        <h2 className="text-2xl font-bold text-zinc-900 tracking-tight">Auteurs</h2>
+        <button onClick={() => openForm()} className="bg-zinc-900 hover:bg-zinc-800 text-white px-4 py-2 rounded-md font-medium text-sm flex items-center gap-2 transition-colors">
+          <Plus size={16} /> Nouvel Auteur
         </button>
       </div>
 
       {isFormOpen && (
-        <form onSubmit={handleSubmit(onSubmit)} className="bg-white border border-slate-200 p-6 rounded-2xl space-y-4 shadow-md">
-          <h3 className="text-xl font-bold text-slate-800 mb-4">{editingAuthor ? "Modifier l'auteur" : "Créer un auteur"}</h3>
+        <form onSubmit={handleSubmit(onSubmit)} className="bg-white border border-zinc-200 p-6 rounded-lg space-y-4 shadow-sm">
+          <h3 className="text-lg font-semibold text-zinc-900 mb-4">{editingAuthor ? "Modifier l'auteur" : "Créer un auteur"}</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-sm font-medium text-slate-600 mb-1">Prénom</label>
-              <input {...register("firstName")} className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2 rounded-lg focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 outline-none" />
-              {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName.message}</p>}
+              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Prénom</label>
+              <input {...register("firstName")} className="w-full bg-white border border-zinc-200 text-zinc-900 px-3 py-2 rounded-md focus:border-zinc-400 outline-none text-sm transition-colors" />
+              {errors.firstName && <p className="text-red-500 text-xs mt-1 font-medium">{errors.firstName.message}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-600 mb-1">Nom</label>
-              <input {...register("lastName")} className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2 rounded-lg focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 outline-none" />
-              {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName.message}</p>}
+              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Nom</label>
+              <input {...register("lastName")} className="w-full bg-white border border-zinc-200 text-zinc-900 px-3 py-2 rounded-md focus:border-zinc-400 outline-none text-sm transition-colors" />
+              {errors.lastName && <p className="text-red-500 text-xs mt-1 font-medium">{errors.lastName.message}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-600 mb-1">Email</label>
-              <input type="email" {...register("email")} className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2 rounded-lg focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 outline-none" />
-              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Email</label>
+              <input type="email" {...register("email")} className="w-full bg-white border border-zinc-200 text-zinc-900 px-3 py-2 rounded-md focus:border-zinc-400 outline-none text-sm transition-colors" />
+              {errors.email && <p className="text-red-500 text-xs mt-1 font-medium">{errors.email.message}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-600 mb-1">Affiliation</label>
-              <input {...register("affiliation")} className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2 rounded-lg focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 outline-none" />
+              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Affiliation</label>
+              <input {...register("affiliation")} className="w-full bg-white border border-zinc-200 text-zinc-900 px-3 py-2 rounded-md focus:border-zinc-400 outline-none text-sm transition-colors" />
             </div>
             <div className="md:col-span-2 flex items-center gap-2">
-              <input type="checkbox" id="isCorresponding" {...register("isCorresponding")} className="w-4 h-4 text-emerald-500 border-slate-300 rounded focus:ring-emerald-400" />
-              <label htmlFor="isCorresponding" className="text-sm font-medium text-slate-600">Auteur correspondant (Contact)</label>
+              <input type="checkbox" id="isCorresponding" {...register("isCorresponding")} className="w-4 h-4 text-zinc-900 border-zinc-300 rounded focus:ring-zinc-900" />
+              <label htmlFor="isCorresponding" className="text-sm font-semibold text-zinc-700">Auteur correspondant (Contact)</label>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-            <button type="button" onClick={closeForm} className="px-4 py-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors">Annuler</button>
-            <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 shadow-sm">
-              {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="animate-spin" size={18} />} Enregistrer
+          <div className="flex justify-end gap-3 pt-6 mt-4 border-t border-zinc-100">
+            <button type="button" onClick={closeForm} className="px-4 py-2 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 border border-transparent rounded-md text-sm font-semibold transition-colors">Annuler</button>
+            <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="bg-zinc-900 hover:bg-zinc-800 text-white px-5 py-2 rounded-md font-semibold text-sm flex items-center gap-2 transition-colors">
+              {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="animate-spin" size={16} />} Enregistrer
             </button>
           </div>
         </form>
       )}
 
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-        <table className="w-full text-left text-sm text-slate-700">
-          <thead className="bg-slate-50 border-b border-slate-200 text-slate-500">
+      <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden shadow-sm">
+        <table className="w-full text-left text-sm text-zinc-700">
+          <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500">
             <tr>
-              <th className="px-6 py-4 font-semibold">Nom & Prénom</th>
-              <th className="px-6 py-4 font-semibold">Email</th>
-              <th className="px-6 py-4 font-semibold">Affiliation</th>
-              <th className="px-6 py-4 font-semibold text-right">Actions</th>
+              <th className="px-6 py-3 font-semibold text-xs uppercase tracking-wider">Nom & Prénom</th>
+              <th className="px-6 py-3 font-semibold text-xs uppercase tracking-wider">Email</th>
+              <th className="px-6 py-3 font-semibold text-xs uppercase tracking-wider">Affiliation</th>
+              <th className="px-6 py-3 font-semibold text-xs uppercase tracking-wider text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-zinc-100">
             {isLoading ? (
-              <tr><td colSpan="4" className="px-6 py-8 text-center text-slate-400">Chargement...</td></tr>
+              <tr><td colSpan="4" className="px-6 py-8 text-center text-zinc-400 font-medium">Chargement...</td></tr>
             ) : data?.items?.length === 0 ? (
-              <tr><td colSpan="4" className="px-6 py-8 text-center text-slate-400">Aucun auteur trouvé</td></tr>
+              <tr><td colSpan="4" className="px-6 py-8 text-center text-zinc-400 font-medium">Aucun auteur trouvé</td></tr>
             ) : (
               data?.items?.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-slate-800">
+                <tr key={item.id} className="hover:bg-zinc-50 transition-colors group">
+                  <td className="px-6 py-4 font-semibold text-zinc-900">
                     {item.lastName} {item.firstName}
-                    {item.isCorresponding && <span className="ml-2 px-2 py-0.5 bg-blue-50 text-blue-600 text-xs rounded border border-blue-200">Contact</span>}
+                    {item.isCorresponding && <span className="ml-2 px-1.5 py-0.5 bg-zinc-100 text-zinc-900 text-[10px] uppercase font-bold rounded border border-zinc-200">Contact</span>}
                   </td>
-                  <td className="px-6 py-4 text-slate-500">{item.email || "-"}</td>
-                  <td className="px-6 py-4 text-slate-500">{item.affiliation || "-"}</td>
+                  <td className="px-6 py-4 text-zinc-500">{item.email || "-"}</td>
+                  <td className="px-6 py-4 text-zinc-500">{item.affiliation || "-"}</td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => openForm(item)} className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors rounded-lg"><Edit2 size={18} /></button>
-                      <button onClick={() => confirmDelete(item.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors rounded-lg"><Trash2 size={18} /></button>
+                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => openForm(item)} className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors rounded-md"><Edit2 size={16} /></button>
+                      <button onClick={() => confirmDelete(item.id)} className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors rounded-md"><Trash2 size={16} /></button>
                     </div>
                   </td>
                 </tr>
@@ -167,10 +167,10 @@ export default function AuthorsAdmin() {
       </div>
 
       {data && data.totalPages > 1 && (
-        <div className="flex items-center justify-center gap-4 text-sm text-slate-500">
-          <button disabled={page <= 0} onClick={() => setPage(p => p - 1)} className="px-4 py-2 bg-white border border-slate-200 rounded-lg hover:text-slate-800 hover:bg-slate-50 disabled:opacity-50 transition-colors shadow-sm"><ChevronLeft size={20} /></button>
-          <span className="font-medium bg-slate-100 px-4 py-2 rounded-lg text-slate-700">Page {page + 1} / {data.totalPages}</span>
-          <button disabled={page + 1 >= data.totalPages} onClick={() => setPage(p => p + 1)} className="px-4 py-2 bg-white border border-slate-200 rounded-lg hover:text-slate-800 hover:bg-slate-50 disabled:opacity-50 transition-colors shadow-sm"><ChevronRight size={20} /></button>
+        <div className="flex items-center justify-between border-t border-zinc-200 pt-4 text-sm text-zinc-500">
+          <button disabled={page <= 0} onClick={() => setPage(p => p - 1)} className="px-3 py-1.5 bg-white border border-zinc-200 rounded-md hover:text-zinc-900 hover:bg-zinc-50 disabled:opacity-50 transition-colors font-semibold"><ChevronLeft size={16} className="inline mr-1" /> Précédent</button>
+          <span className="font-semibold text-zinc-600">Page {page + 1} sur {data.totalPages}</span>
+          <button disabled={page + 1 >= data.totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1.5 bg-white border border-zinc-200 rounded-md hover:text-zinc-900 hover:bg-zinc-50 disabled:opacity-50 transition-colors font-semibold">Suivant <ChevronRight size={16} className="inline ml-1" /></button>
         </div>
       )}
     </div>

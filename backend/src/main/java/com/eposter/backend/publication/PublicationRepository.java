@@ -15,30 +15,20 @@ public interface PublicationRepository extends JpaRepository<Publication, Long> 
 
     Optional<Publication> findByIdAndDeletedAtIsNull(Long id);
 
-    @Query(
-            value = """
-                    SELECT * FROM publications p
-                    WHERE p.deleted_at IS NULL
-                      AND (:q IS NULL OR :q = '' OR MATCH(p.title, p.description, p.abstract_text, p.authors_str) AGAINST (:q IN NATURAL LANGUAGE MODE))
-                      AND (:eventId IS NULL OR :eventId = '' OR p.event_ref_id = :eventId)
-                      AND (:session IS NULL OR :session = '' OR p.session = :session)
-                      AND (:room IS NULL OR :room = '' OR p.room = :room)
-                      AND (:category IS NULL OR :category = '' OR p.category_str = :category)
-                    """,
-            countQuery = """
-                    SELECT COUNT(*) FROM publications p
-                    WHERE p.deleted_at IS NULL
-                      AND (:q IS NULL OR :q = '' OR MATCH(p.title, p.description, p.abstract_text, p.authors_str) AGAINST (:q IN NATURAL LANGUAGE MODE))
-                      AND (:eventId IS NULL OR :eventId = '' OR p.event_ref_id = :eventId)
-                      AND (:session IS NULL OR :session = '' OR p.session = :session)
-                      AND (:room IS NULL OR :room = '' OR p.room = :room)
-                      AND (:category IS NULL OR :category = '' OR p.category_str = :category)
-                    """,
-            nativeQuery = true
-    )
+    @Query("""
+            SELECT DISTINCT p FROM Publication p
+            LEFT JOIN p.publicationCategories pc
+            LEFT JOIN pc.category c
+            WHERE p.deletedAt IS NULL
+              AND (:q IS NULL OR :q = '' OR LOWER(p.title) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(p.abstractText) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(p.authors) LIKE LOWER(CONCAT('%', :q, '%')))
+              AND (:eventId IS NULL OR p.event.id = :eventId)
+              AND (:session IS NULL OR :session = '' OR p.session = :session)
+              AND (:room IS NULL OR :room = '' OR p.room = :room)
+              AND (:category IS NULL OR :category = '' OR p.category LIKE CONCAT('%', :category, '%') OR c.name = :category)
+            """)
     Page<Publication> searchFullText(
             @Param("q") String q,
-            @Param("eventId") String eventId,
+            @Param("eventId") Long eventId,
             @Param("session") String session,
             @Param("room") String room,
             @Param("category") String category,

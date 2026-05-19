@@ -1,24 +1,49 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-800 font-sans antialiased;
+    @apply bg-zinc-50 text-zinc-900 antialiased;
     margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 }
 
-/* Scrollbar styling personnalisée pour le Totem */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* ────────── Design Tokens ────────── */
+:root {
+  --color-primary: #18181b; /* Default to dark if not set */
 }
-::-webkit-scrollbar-track {
-  background: transparent;
+
+/* ────────── Scrollbar ────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+
+/* ────────── Animations ────────── */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+
+.animate-fade-in { animation: fade-in 0.4s ease-out forwards; }
+
+/* ────────── Keyboard Overrides ────────── */
+.hg-theme-default {
+  border-radius: 0.75rem !important;
+  border: 1px solid #e4e4e7 !important;
+  background: #ffffff !important;
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1) !important;
+  font-family: 'Inter', sans-serif !important;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+.hg-theme-default .hg-button {
+  border-radius: 0.5rem !important;
+  background: #f4f4f5 !important;
+  border: 1px solid #e4e4e7 !important;
+  color: #18181b !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+}
+.hg-theme-default .hg-button:hover {
+  background: #e4e4e7 !important;
 }

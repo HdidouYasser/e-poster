@@ -52,14 +52,14 @@ export default function EventsAdmin() {
 
   const confirmDelete = (id) => {
     toast((t) => (
-      <div className="flex flex-col gap-3">
-        <p className="font-medium text-slate-800">Confirmer la suppression ?</p>
+      <div className="flex flex-col gap-3 font-sans">
+        <p className="font-semibold text-zinc-900 text-sm">Confirmer la suppression ?</p>
         <div className="flex gap-2 justify-end">
-          <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1 bg-slate-100 border border-slate-200 rounded-md text-sm hover:bg-slate-200 transition-colors text-slate-700">Annuler</button>
-          <button onClick={() => { toast.dismiss(t.id); deleteMutation.mutate(id); }} className="px-3 py-1 bg-red-50 text-red-600 border border-red-200 rounded-md text-sm hover:bg-red-100 transition-colors">Supprimer</button>
+          <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1.5 bg-white border border-zinc-200 rounded-md text-xs font-semibold hover:bg-zinc-50 transition-colors text-zinc-700">Annuler</button>
+          <button onClick={() => { toast.dismiss(t.id); deleteMutation.mutate(id); }} className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-md text-xs font-semibold hover:bg-red-100 transition-colors">Supprimer</button>
         </div>
       </div>
-    ), { duration: 5000, style: { background: '#fff', color: '#0f172a', border: '1px solid #e2e8f0' } });
+    ), { duration: 5000, style: { background: '#fff', color: '#18181b', border: '1px solid #e4e4e7', borderRadius: '0.5rem' } });
   };
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
@@ -86,82 +86,83 @@ export default function EventsAdmin() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto font-sans">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold text-slate-800">Événements</h2>
-        <button onClick={() => openForm()} className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors shadow-sm">
-          <Plus size={20} /> Nouvel Événement
+        <h2 className="text-2xl font-bold text-zinc-900 tracking-tight">Événements</h2>
+        <button onClick={() => openForm()} className="bg-zinc-900 hover:bg-zinc-800 text-white px-4 py-2 rounded-md font-medium text-sm flex items-center gap-2 transition-colors">
+          <Plus size={16} /> Nouvel Événement
         </button>
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
         <input
           type="text"
           value={q}
           onChange={(e) => { setQ(e.target.value); setPage(0); }}
           placeholder="Rechercher un événement..."
-          className="w-full bg-white border border-slate-200 text-slate-800 pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 transition-all shadow-sm"
+          className="w-full bg-white border border-zinc-200 text-zinc-900 pl-10 pr-4 py-2.5 rounded-md focus:outline-none focus:border-zinc-400 transition-colors text-sm"
         />
       </div>
 
       {isFormOpen && (
-        <form onSubmit={handleSubmit(onSubmit)} className="bg-white border border-slate-200 p-6 rounded-2xl space-y-4 shadow-md">
-          <h3 className="text-xl font-bold text-slate-800 mb-4">{editingEvent ? "Modifier l'événement" : "Créer un événement"}</h3>
+        <form onSubmit={handleSubmit(onSubmit)} className="bg-white border border-zinc-200 p-6 rounded-lg space-y-4 shadow-sm">
+          <h3 className="text-lg font-semibold text-zinc-900 mb-4">{editingEvent ? "Modifier l'événement" : "Créer un événement"}</h3>
           <div>
-            <label className="block text-sm font-medium text-slate-600 mb-1">Titre</label>
-            <input {...register("title")} className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2 rounded-lg focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 outline-none" />
-            {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
+            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Titre</label>
+            <input {...register("title")} className="w-full bg-white border border-zinc-200 text-zinc-900 px-3 py-2 rounded-md focus:border-zinc-400 outline-none text-sm transition-colors" />
+            {errors.title && <p className="text-red-500 text-xs mt-1 font-medium">{errors.title.message}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-600 mb-1">Description</label>
-            <textarea {...register("description")} rows={3} className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2 rounded-lg focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 outline-none" />
+            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Description</label>
+            <textarea {...register("description")} rows={3} className="w-full bg-white border border-zinc-200 text-zinc-900 px-3 py-2 rounded-md focus:border-zinc-400 outline-none text-sm transition-colors" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-600 mb-1">Statut</label>
-            <select {...register("status")} className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2 rounded-lg focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 outline-none">
+            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Statut</label>
+            <select {...register("status")} className="w-full bg-white border border-zinc-200 text-zinc-900 px-3 py-2 rounded-md focus:border-zinc-400 outline-none text-sm transition-colors">
               <option value="ACTIVE">Actif</option>
               <option value="ARCHIVED">Archivé</option>
             </select>
           </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-            <button type="button" onClick={closeForm} className="px-4 py-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors">Annuler</button>
-            <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 shadow-sm">
-              {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="animate-spin" size={18} />} Enregistrer
+          <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100 mt-6">
+            <button type="button" onClick={closeForm} className="px-4 py-2 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 border border-transparent rounded-md text-sm font-semibold transition-colors">Annuler</button>
+            <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="bg-zinc-900 hover:bg-zinc-800 text-white px-5 py-2 rounded-md font-semibold text-sm flex items-center gap-2 transition-colors">
+              {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="animate-spin" size={16} />} Enregistrer
             </button>
           </div>
         </form>
       )}
 
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-        <table className="w-full text-left text-sm text-slate-700">
-          <thead className="bg-slate-50 border-b border-slate-200 text-slate-500">
+      <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden shadow-sm">
+        <table className="w-full text-left text-sm text-zinc-700">
+          <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500">
             <tr>
-              <th className="px-6 py-4 font-semibold">Titre</th>
-              <th className="px-6 py-4 font-semibold">Description</th>
-              <th className="px-6 py-4 font-semibold">Statut</th>
-              <th className="px-6 py-4 font-semibold text-right">Actions</th>
+              <th className="px-6 py-3 font-semibold text-xs uppercase tracking-wider">Titre</th>
+              <th className="px-6 py-3 font-semibold text-xs uppercase tracking-wider">Description</th>
+              <th className="px-6 py-3 font-semibold text-xs uppercase tracking-wider">Statut</th>
+              <th className="px-6 py-3 font-semibold text-xs uppercase tracking-wider text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-zinc-100">
             {isLoading ? (
-              <tr><td colSpan="4" className="px-6 py-8 text-center text-slate-400">Chargement...</td></tr>
+              <tr><td colSpan="4" className="px-6 py-8 text-center text-zinc-400 font-medium">Chargement...</td></tr>
             ) : data?.items?.length === 0 ? (
-              <tr><td colSpan="4" className="px-6 py-8 text-center text-slate-400">Aucun événement trouvé</td></tr>
+              <tr><td colSpan="4" className="px-6 py-8 text-center text-zinc-400 font-medium">Aucun événement trouvé</td></tr>
             ) : (
               data?.items?.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-slate-800">{item.title}</td>
-                  <td className="px-6 py-4 text-slate-500 truncate max-w-xs">{item.description}</td>
+                <tr key={item.id} className="hover:bg-zinc-50 transition-colors group">
+                  <td className="px-6 py-4 font-semibold text-zinc-900">{item.title}</td>
+                  <td className="px-6 py-4 text-zinc-500 truncate max-w-xs">{item.description}</td>
                   <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${item.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border ${item.status === 'ACTIVE' ? 'bg-zinc-100 text-zinc-900 border-zinc-200' : 'bg-zinc-50 text-zinc-500 border-zinc-200'}`}>
+                      {item.status === 'ACTIVE' && <span className="w-1.5 h-1.5 rounded-full bg-zinc-900 mr-1.5" />}
                       {item.status}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => openForm(item)} className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors rounded-lg"><Edit2 size={18} /></button>
-                      <button onClick={() => confirmDelete(item.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors rounded-lg"><Trash2 size={18} /></button>
+                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => openForm(item)} className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors rounded-md"><Edit2 size={16} /></button>
+                      <button onClick={() => confirmDelete(item.id)} className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors rounded-md"><Trash2 size={16} /></button>
                     </div>
                   </td>
                 </tr>
@@ -172,10 +173,10 @@ export default function EventsAdmin() {
       </div>
 
       {data && data.totalPages > 1 && (
-        <div className="flex items-center justify-center gap-4 text-sm text-slate-500">
-          <button disabled={page <= 0} onClick={() => setPage(p => p - 1)} className="px-4 py-2 bg-white border border-slate-200 rounded-lg hover:text-slate-800 hover:bg-slate-50 disabled:opacity-50 transition-colors shadow-sm">Précédent</button>
-          <span className="font-medium bg-slate-100 px-4 py-2 rounded-lg text-slate-700">Page {page + 1} / {data.totalPages}</span>
-          <button disabled={page + 1 >= data.totalPages} onClick={() => setPage(p => p + 1)} className="px-4 py-2 bg-white border border-slate-200 rounded-lg hover:text-slate-800 hover:bg-slate-50 disabled:opacity-50 transition-colors shadow-sm">Suivant</button>
+        <div className="flex items-center justify-between border-t border-zinc-200 pt-4 text-sm text-zinc-500">
+          <button disabled={page <= 0} onClick={() => setPage(p => p - 1)} className="px-3 py-1.5 bg-white border border-zinc-200 rounded-md hover:text-zinc-900 hover:bg-zinc-50 disabled:opacity-50 transition-colors font-semibold">Précédent</button>
+          <span className="font-semibold text-zinc-600">Page {page + 1} sur {data.totalPages}</span>
+          <button disabled={page + 1 >= data.totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1.5 bg-white border border-zinc-200 rounded-md hover:text-zinc-900 hover:bg-zinc-50 disabled:opacity-50 transition-colors font-semibold">Suivant</button>
         </div>
       )}
     </div>
