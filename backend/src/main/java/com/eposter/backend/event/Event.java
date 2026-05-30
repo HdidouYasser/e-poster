@@ -39,6 +39,10 @@ public class Event {
     private String colorSecondary;
     @Column(columnDefinition = "TEXT")
     private String bannerUrl;
+    @Column(columnDefinition = "TEXT")
+    private String programUrl;
+    @Column(columnDefinition = "TEXT")
+    private String revueUrl;
     @OneToMany(mappedBy = "event")
     @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Publication> publications = new ArrayList<>();
@@ -72,6 +76,10 @@ public class Event {
     public void setColorSecondary(String colorSecondary) { this.colorSecondary = colorSecondary; }
     public String getBannerUrl() { return bannerUrl; }
     public void setBannerUrl(String bannerUrl) { this.bannerUrl = bannerUrl; }
+    public String getProgramUrl() { return programUrl; }
+    public void setProgramUrl(String programUrl) { this.programUrl = programUrl; }
+    public String getRevueUrl() { return revueUrl; }
+    public void setRevueUrl(String revueUrl) { this.revueUrl = revueUrl; }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public List<Publication> getPublications() { return publications; }
     public void setPublications(List<Publication> publications) { this.publications = publications; }

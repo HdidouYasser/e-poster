@@ -1,6 +1,7 @@
 package com.eposter.backend.media;
 
 import com.eposter.backend.publication.Publication;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -36,6 +37,7 @@ public class Media {
     private Integer width;
     private Integer height;
     
+    @JsonIgnore
     @ManyToOne
     private Publication publication;
     

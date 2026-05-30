@@ -3,6 +3,7 @@ package com.eposter.backend.screen;
 import com.eposter.backend.event.Event;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -38,7 +39,7 @@ public class Screen implements ScreenComponent {
     @ManyToOne
     private Event event;
     
-    @OneToMany(mappedBy = "screen", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "screen", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ScreenSection> sections = new ArrayList<>();
 
     @Column(name = "created_at")

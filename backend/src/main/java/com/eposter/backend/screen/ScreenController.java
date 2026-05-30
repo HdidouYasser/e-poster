@@ -70,6 +70,14 @@ public class ScreenController {
         return ex.getMessage();
     }
 
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public String handleAllExceptions(Exception ex) {
+        java.io.StringWriter sw = new java.io.StringWriter();
+        ex.printStackTrace(new java.io.PrintWriter(sw));
+        return sw.toString();
+    }
+
     public record ScreenRequest(
             @NotBlank String name,
             String location,

@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   body {
@@ -11,33 +11,54 @@
 
 /* ────────── Design Tokens ────────── */
 :root {
-  --color-primary: #18181b; /* Default to dark if not set */
+  --theme-primary: #18181b;
+  --theme-primary-hover: #27272a;
+  --theme-primary-light: #3f3f46;
+  --theme-foreground: #ffffff;
+  --theme-secondary: #f1785b;
+  --theme-secondary-hover: #d66448;
+  --theme-secondary-foreground: #ffffff;
+  --theme-bg-light: #f8fafc;
+}
+
+/* Add smooth transition to elements affected by dynamic theme */
+.theme-transition {
+  transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+              border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.3s ease;
+}
+
+/* ────────── v0 Style Dot Grid ────────── */
+.bg-dot-grid {
+  background-image: radial-gradient(rgba(24, 24, 27, 0.04) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
 }
 
 /* ────────── Scrollbar ────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+::-webkit-scrollbar-thumb { background: #e4e4e7; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #d4d4d8; }
 
 /* ────────── Animations ────────── */
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.animate-fade-in { animation: fade-in 0.4s ease-out forwards; }
+.animate-fade-in { animation: fade-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
 /* ────────── Keyboard Overrides ────────── */
 .hg-theme-default {
-  border-radius: 0.75rem !important;
+  border-radius: 1.25rem !important;
   border: 1px solid #e4e4e7 !important;
   background: #ffffff !important;
-  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1) !important;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05), 0 10px 10px -5px rgba(0,0,0,0.04) !important;
   font-family: 'Inter', sans-serif !important;
 }
 .hg-theme-default .hg-button {
-  border-radius: 0.5rem !important;
+  border-radius: 0.75rem !important;
   background: #f4f4f5 !important;
   border: 1px solid #e4e4e7 !important;
   color: #18181b !important;

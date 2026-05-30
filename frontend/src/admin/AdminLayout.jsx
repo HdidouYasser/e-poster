@@ -1,81 +1,108 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
-import { LogOut, Calendar, FileText, Search, Users, Tags, UploadCloud, Activity } from "lucide-react";
+import { LogOut, Calendar, FileText, Users, Tags, UploadCloud, Activity, Monitor, Presentation, BarChart3 } from "lucide-react";
 import clsx from "clsx";
 
+const navItems = [
+  { path: "/admin/stats",        icon: BarChart3,    label: "Tableau de bord" },
+  { path: "/admin/publications", icon: FileText,    label: "E-Posters" },
+  { path: "/admin/screens",      icon: Monitor,      label: "Écrans / Totems" },
+  { path: "/admin/events",       icon: Calendar,     label: "Événements" },
+  { path: "/admin/categories",   icon: Tags,         label: "Catégories" },
+  { path: "/admin/authors",      icon: Users,        label: "Auteurs" },
+  { path: "/admin/import",       icon: UploadCloud,  label: "Import Bulk" },
+  { path: "/admin/audit",        icon: Activity,     label: "Audit Logs" },
+];
+
 export default function AdminLayout() {
-  const logout = useAuthStore((s) => s.logout);
+  const logout   = useAuthStore((s) => s.logout);
   const username = useAuthStore((s) => s.username);
   const location = useLocation();
 
-  const navItemClass = (path) => clsx(
-    "flex items-center gap-3 px-3 py-2 rounded-md transition-colors font-medium text-sm",
-    location.pathname.startsWith(path)
-      ? "bg-zinc-100 text-zinc-900 font-semibold"
-      : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
-  );
+  const activeNav = navItems.find((n) => location.pathname.startsWith(n.path));
 
   return (
-    <div className="flex h-screen bg-zinc-50 text-zinc-900 font-sans">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-zinc-200 bg-white flex flex-col px-4 py-6 shrink-0">
-        <div className="flex items-center gap-3 mb-8 px-2">
-          <div className="w-8 h-8 rounded-md bg-zinc-900 flex items-center justify-center text-white font-bold">
-            <FileText size={16} />
+    <div className="flex h-screen bg-zinc-50 text-zinc-900 font-sans overflow-hidden">
+
+      {/* ── Sidebar ── */}
+      <aside className="w-64 border-r border-zinc-200/80 bg-white flex flex-col shrink-0">
+
+        {/* Logo */}
+        <div className="flex items-center gap-3 px-5 py-5 border-b border-zinc-100">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-zinc-900 to-zinc-600 flex items-center justify-center shadow-md shrink-0">
+            <Presentation size={18} className="text-white" />
           </div>
           <div>
-            <h1 className="text-base font-bold text-zinc-900 leading-none">E-Poster</h1>
+            <h1 className="text-base font-bold text-zinc-900 leading-none font-display">E-Poster</h1>
+            <p className="text-[10px] text-zinc-400 font-medium mt-0.5">Administration</p>
           </div>
         </div>
 
-        <nav className="flex-1 space-y-1">
-          <Link to="/admin/publications" className={navItemClass("/admin/publications")}>
-            <FileText size={18} /> E-Posters
-          </Link>
-          <Link to="/admin/events" className={navItemClass("/admin/events")}>
-            <Calendar size={18} /> Événements
-          </Link>
-          <Link to="/admin/categories" className={navItemClass("/admin/categories")}>
-            <Tags size={18} /> Catégories
-          </Link>
-          <Link to="/admin/authors" className={navItemClass("/admin/authors")}>
-            <Users size={18} /> Auteurs
-          </Link>
-          <Link to="/admin/import" className={navItemClass("/admin/import")}>
-            <UploadCloud size={18} /> Import Bulk
-          </Link>
-          <Link to="/admin/audit" className={navItemClass("/admin/audit")}>
-            <Activity size={18} /> Audit Logs
-          </Link>
+        {/* Nav */}
+        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+          {navItems.map(({ path, icon: Icon, label }) => {
+            const isActive = location.pathname.startsWith(path);
+            return (
+              <Link
+                key={path}
+                to={path}
+                className={clsx(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium",
+                  isActive
+                    ? "bg-zinc-900 text-white shadow-sm"
+                    : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
+                )}
+              >
+                <Icon
+                  size={16}
+                  className={clsx(isActive ? "text-white" : "text-zinc-400")}
+                />
+                {label}
+              </Link>
+            );
+          })}
         </nav>
 
-        <div className="mt-auto space-y-1 mb-6 border-b border-zinc-200 pb-6">
-          <button onClick={logout} className="w-full flex items-center gap-3 px-3 py-2 text-zinc-500 hover:bg-zinc-50 hover:text-red-600 rounded-md transition-colors font-medium text-sm">
-            <LogOut size={18} /> Déconnexion
+        {/* Footer */}
+        <div className="p-3 border-t border-zinc-100 space-y-0.5">
+          <button
+            onClick={logout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 text-zinc-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all font-medium text-sm"
+          >
+            <LogOut size={16} className="shrink-0" />
+            Déconnexion
           </button>
-        </div>
 
-        <div className="flex items-center gap-3 px-2">
-          <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-xs font-bold text-zinc-700 uppercase">
-            {username ? username.substring(0, 2) : "AD"}
-          </div>
-          <div className="overflow-hidden">
-            <div className="text-sm font-semibold text-zinc-900 truncate">{username || "Admin"}</div>
+          <div className="flex items-center gap-3 px-3 py-2 mt-1">
+            <div className="w-8 h-8 rounded-xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-xs font-bold text-zinc-700 uppercase shrink-0">
+              {username ? username.substring(0, 2) : "AD"}
+            </div>
+            <div className="overflow-hidden">
+              <div className="text-sm font-semibold text-zinc-900 truncate">{username || "Admin"}</div>
+              <div className="text-[10px] text-zinc-400 font-medium">Administrateur</div>
+            </div>
           </div>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden bg-zinc-50">
+      {/* ── Main ── */}
+      <main className="flex-1 flex flex-col overflow-hidden">
+
         {/* Topbar */}
-        <header className="h-14 border-b border-zinc-200 bg-white flex items-center justify-between px-8 shrink-0">
-          <div className="flex items-center gap-4 text-zinc-500 font-medium text-sm">
-            Tableau de Bord Administration
+        <header className="h-14 border-b border-zinc-200/80 bg-white/90 backdrop-blur-sm flex items-center justify-between px-8 shrink-0 shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-zinc-500 font-display">
+              {activeNav?.label ?? "Tableau de bord"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-zinc-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            En ligne
           </div>
         </header>
 
-        {/* Page Content */}
-        <div className="flex-1 overflow-auto p-8">
+        {/* Content area */}
+        <div className="flex-1 overflow-auto p-8 bg-zinc-50 bg-dot-grid">
           <Outlet />
         </div>
       </main>

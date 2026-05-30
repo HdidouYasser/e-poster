@@ -14,12 +14,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.PDFRenderer;
+
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -60,7 +67,25 @@ public class FileController {
 
         Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
 
-        return ResponseEntity.ok(Map.of("url", "/api/files/" + storedName));
+        Map<String, String> response = new HashMap<>();
+        response.put("url", "/api/files/" + storedName);
+
+        // Generate thumbnail if it's a PDF
+        if (originalName.toLowerCase().endsWith(".pdf")) {
+            try (PDDocument document = PDDocument.load(target.toFile())) {
+                PDFRenderer pdfRenderer = new PDFRenderer(document);
+                BufferedImage bim = pdfRenderer.renderImageWithDPI(0, 150);
+                String thumbName = "thumb_" + storedName.replace(".pdf", ".jpg");
+                Path thumbTarget = storageRoot.resolve(thumbName).normalize();
+                ImageIO.write(bim, "jpg", thumbTarget.toFile());
+                response.put("thumbnailUrl", "/api/files/" + thumbName);
+            } catch (Exception e) {
+                // Ignore PDF parsing errors, just proceed without thumbnail
+                e.printStackTrace();
+            }
+        }
+
+        return ResponseEntity.ok(response);
     }
 
     /**

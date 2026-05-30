@@ -53,6 +53,12 @@ public class EventService {
         existing.setStatus(payload.getStatus());
         existing.setStartDate(payload.getStartDate());
         existing.setEndDate(payload.getEndDate());
+        existing.setLogoUrl(payload.getLogoUrl());
+        existing.setColorPrimary(payload.getColorPrimary());
+        existing.setColorSecondary(payload.getColorSecondary());
+        existing.setBannerUrl(payload.getBannerUrl());
+        existing.setProgramUrl(payload.getProgramUrl());
+        existing.setRevueUrl(payload.getRevueUrl());
         existing.setUpdatedAt(Instant.now());
         Event saved = repository.save(existing);
         auditService.log("EVENT", saved.getId(), "UPDATE", saved.getTitle());

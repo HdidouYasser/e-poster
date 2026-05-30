@@ -60,7 +60,7 @@ public class PublicationController {
 
     @GetMapping("/{id}")
     public Publication getById(@PathVariable Long id) {
-        return service.getById(id);
+        return service.getAndIncrementViewCount(id);
     }
 
     @GetMapping("/search")
@@ -111,6 +111,26 @@ public class PublicationController {
         return PageRequest.of(page, size, sort);
     }
 
+    public record MediaRequest(
+            String filePath,
+            String fileName,
+            String fileType,
+            Long fileSize,
+            String thumbnailPath
+    ) {
+        public com.eposter.backend.media.Media toModel() {
+            com.eposter.backend.media.Media m = new com.eposter.backend.media.Media();
+            m.setFilePath(filePath);
+            m.setFileName(fileName);
+            m.setFileType(fileType);
+            m.setFileSize(fileSize);
+            m.setThumbnailPath(thumbnailPath);
+            m.setUploadDate(Instant.now());
+            m.setCreatedAt(Instant.now());
+            return m;
+        }
+    }
+
     public record PublicationRequest(
             String eventId,
             @NotBlank String title,
@@ -123,7 +143,8 @@ public class PublicationController {
             String posterUrl,
             Instant publishDate,
             List<Long> authorIds,
-            List<Long> categoryIds
+            List<Long> categoryIds,
+            List<MediaRequest> mediaList
     ) {
         Publication toModel() {
             Publication model = new Publication();
@@ -139,6 +160,9 @@ public class PublicationController {
             model.setPublishDate(publishDate);
             model.setAuthorIds(authorIds);
             model.setCategoryIds(categoryIds);
+            if (mediaList != null) {
+                model.setMediaList(mediaList.stream().map(MediaRequest::toModel).toList());
+            }
             return model;
         }
     }

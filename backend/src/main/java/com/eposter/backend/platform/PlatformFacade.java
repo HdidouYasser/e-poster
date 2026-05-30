@@ -81,5 +81,24 @@ public class PlatformFacade {
         event.setScreens(screenService.list(eventId));
         return event;
     }
+
+    public java.util.Map<String, Object> getStatistics() {
+        long totalEvents = eventService.list(org.springframework.data.domain.Pageable.unpaged()).getTotalElements();
+        long totalPublications = publicationService.list(org.springframework.data.domain.Pageable.unpaged()).getTotalElements();
+        long totalScreens = screenService.list(null).size();
+        long totalCategories = categoryService.list(null, null).size();
+        long totalViews = publicationService.getTotalViews();
+        List<Publication> topPublications = publicationService.getTopViewed();
+
+        java.util.Map<String, Object> stats = new java.util.HashMap<>();
+        stats.put("totalEvents", totalEvents);
+        stats.put("totalPublications", totalPublications);
+        stats.put("totalScreens", totalScreens);
+        stats.put("totalCategories", totalCategories);
+        stats.put("totalViews", totalViews);
+        stats.put("topPublications", topPublications);
+
+        return stats;
+    }
 }
 

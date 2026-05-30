@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -50,11 +51,10 @@ public class Publication {
     private String session;
     private String room;
     
-    @Column(name = "poster_url")
+    @Column(name = "poster_url", columnDefinition = "TEXT")
     private String posterUrl;
     
-    @JsonIgnore
-    @OneToMany(mappedBy = "publication", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "publication", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Media> mediaList = new ArrayList<>();
     
     @JsonIgnore
@@ -77,10 +77,13 @@ public class Publication {
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
+    @Column(name = "view_count", nullable = false)
+    private Integer viewCount = 0;
+
     @Transient
     private String eventId;
     
-    @Column(name = "authors_str")
+    @Column(name = "authors_str", columnDefinition = "TEXT")
     private String authors;
     
     @Column(name = "category_str")
@@ -134,4 +137,6 @@ public class Publication {
     public void setAuthorIds(List<Long> authorIds) { this.authorIds = authorIds; }
     public List<Long> getCategoryIds() { return categoryIds; }
     public void setCategoryIds(List<Long> categoryIds) { this.categoryIds = categoryIds; }
+    public Integer getViewCount() { return viewCount == null ? 0 : viewCount; }
+    public void setViewCount(Integer viewCount) { this.viewCount = viewCount; }
 }

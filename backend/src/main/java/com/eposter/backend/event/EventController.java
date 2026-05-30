@@ -100,7 +100,13 @@ public class EventController {
             String description,
             String status,
             Instant startDate,
-            Instant endDate
+            Instant endDate,
+            String logoUrl,
+            String colorPrimary,
+            String colorSecondary,
+            String bannerUrl,
+            String programUrl,
+            String revueUrl
     ) {
         Event toModel() {
             Event model = new Event();
@@ -109,6 +115,12 @@ public class EventController {
             model.setStatus(status);
             model.setStartDate(startDate);
             model.setEndDate(endDate);
+            model.setLogoUrl(logoUrl);
+            model.setColorPrimary(colorPrimary);
+            model.setColorSecondary(colorSecondary);
+            model.setBannerUrl(bannerUrl);
+            model.setProgramUrl(programUrl);
+            model.setRevueUrl(revueUrl);
             return model;
         }
     }

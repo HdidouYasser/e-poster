@@ -68,6 +68,12 @@ public class PublicationService {
         
         processRelations(payload);
         
+        if (payload.getMediaList() != null) {
+            for (com.eposter.backend.media.Media media : payload.getMediaList()) {
+                media.setPublication(payload);
+            }
+        }
+        
         Publication saved = repository.save(payload);
         auditService.log("PUBLICATION", saved.getId(), "CREATE", saved.getTitle());
         return saved;
@@ -98,6 +104,14 @@ public class PublicationService {
         existing.setAuthorIds(payload.getAuthorIds());
         existing.setCategoryIds(payload.getCategoryIds());
         processRelations(existing);
+        
+        if (payload.getMediaList() != null) {
+            existing.getMediaList().clear();
+            for (com.eposter.backend.media.Media media : payload.getMediaList()) {
+                media.setPublication(existing);
+                existing.getMediaList().add(media);
+            }
+        }
         
         Publication saved = repository.save(existing);
         auditService.log("PUBLICATION", saved.getId(), "UPDATE", saved.getTitle());
@@ -148,5 +162,19 @@ public class PublicationService {
         Publication existing = getById(id);
         repository.delete(existing);
         auditService.log("PUBLICATION", id, "DELETE", existing.getTitle());
+    }
+
+    public Publication getAndIncrementViewCount(Long id) {
+        Publication pub = getById(id);
+        pub.setViewCount(pub.getViewCount() + 1);
+        return repository.save(pub);
+    }
+
+    public long getTotalViews() {
+        return repository.sumViewCount();
+    }
+
+    public List<Publication> getTopViewed() {
+        return repository.findTop5ByDeletedAtIsNullOrderByViewCountDesc();
     }
 }

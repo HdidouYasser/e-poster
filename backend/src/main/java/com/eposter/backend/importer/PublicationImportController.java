@@ -17,10 +17,16 @@ public class PublicationImportController {
 
     private final PublicationService publicationService;
     private final ImportParserFactory parserFactory;
+    private final ImportRecordRepository importRecordRepository;
 
-    public PublicationImportController(PublicationService publicationService, ImportParserFactory parserFactory) {
+    public PublicationImportController(
+            PublicationService publicationService, 
+            ImportParserFactory parserFactory,
+            ImportRecordRepository importRecordRepository
+    ) {
         this.publicationService = publicationService;
         this.parserFactory = parserFactory;
+        this.importRecordRepository = importRecordRepository;
     }
 
     /**
@@ -33,15 +39,46 @@ public class PublicationImportController {
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "eventId", required = false) String defaultEventId
     ) throws Exception {
-        ImportParser parser = parserFactory.createParser(file.getOriginalFilename());
-        List<Publication> imported = parser.parse(file, defaultEventId);
-
-        int created = 0;
-        for (Publication p : imported) {
-            publicationService.create(p);
-            created++;
+        String userEmail = "admin";
+        var auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            userEmail = auth.getName();
         }
-        return new ImportResult(created);
+
+        String originalFilename = file.getOriginalFilename();
+        String fileType = originalFilename != null && originalFilename.toLowerCase().endsWith(".csv") ? "CSV" : "EXCEL";
+
+        ImportRecord record = new ImportRecord();
+        record.setFileName(originalFilename != null ? originalFilename : "unknown");
+        record.setFileType(fileType);
+        record.setStatus("PROCESSING");
+        record.setImportedBy(userEmail);
+        record.setImportedAt(java.time.Instant.now());
+        record = importRecordRepository.save(record);
+
+        try {
+            ImportParser parser = parserFactory.createParser(originalFilename);
+            List<Publication> imported = parser.parse(file, defaultEventId);
+            record.setTotalRows(imported.size());
+
+            int created = 0;
+            for (Publication p : imported) {
+                publicationService.create(p);
+                created++;
+            }
+            record.setSuccessRows(created);
+            record.setFailedRows(imported.size() - created);
+            record.setStatus("COMPLETED");
+            record.setCompletedAt(java.time.Instant.now());
+            importRecordRepository.save(record);
+            return new ImportResult(created);
+        } catch (Exception e) {
+            record.setStatus("FAILED");
+            record.setErrorMessage(e.getMessage());
+            record.setCompletedAt(java.time.Instant.now());
+            importRecordRepository.save(record);
+            throw e;
+        }
     }
 
     public record ImportResult(int created) {}

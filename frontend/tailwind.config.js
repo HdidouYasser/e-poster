@@ -6,8 +6,22 @@ export default {
   ],
   theme: {
     extend: {
+      colors: {
+        theme: {
+          primary: 'var(--theme-primary)',
+          'primary-hover': 'var(--theme-primary-hover)',
+          hover: 'var(--theme-primary-hover)',
+          light: 'var(--theme-primary-light)',
+          foreground: 'var(--theme-foreground)',
+          secondary: 'var(--theme-secondary)',
+          'secondary-hover': 'var(--theme-secondary-hover)',
+          'secondary-foreground': 'var(--theme-secondary-foreground)',
+          'bg-light': 'var(--theme-bg-light)',
+        }
+      },
       fontFamily: {
-        sans: ['Outfit', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
+        display: ['Outfit', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out forwards',

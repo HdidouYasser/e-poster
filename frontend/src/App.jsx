@@ -11,8 +11,10 @@ import EventsAdmin from "./admin/EventsAdmin";
 import PublicationsAdmin from "./admin/PublicationsAdmin";
 import CategoriesAdmin from "./admin/CategoriesAdmin";
 import AuthorsAdmin from "./admin/AuthorsAdmin";
+import ScreensAdmin from "./admin/ScreensAdmin";
 import ImportAdmin from "./admin/ImportAdmin";
 import AuditAdmin from "./admin/AuditAdmin";
+import StatsAdmin from "./admin/StatsAdmin";
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -47,12 +49,14 @@ export default function App() {
         <Route path="/" element={<Navigate to="/totem" replace />} />
 
         {/* Back-Office : Admin */}
-        <Route path="/login" element={isAuthenticated ? <Navigate to="/admin/publications" replace /> : <LoginPage />} />
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/admin/stats" replace /> : <LoginPage />} />
         
         <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
-          <Route index element={<Navigate to="/admin/publications" replace />} />
+          <Route index element={<Navigate to="/admin/stats" replace />} />
+          <Route path="stats" element={<StatsAdmin />} />
           <Route path="events" element={<EventsAdmin />} />
           <Route path="publications" element={<PublicationsAdmin />} />
+          <Route path="screens" element={<ScreensAdmin />} />
           <Route path="categories" element={<CategoriesAdmin />} />
           <Route path="authors" element={<AuthorsAdmin />} />
           <Route path="import" element={<ImportAdmin />} />

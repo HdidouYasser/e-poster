@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { publicApi } from "../api";
+import { publicApi, getMediaUrl, getPosterThumbnail } from "../api";
 import { useIdleTimer } from "../hooks/useIdleTimer";
 import { X, Image as ImageIcon, Monitor, Clock, MapPin, Tag } from "lucide-react";
 
@@ -38,8 +38,6 @@ export default function TotemSlideshow() {
     [eventQuery.data, activeEventQuery.data]
   );
 
-  const cp = selectedEvent?.colorPrimary || '#ffffff';
-
   const publications = useMemo(() => pubsData?.items || [], [pubsData]);
 
   useEffect(() => {
@@ -60,7 +58,7 @@ export default function TotemSlideshow() {
   if (!publications.length) {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white font-sans">
-        <div className="w-8 h-8 border-2 border-zinc-800 rounded-full animate-spin mb-4" style={{ borderTopColor: cp }} />
+        <div className="w-8 h-8 border-2 border-zinc-800 border-t-theme-primary rounded-full animate-spin mb-4" />
         <p className="text-zinc-500 text-sm font-medium">Chargement du diaporama...</p>
       </div>
     );
@@ -76,7 +74,7 @@ export default function TotemSlideshow() {
       <header className="flex items-center justify-between z-20 shrink-0">
         <div className="flex items-center gap-3">
           {selectedEvent?.logoUrl ? (
-            <img src={selectedEvent.logoUrl} alt="logo" className="h-6 object-contain" />
+            <img src={getMediaUrl(selectedEvent.logoUrl)} alt="logo" className="h-6 object-contain" />
           ) : (
             <div className="w-6 h-6 rounded flex items-center justify-center bg-zinc-800">
               <Monitor size={12} className="text-white" />
@@ -105,7 +103,7 @@ export default function TotemSlideshow() {
         <div className="w-full lg:w-1/2 aspect-[3/4] bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden flex items-center justify-center p-2 relative">
            {currentPub.posterUrl ? (
              <img 
-               src={currentPub.posterUrl} 
+               src={getPosterThumbnail(currentPub.posterUrl)} 
                alt={currentPub.title} 
                className="w-full h-full object-contain" 
              />
@@ -113,6 +111,7 @@ export default function TotemSlideshow() {
              <ImageIcon size={64} className="text-zinc-800" />
            )}
         </div>
+
         
         {/* Poster Details */}
         <div className="w-full lg:w-1/2 flex flex-col items-start text-left">

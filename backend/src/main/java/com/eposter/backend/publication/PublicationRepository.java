@@ -15,17 +15,29 @@ public interface PublicationRepository extends JpaRepository<Publication, Long> 
 
     Optional<Publication> findByIdAndDeletedAtIsNull(Long id);
 
-    @Query("""
-            SELECT DISTINCT p FROM Publication p
-            LEFT JOIN p.publicationCategories pc
-            LEFT JOIN pc.category c
-            WHERE p.deletedAt IS NULL
-              AND (:q IS NULL OR :q = '' OR LOWER(p.title) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(p.abstractText) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(p.authors) LIKE LOWER(CONCAT('%', :q, '%')))
-              AND (:eventId IS NULL OR p.event.id = :eventId)
+    @Query(value = """
+            SELECT DISTINCT p.* FROM publications p
+            LEFT JOIN publication_categories pc ON p.id = pc.publication_id
+            LEFT JOIN categories c ON pc.category_id = c.id
+            WHERE p.deleted_at IS NULL
+              AND (:q IS NULL OR :q = '' OR MATCH(p.title, p.description, p.abstract_text, p.authors_str) AGAINST(:q IN BOOLEAN MODE))
+              AND (:eventId IS NULL OR p.event_ref_id = :eventId)
               AND (:session IS NULL OR :session = '' OR p.session = :session)
               AND (:room IS NULL OR :room = '' OR p.room = :room)
-              AND (:category IS NULL OR :category = '' OR p.category LIKE CONCAT('%', :category, '%') OR c.name = :category)
-            """)
+              AND (:category IS NULL OR :category = '' OR p.category_str LIKE CONCAT('%', :category, '%') OR c.name = :category)
+            """,
+            countQuery = """
+            SELECT COUNT(DISTINCT p.id) FROM publications p
+            LEFT JOIN publication_categories pc ON p.id = pc.publication_id
+            LEFT JOIN categories c ON pc.category_id = c.id
+            WHERE p.deleted_at IS NULL
+              AND (:q IS NULL OR :q = '' OR MATCH(p.title, p.description, p.abstract_text, p.authors_str) AGAINST(:q IN BOOLEAN MODE))
+              AND (:eventId IS NULL OR p.event_ref_id = :eventId)
+              AND (:session IS NULL OR :session = '' OR p.session = :session)
+              AND (:room IS NULL OR :room = '' OR p.room = :room)
+              AND (:category IS NULL OR :category = '' OR p.category_str LIKE CONCAT('%', :category, '%') OR c.name = :category)
+            """,
+            nativeQuery = true)
     Page<Publication> searchFullText(
             @Param("q") String q,
             @Param("eventId") Long eventId,
@@ -34,4 +46,9 @@ public interface PublicationRepository extends JpaRepository<Publication, Long> 
             @Param("category") String category,
             Pageable pageable
     );
+
+    @Query("SELECT COALESCE(SUM(p.viewCount), 0) FROM Publication p WHERE p.deletedAt IS NULL")
+    long sumViewCount();
+
+    java.util.List<Publication> findTop5ByDeletedAtIsNullOrderByViewCountDesc();
 }

@@ -2,100 +2,179 @@ import "dotenv/config";
 import mysql from "mysql2/promise";
 import { legacy } from "./mapping.js";
 
-const DRY_RUN = String(process.env.DRY_RUN || "false").toLowerCase() === "true";
-
-function required(name) {
-  const v = process.env[name];
-  if (!v) throw new Error(`Missing env var ${name}`);
-  return v;
-}
-
 async function main() {
   const source = await mysql.createConnection({
-    host: required("LEGACY_MYSQL_HOST"),
-    port: Number(process.env.LEGACY_MYSQL_PORT || 3306),
-    user: required("LEGACY_MYSQL_USER"),
-    password: process.env.LEGACY_MYSQL_PASSWORD || "",
-    database: required("LEGACY_MYSQL_DATABASE")
+    host: 'localhost',
+    port: 3306,
+    user: 'root',
+    password: 'root',
+    database: 'congres_ampic'
   });
 
   const target = await mysql.createConnection({
-    host: required("TARGET_MYSQL_HOST"),
-    port: Number(process.env.TARGET_MYSQL_PORT || 3306),
-    user: required("TARGET_MYSQL_USER"),
-    password: process.env.TARGET_MYSQL_PASSWORD || "",
-    database: required("TARGET_MYSQL_DATABASE")
+    host: 'localhost',
+    port: 3306,
+    user: 'root',
+    password: 'root',
+    database: 'eposter'
   });
 
   try {
-    console.log(`DRY_RUN=${DRY_RUN}`);
-    console.log("Reading legacy events…");
-    const [eventRows] = await source.execute(`SELECT * FROM \`${legacy.tables.events}\``);
-    console.log(`Events rows: ${eventRows.length}`);
+    console.log("Connected to both legacy and target databases!");
 
-    const legacyEventIdToTargetId = new Map();
+    // 0. Clean target tables first (safely with foreign key checks disabled)
+    console.log("Cleaning target tables in eposter database...");
+    await target.execute("SET FOREIGN_KEY_CHECKS = 0");
+    await target.execute("ALTER TABLE publications MODIFY COLUMN authors_str TEXT");
+    await target.execute("ALTER TABLE publications MODIFY COLUMN poster_url TEXT");
+    await target.execute("TRUNCATE TABLE publication_authors");
+    await target.execute("TRUNCATE TABLE publication_categories");
+    await target.execute("TRUNCATE TABLE publications");
+    await target.execute("TRUNCATE TABLE authors");
+    await target.execute("SET FOREIGN_KEY_CHECKS = 1");
+    console.log("Target tables cleaned and columns adjusted.");
 
-    for (const row of eventRows) {
-      const event = legacy.mapEvent(row);
-      if (DRY_RUN) continue;
+    // Create FULLTEXT index
+    try {
+      console.log("Creating FULLTEXT index on publications...");
+      await target.execute("ALTER TABLE publications ADD FULLTEXT INDEX idx_pub_fulltext (title, description, abstract_text, authors_str)");
+      console.log("FULLTEXT index created successfully.");
+    } catch (err) {
+      if (err.code === 'ER_DUP_KEYNAME') {
+        console.log("FULLTEXT index already exists.");
+      } else {
+        console.warn("Could not create FULLTEXT index:", err.message);
+      }
+    }
+
+    // 1. Create or fetch a default event
+    const eventTitle = "18ème Congrès National AMPIIC";
+    console.log(`Checking if default event "${eventTitle}" exists in eposter...`);
+    
+    const [existingEvents] = await target.execute(
+      "SELECT id FROM events WHERE title = ? AND deleted_at IS NULL",
+      [eventTitle]
+    );
+
+    let eventId;
+    if (existingEvents.length > 0) {
+      eventId = existingEvents[0].id;
+      console.log(`Event already exists with ID: ${eventId}`);
+    } else {
+      console.log("Creating default event with AMPIIC branding...");
       const [result] = await target.execute(
-        `INSERT INTO events (title, description, status, start_date, end_date, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO events (title, description, status, color_primary, color_secondary, start_date, end_date, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          event.title,
-          event.description,
-          event.status,
-          event.startDate,
-          event.endDate,
-          event.createdAt,
-          event.updatedAt
+          eventTitle,
+          "L'Association Marocaine de Pathologie Infectieuse et d’Immunologie Clinique",
+          "ACTIVE",
+          "#4298a5", // Primary Teal color from legacy site
+          "#f1785b", // Secondary Orange/Coral color from legacy site
+          new Date(),
+          new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days event
+          new Date(),
+          new Date()
         ]
       );
-      legacyEventIdToTargetId.set(event.legacyId, result.insertId);
+      eventId = result.insertId;
+      console.log(`Created default event with ID: ${eventId}`);
     }
 
-    console.log("Reading legacy publications…");
-    const [pubRows] = await source.execute(`SELECT * FROM \`${legacy.tables.publications}\``);
-    console.log(`Publications rows: ${pubRows.length}`);
+    // 2. Read publications from legacy publicationspartone table
+    console.log(`Reading publications from legacy table: ${legacy.tables.publications}...`);
+    const [pubRows] = await source.execute(`SELECT * FROM \`${legacy.tables.publications}\` ORDER BY id ASC LIMIT 4`);
+    console.log(`Found ${pubRows.length} publications in legacy table.`);
 
-    let created = 0;
+    let migratedCount = 0;
 
     for (const row of pubRows) {
-      const publication = legacy.mapPublication(row);
+      const pub = legacy.mapPublication(row);
+      pub.eventId = eventId;
 
-      if (publication.legacyEventId && legacyEventIdToTargetId.has(publication.legacyEventId)) {
-        publication.eventId = String(legacyEventIdToTargetId.get(publication.legacyEventId));
-      } else {
-        publication.eventId = null;
-      }
-      if (!publication.title) publication.title = "(Sans titre)";
+      // 3. Insert publication
+      const [pubResult] = await target.execute(
+        `INSERT INTO publications 
+           (event_ref_id, title, authors_str, description, status, session, room, poster_url, publish_date, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          pub.eventId,
+          pub.title,
+          pub.authors,
+          pub.description,
+          pub.status,
+          pub.session,
+          pub.room,
+          pub.posterUrl,
+          pub.publishDate,
+          pub.createdAt,
+          pub.updatedAt
+        ]
+      );
+      
+      const newPubId = pubResult.insertId;
 
-      if (!DRY_RUN) {
-        await target.execute(
-          `INSERT INTO publications
-             (event_id, title, authors, description, status, session, category, room, poster_url, publish_date, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [
-            publication.eventId,
-            publication.title,
-            publication.authors,
-            publication.description,
-            publication.status,
-            publication.session,
-            publication.category,
-            publication.room,
-            publication.posterUrl,
-            publication.publishDate,
-            publication.createdAt,
-            publication.updatedAt
-          ]
-        );
+      // 4. Parse authors and insert them normalized
+      if (pub.authors) {
+        // Authors are like "M. Ameur, L. Barakat, K. Echchilali"
+        const authorNames = pub.authors.split(',').map(name => name.trim()).filter(Boolean);
+        
+        let order = 0;
+        const seenAuthorsInPub = new Set();
+        for (const fullName of authorNames) {
+          // Parse first name and last name
+          const parts = fullName.split(' ').filter(Boolean);
+          let firstName = "";
+          let lastName = "";
+          
+          if (parts.length > 1) {
+            firstName = parts[0];
+            lastName = parts.slice(1).join(' ');
+          } else if (parts.length === 1) {
+            lastName = parts[0];
+          } else {
+            continue;
+          }
+
+          // Check if author exists in authors table
+          const [existingAuthors] = await target.execute(
+            "SELECT id FROM authors WHERE first_name = ? AND last_name = ?",
+            [firstName, lastName]
+          );
+
+          let authorId;
+          if (existingAuthors.length > 0) {
+            authorId = existingAuthors[0].id;
+          } else {
+            // Insert new author
+            const [authorResult] = await target.execute(
+              `INSERT INTO authors (first_name, last_name, is_corresponding, created_at)
+               VALUES (?, ?, ?, ?)`,
+              [firstName, lastName, false, new Date()]
+            );
+            authorId = authorResult.insertId;
+          }
+
+          // Avoid duplicate author insertion for the same publication
+          if (seenAuthorsInPub.has(authorId)) {
+            console.log(`Skipping duplicate author association for publication ID ${newPubId}: Author ID ${authorId} (${fullName})`);
+            continue;
+          }
+          seenAuthorsInPub.add(authorId);
+
+          // Insert into publication_authors junction table
+          await target.execute(
+            `INSERT INTO publication_authors (publication_id, author_id, author_order)
+             VALUES (?, ?, ?)`,
+            [newPubId, authorId, order++]
+          );
+        }
       }
-      created++;
+
+      migratedCount++;
     }
 
-    console.log("Done.");
-    console.log({ created });
+    console.log(`Migration finished! Successfully migrated ${migratedCount} publications and populated normalized authors tables.`);
   } finally {
     await source.end();
     await target.end();
@@ -103,7 +182,6 @@ async function main() {
 }
 
 main().catch((e) => {
-  console.error(e);
+  console.error("Migration error:", e);
   process.exit(1);
 });
-

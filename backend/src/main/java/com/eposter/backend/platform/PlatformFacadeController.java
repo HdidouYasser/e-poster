@@ -30,5 +30,10 @@ public class PlatformFacadeController {
     public Publication getPublicationDetail(@PathVariable Long id) {
         return facade.getPublicationDetail(id);
     }
+
+    @GetMapping("/statistics")
+    public java.util.Map<String, Object> getStatistics() {
+        return facade.getStatistics();
+    }
 }
 
