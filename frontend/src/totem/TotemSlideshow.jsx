@@ -58,18 +58,32 @@ export default function TotemSlideshow() {
   if (!publications.length) {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white font-sans">
-        <div className="w-8 h-8 border-2 border-zinc-800 border-t-theme-primary rounded-full animate-spin mb-4" />
-        <p className="text-zinc-500 text-sm font-medium">Chargement du diaporama...</p>
+        <p className="text-zinc-400">Aucune publication disponible</p>
+      </div>
+    );
+  }
+
+  if (!selectedEvent) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white font-sans">
+        <p className="text-zinc-400">Événement non trouvé</p>
+        <button
+          onClick={() => navigate(`/totem`)}
+          className="mt-4 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded text-sm"
+        >
+          Retour
+        </button>
       </div>
     );
   }
 
   const currentPub = publications[currentIndex];
-  const categoryName = typeof currentPub.category === 'object' ? currentPub.category.name : currentPub.category;
+  const categoryName = currentPub?.category 
+    ? (typeof currentPub.category === 'object' ? currentPub.category.name : currentPub.category)
+    : "";
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white flex flex-col p-8 font-sans transition-opacity duration-500">
-      
       {/* ── Top Bar ── */}
       <header className="flex items-center justify-between z-20 shrink-0">
         <div className="flex items-center gap-3">

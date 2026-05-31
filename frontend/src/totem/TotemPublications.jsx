@@ -123,16 +123,7 @@ export default function TotemPublications() {
 
   return (
     <div className="min-h-screen flex flex-col bg-theme-bg-light text-zinc-900 font-sans transition-colors duration-500 bg-dot-grid theme-transition relative overflow-hidden">
-      {/* Dynamic Animated Mesh Gradient in Background */}
-      <div
-        className="absolute inset-0 pointer-events-none transition-all duration-1000 ease-in-out opacity-40 theme-transition"
-        style={{
-          background: `
-            radial-gradient(circle at 10% 20%, rgba(var(--theme-primary-rgb, 24, 24, 27), 0.05) 0%, transparent 60%),
-            radial-gradient(circle at 90% 80%, rgba(var(--theme-secondary-rgb, 241, 120, 91), 0.06) 0%, transparent 60%)
-          `
-        }}
-      />
+
       {/* Header Panel */}
       <header className="flex flex-col md:flex-row items-center justify-between px-8 py-5 bg-white/80 backdrop-blur-md border-b border-zinc-200/60 gap-4 sticky top-0 z-20 shadow-sm theme-transition">
         <div className="flex items-center gap-4 w-full md:w-auto">
@@ -206,7 +197,8 @@ export default function TotemPublications() {
 
         <button
           onClick={() => window.open(`${window.location.origin}/totem/publications?screen=${Number(screen) + 1}`, `totem-screen-${Number(screen) + 1}`)}
-          className="w-full md:w-auto px-5 py-2.5 bg-gradient-to-r from-theme-primary to-theme-primary-light text-theme-foreground hover:opacity-95 rounded-xl text-sm font-bold shadow-sm transition-all flex items-center justify-center gap-2 shrink-0 active:scale-95 theme-transition font-display"
+          style={{ backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' }}
+          className="w-full md:w-auto px-5 py-2.5 hover:opacity-90 rounded-xl text-sm font-bold shadow-sm transition-all flex items-center justify-center gap-2 shrink-0 active:scale-95 theme-transition font-display"
         >
           <Monitor size={16} /> Écran {screen === '1' ? '2' : '1'}
         </button>
@@ -218,7 +210,8 @@ export default function TotemPublications() {
           <div className="flex-1 flex items-center gap-2 overflow-x-auto pb-1.5 max-w-full scrollbar-thin">
             <button
               onClick={() => { setCategory(""); setPage(0); }}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border shrink-0 theme-transition font-display ${!category ? 'bg-gradient-to-r from-theme-primary to-theme-primary-light text-theme-foreground border-transparent shadow-md' : 'bg-white text-zinc-600 border-zinc-200/80 hover:bg-zinc-50'}`}
+              style={!category ? { backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' } : {}}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border shrink-0 theme-transition font-display ${!category ? 'border-transparent shadow-md' : 'bg-white text-zinc-600 border-zinc-200/80 hover:bg-zinc-50'}`}
             >
               Tous les thèmes
             </button>
@@ -226,7 +219,8 @@ export default function TotemPublications() {
               <button
                 key={c.id}
                 onClick={() => { setCategory(c.name); setPage(0); }}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border shrink-0 theme-transition font-display ${category === c.name ? 'bg-gradient-to-r from-theme-primary to-theme-primary-light text-theme-foreground border-transparent shadow-md' : 'bg-white text-zinc-600 border-zinc-200/80 hover:bg-zinc-50'}`}
+                style={category === c.name ? { backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' } : {}}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border shrink-0 theme-transition font-display ${category === c.name ? 'border-transparent shadow-md' : 'bg-white text-zinc-600 border-zinc-200/80 hover:bg-zinc-50'}`}
               >
                 {c.name}
               </button>

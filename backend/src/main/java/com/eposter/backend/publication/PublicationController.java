@@ -1,8 +1,8 @@
 package com.eposter.backend.publication;
 
-import com.eposter.backend.common.ApiPageResponse;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
+import java.time.Instant;
+import java.util.List;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -19,8 +19,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Instant;
-import java.util.List;
+import com.eposter.backend.common.ApiPageResponse;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 
 @RestController
 @RequestMapping("/api/publications")
@@ -92,6 +94,33 @@ public class PublicationController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         service.delete(id);
+    }
+
+    @GetMapping("/export/csv")
+    public org.springframework.http.ResponseEntity<byte[]> exportCSV() {
+        byte[] data = service.exportPublicationsCSV();
+        return org.springframework.http.ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"publications_" + java.time.LocalDate.now() + ".csv\"")
+                .header("Content-Type", "text/csv; charset=UTF-8")
+                .body(data);
+    }
+
+    @GetMapping("/export/json")
+    public org.springframework.http.ResponseEntity<byte[]> exportJSON() {
+        byte[] data = service.exportPublicationsJSON();
+        return org.springframework.http.ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"publications_" + java.time.LocalDate.now() + ".json\"")
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(data);
+    }
+
+    @GetMapping("/export/pdf")
+    public org.springframework.http.ResponseEntity<byte[]> exportPDF() {
+        byte[] data = service.exportPublicationsPDF();
+        return org.springframework.http.ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"publications_" + java.time.LocalDate.now() + ".pdf\"")
+                .header("Content-Type", "application/pdf")
+                .body(data);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

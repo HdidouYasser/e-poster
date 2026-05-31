@@ -1,12 +1,12 @@
 package com.eposter.backend.publication;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
-import java.util.Optional;
 
 public interface PublicationRepository extends JpaRepository<Publication, Long> {
     Page<Publication> findByDeletedAtIsNull(Pageable pageable);
@@ -51,4 +51,10 @@ public interface PublicationRepository extends JpaRepository<Publication, Long> 
     long sumViewCount();
 
     java.util.List<Publication> findTop5ByDeletedAtIsNullOrderByViewCountDesc();
+
+    // Dashboard methods
+    java.util.List<Publication> findTop5ByOrderByCreatedAtDesc();
+    
+    @Query("SELECT COUNT(p) FROM Publication p WHERE p.event.id = :eventId AND p.deletedAt IS NULL")
+    long countPublicationsByEvent(@Param("eventId") Long eventId);
 }

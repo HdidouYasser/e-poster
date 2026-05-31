@@ -15,6 +15,7 @@ import ScreensAdmin from "./admin/ScreensAdmin";
 import ImportAdmin from "./admin/ImportAdmin";
 import AuditAdmin from "./admin/AuditAdmin";
 import StatsAdmin from "./admin/StatsAdmin";
+import ExportAdmin from "./admin/ExportAdmin";
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -61,6 +62,7 @@ export default function App() {
           <Route path="authors" element={<AuthorsAdmin />} />
           <Route path="import" element={<ImportAdmin />} />
           <Route path="audit" element={<AuditAdmin />} />
+          <Route path="export" element={<ExportAdmin />} />
         </Route>
       </Routes>
     </>

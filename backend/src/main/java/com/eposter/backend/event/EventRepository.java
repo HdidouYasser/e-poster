@@ -1,12 +1,12 @@
 package com.eposter.backend.event;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
-import java.util.Optional;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
 
@@ -30,4 +30,9 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     Page<Event> searchFullText(@Param("q") String q, Pageable pageable);
 
     Optional<Event> findFirstByStatusIgnoreCaseAndDeletedAtIsNullOrderByUpdatedAtDesc(String status);
+
+    // Dashboard methods
+    long countByEndDateAfter(java.time.Instant date);
+    
+    java.util.List<Event> findByStartDateGreaterThanEqualOrderByStartDateAsc(java.time.Instant date);
 }

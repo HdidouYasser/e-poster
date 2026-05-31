@@ -1,18 +1,18 @@
 package com.eposter.backend.publication;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import com.eposter.backend.audit.AuditService;
 import com.eposter.backend.category.Category;
 import com.eposter.backend.category.CategoryRepository;
 import com.eposter.backend.event.Event;
 import com.eposter.backend.event.EventRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 @Service
 public class PublicationService {
@@ -46,7 +46,31 @@ public class PublicationService {
         if (eventId != null && !eventId.isBlank()) {
             try { eventIdLong = Long.parseLong(eventId); } catch (NumberFormatException ignored) {}
         }
-        return repository.searchFullText(query, eventIdLong, session, room, category, pageable);
+        
+        // Convert camelCase sort fields to snake_case for native SQL query
+        java.util.List<org.springframework.data.domain.Sort.Order> orders = new java.util.ArrayList<>();
+        for (org.springframework.data.domain.Sort.Order order : pageable.getSort()) {
+            String property = order.getProperty();
+            if ("createdAt".equals(property)) {
+                property = "created_at";
+            } else if ("updatedAt".equals(property)) {
+                property = "updated_at";
+            } else if ("abstractText".equals(property)) {
+                property = "abstract_text";
+            } else if ("posterUrl".equals(property)) {
+                property = "poster_url";
+            } else if ("viewCount".equals(property)) {
+                property = "view_count";
+            }
+            orders.add(new org.springframework.data.domain.Sort.Order(order.getDirection(), property));
+        }
+        Pageable nativePageable = org.springframework.data.domain.PageRequest.of(
+            pageable.getPageNumber(), 
+            pageable.getPageSize(), 
+            org.springframework.data.domain.Sort.by(orders)
+        );
+        
+        return repository.searchFullText(query, eventIdLong, session, room, category, nativePageable);
     }
 
     public Publication getById(Long id) {
@@ -164,6 +188,37 @@ public class PublicationService {
         auditService.log("PUBLICATION", id, "DELETE", existing.getTitle());
     }
 
+    public byte[] exportPublicationsCSV() {
+        List<Publication> publications = repository.findAll();
+        StringBuilder csv = new StringBuilder();
+        
+        // Headers  
+        csv.append("ID,Titre,Auteurs,Événement,Statut,Créé le,Vues\n");
+        
+        // Data rows
+        publications.forEach(pub -> {
+            csv.append(escapeCSV(pub.getId().toString())).append(",")
+               .append(escapeCSV(pub.getTitle())).append(",")
+               .append(escapeCSV(pub.getAuthors() != null ? pub.getAuthors() : "")).append(",")
+               .append(escapeCSV(pub.getEvent() != null ? pub.getEvent().getTitle() : "")).append(",")
+               .append(escapeCSV(pub.getStatus() != null ? pub.getStatus() : "")).append(",")
+               .append(escapeCSV(pub.getCreatedAt() != null ? pub.getCreatedAt().toString() : "")).append(",")
+               .append(pub.getViewCount() != null ? pub.getViewCount() : 0).append("\n");
+        });
+        
+        return csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    private String escapeCSV(String value) {
+        if (value == null) {
+            return "";
+        }
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
+    }
+
     public Publication getAndIncrementViewCount(Long id) {
         Publication pub = getById(id);
         pub.setViewCount(pub.getViewCount() + 1);
@@ -177,4 +232,84 @@ public class PublicationService {
     public List<Publication> getTopViewed() {
         return repository.findTop5ByDeletedAtIsNullOrderByViewCountDesc();
     }
+
+    public byte[] exportPublicationsJSON() {
+        List<Publication> publications = repository.findAll();
+        java.util.List<java.util.Map<String, Object>> data = new java.util.ArrayList<>();
+        
+        for (Publication pub : publications) {
+            java.util.Map<String, Object> map = new java.util.LinkedHashMap<>();
+            map.put("id", pub.getId());
+            map.put("title", pub.getTitle());
+            map.put("authors", pub.getAuthors());
+            map.put("event", pub.getEvent() != null ? pub.getEvent().getTitle() : null);
+            map.put("status", pub.getStatus());
+            map.put("createdAt", pub.getCreatedAt() != null ? pub.getCreatedAt().toString() : null);
+            map.put("views", pub.getViewCount() != null ? pub.getViewCount() : 0);
+            data.add(map);
+        }
+        
+        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        try {
+            return mapper.writerWithDefaultPrettyPrinter()
+                .writeValueAsBytes(data);
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            throw new RuntimeException("Failed to export JSON: " + e.getMessage());
+        }
+    }
+
+    public byte[] exportPublicationsPDF() {
+        List<Publication> publications = repository.findAll();
+        try (org.apache.pdfbox.pdmodel.PDDocument document = new org.apache.pdfbox.pdmodel.PDDocument()) {
+            org.apache.pdfbox.pdmodel.PDPage page = new org.apache.pdfbox.pdmodel.PDPage();
+            document.addPage(page);
+            
+            try (org.apache.pdfbox.pdmodel.PDPageContentStream contentStream = new org.apache.pdfbox.pdmodel.PDPageContentStream(document, page)) {
+                contentStream.beginText();
+                contentStream.setFont(org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA_BOLD, 16);
+                contentStream.newLineAtOffset(50, 750);
+                contentStream.showText("Liste des E-Posters");
+                contentStream.endText();
+                
+                contentStream.beginText();
+                contentStream.setFont(org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA, 10);
+                contentStream.newLineAtOffset(50, 720);
+                
+                int y = 720;
+                for (Publication pub : publications) {
+                    if (y < 50) {
+                        break;
+                    }
+                    String line = String.format("ID: %d | Title: %s | Authors: %s | Event: %s", 
+                        pub.getId(), 
+                        pub.getTitle().substring(0, Math.min(pub.getTitle().length(), 40)),
+                        pub.getAuthors() != null ? pub.getAuthors().substring(0, Math.min(pub.getAuthors().length(), 20)) : "",
+                        pub.getEvent() != null ? pub.getEvent().getTitle().substring(0, Math.min(pub.getEvent().getTitle().length(), 20)) : ""
+                    );
+                    contentStream.showText(safePdfString(line));
+                    contentStream.newLineAtOffset(0, -15);
+                    y -= 15;
+                }
+                contentStream.endText();
+            }
+            
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+            document.save(out);
+            return out.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate PDF", e);
+        }
+    }
+
+    private String safePdfString(String str) {
+        if (str == null) return "";
+        return str.replace("é", "e").replace("è", "e").replace("ê", "e")
+                  .replace("à", "a").replace("â", "a")
+                  .replace("ù", "u").replace("û", "u")
+                  .replace("î", "i").replace("ï", "i")
+                  .replace("ô", "o")
+                  .replace("ç", "c")
+                  .replaceAll("[^\\x20-\\x7E]", ""); // strip anything else not in standard printable ASCII range
+    }
 }
+

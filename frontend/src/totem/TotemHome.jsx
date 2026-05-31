@@ -53,16 +53,7 @@ export default function TotemHome() {
 
   return (
     <div className="min-h-screen flex flex-col bg-zinc-50 text-zinc-900 font-sans relative overflow-hidden selection:bg-theme-secondary/20 selection:text-zinc-900 bg-dot-grid theme-transition">
-      {/* Dynamic Animated Mesh Gradient in Background */}
-      <div 
-        className="absolute inset-0 pointer-events-none transition-all duration-1000 ease-in-out opacity-40 theme-transition"
-        style={{
-          background: `
-            radial-gradient(circle at 20% 30%, rgba(var(--theme-primary-rgb, 24, 24, 27), 0.05) 0%, transparent 60%),
-            radial-gradient(circle at 80% 70%, rgba(var(--theme-secondary-rgb, 241, 120, 91), 0.06) 0%, transparent 60%)
-          `
-        }}
-      />
+
 
       {/* Header */}
       <header className="relative flex items-center justify-between px-8 py-6 bg-white/40 backdrop-blur-md border-b border-zinc-200/60 z-10 shadow-sm theme-transition">
@@ -76,7 +67,7 @@ export default function TotemHome() {
           )}
           <div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2 font-display">
-              Plateforme <span className="bg-gradient-to-r from-theme-primary to-theme-secondary bg-clip-text text-transparent theme-transition">E-Poster</span>
+              Plateforme <span className="text-theme-secondary theme-transition">E-Poster</span>
             </h1>
             <p className="text-xs text-zinc-500 font-medium">Borne tactile interactive</p>
           </div>
@@ -92,7 +83,8 @@ export default function TotemHome() {
                     setSelectedScreen(String(s.id));
                     window.open(`${window.location.origin}/totem?screen=${s.id}`, `totem-screen-${s.id}`);
                   }}
-                  className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all theme-transition ${selectedScreen === String(s.id) ? 'bg-gradient-to-r from-theme-primary to-theme-primary-light text-theme-foreground shadow-md' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200/40'}`}
+                  style={selectedScreen === String(s.id) ? { backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' } : {}}
+                  className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all theme-transition ${selectedScreen === String(s.id) ? 'shadow-md' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200/40'}`}
                 >
                   <Monitor size={14} /> {s.name}
                 </button>
@@ -174,11 +166,11 @@ export default function TotemHome() {
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80" 
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-zinc-100 to-zinc-200/80 flex items-center justify-center">
+                        <div className="w-full h-full bg-zinc-100 flex items-center justify-center">
                           <Presentation size={36} className="text-zinc-300" />
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-white/20 to-transparent" />
+                      <div className="absolute inset-0 bg-white/40" />
                       
                       {/* Logo positioned floating */}
                       <div className="absolute bottom-4 left-6 flex items-end gap-3">
@@ -269,7 +261,8 @@ export default function TotemHome() {
 
                         {/* CTA button */}
                         <button
-                          className="w-full mt-2 py-3 px-4 bg-gradient-to-r from-theme-primary to-theme-primary-light text-theme-foreground hover:opacity-95 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-md group-hover:scale-[1.02] theme-transition font-display"
+                          style={{ backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' }}
+                          className="w-full mt-2 py-3 px-4 hover:opacity-90 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-md group-hover:scale-[1.02] theme-transition font-display"
                         >
                           Accéder aux publications
                           <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />

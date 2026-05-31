@@ -24,21 +24,12 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-4 font-sans bg-dot-grid relative overflow-hidden">
-      {/* Mesh gradient background */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-60"
-        style={{
-          background: `
-            radial-gradient(circle at 20% 30%, rgba(24, 24, 27, 0.04) 0%, transparent 60%),
-            radial-gradient(circle at 80% 70%, rgba(241, 120, 91, 0.05) 0%, transparent 60%)
-          `
-        }}
-      />
+
 
       <div className="w-full max-w-md bg-white/90 backdrop-blur-sm border border-zinc-200/80 rounded-3xl p-10 shadow-xl relative z-10 animate-fade-in">
         {/* Logo & Branding */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-gradient-to-br from-zinc-900 to-zinc-700 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-md">
+          <div className="w-14 h-14 bg-zinc-900 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-md">
             <Presentation className="text-white" size={26} />
           </div>
           <h1 className="text-2xl font-bold text-zinc-900 tracking-tight font-display">E-Poster</h1>
@@ -93,7 +84,7 @@ export default function LoginPage() {
             id="login-submit"
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-zinc-900 to-zinc-700 hover:opacity-90 text-white py-3.5 rounded-2xl font-bold transition-all disabled:opacity-50 text-sm mt-2 shadow-md active:scale-[0.98] font-display"
+            className="w-full bg-zinc-900 hover:bg-zinc-800 text-white py-3.5 rounded-2xl font-bold transition-all disabled:opacity-50 text-sm mt-2 shadow-md active:scale-[0.98] font-display"
           >
             {loading ? "Connexion en cours..." : "Se connecter"}
           </button>

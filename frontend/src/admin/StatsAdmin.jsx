@@ -9,7 +9,10 @@ export default function StatsAdmin() {
 
   const statsQuery = useQuery({
     queryKey: ["admin-stats"],
-    queryFn: async () => (await api.get("/platform/statistics")).data,
+    queryFn: async () => {
+      const response = await api.get("/dashboard/stats");
+      return response.data;
+    },
     refetchOnWindowFocus: false
   });
 
@@ -76,11 +79,11 @@ export default function StatsAdmin() {
     : 1;
 
   const cardItems = [
-    { title: "Consultations", value: stats.totalViews, icon: Eye, color: "from-theme-primary to-theme-primary-light", desc: "Total des e-posters lus" },
-    { title: "E-Posters", value: stats.totalPublications, icon: FileText, color: "from-zinc-900 to-zinc-700", desc: "Publications insérées" },
-    { title: "Événements", value: stats.totalEvents, icon: Calendar, color: "from-blue-600 to-blue-400", desc: "Congrès configurés" },
-    { title: "Écrans", value: stats.totalScreens, icon: Monitor, color: "from-emerald-600 to-emerald-400", desc: "Totems interactifs" },
-    { title: "Catégories", value: stats.totalCategories, icon: Tags, color: "from-amber-600 to-amber-400", desc: "Thèmes & sessions" }
+    { title: "Consultations", value: stats.totalViews, icon: Eye, color: "bg-zinc-900", desc: "Total des e-posters lus" },
+    { title: "E-Posters", value: stats.totalPublications, icon: FileText, color: "bg-slate-700", desc: "Publications insérées" },
+    { title: "Événements", value: stats.totalEvents, icon: Calendar, color: "bg-blue-600", desc: "Congrès configurés" },
+    { title: "Écrans", value: stats.totalScreens, icon: Monitor, color: "bg-emerald-600", desc: "Totems interactifs" },
+    { title: "Catégories", value: stats.totalCategories, icon: Tags, color: "bg-amber-600", desc: "Thèmes & sessions" }
   ];
 
   return (
@@ -89,30 +92,26 @@ export default function StatsAdmin() {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 tracking-tight font-display">
-            Tableau de Bord / Statistiques
-          </h1>
-          <p className="text-sm text-zinc-500 font-medium">
-            Rapport en temps réel des consultations d'e-posters sur les totems.
-          </p>
+          <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Tableau de Bord & Statistiques</h2>
+          <p className="text-sm text-slate-500 mt-1">Rapport en temps réel des consultations d'e-posters</p>
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <button
             onClick={handleRefresh}
             disabled={isRefreshing || statsQuery.isLoading}
-            className="flex-1 sm:flex-none bg-white border border-zinc-200 hover:bg-zinc-50 text-zinc-700 px-4 py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-sm disabled:opacity-50"
+            className="flex-1 sm:flex-none btn-ghost"
           >
-            <RefreshCw size={15} className={isRefreshing ? "animate-spin" : ""} />
+            <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} />
             Actualiser
           </button>
           
           <button
             onClick={exportStatsCSV}
             disabled={statsQuery.isLoading || stats.topPublications.length === 0}
-            className="flex-1 sm:flex-none bg-zinc-900 hover:bg-zinc-800 text-white px-4 py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-md disabled:opacity-50"
+            className="flex-1 sm:flex-none btn-primary"
           >
-            <Download size={15} />
+            <Download size={16} />
             Exporter CSV
           </button>
         </div>
@@ -139,7 +138,7 @@ export default function StatsAdmin() {
                 
                 <div className="flex justify-between items-start mb-4">
                   <span className="text-xs text-zinc-400 font-bold uppercase tracking-wider">{card.title}</span>
-                  <div className={`p-2.5 rounded-xl bg-gradient-to-br ${card.color} text-white shadow-sm shrink-0`}>
+                  <div className={`p-2.5 rounded-xl ${card.color} text-white shadow-sm shrink-0`}>
                     <card.icon size={16} />
                   </div>
                 </div>
@@ -182,11 +181,14 @@ export default function StatsAdmin() {
                     return (
                       <div key={pub.id} className="flex gap-4 items-start p-3 hover:bg-zinc-50/50 rounded-2xl border border-transparent hover:border-zinc-100 transition-all">
                         {/* Rank Badge */}
-                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black shrink-0 shadow-sm border ${
-                          idx === 0 ? 'bg-gradient-to-r from-theme-primary to-theme-primary-light text-white border-transparent' :
-                          idx === 1 ? 'bg-zinc-900 text-white border-transparent' :
-                          'bg-zinc-55 text-zinc-700 border-zinc-200 bg-zinc-100'
-                        }`}>
+                        <div 
+                          style={idx === 0 ? { backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' } : {}}
+                          className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black shrink-0 shadow-sm border ${
+                            idx === 0 ? 'border-transparent' :
+                            idx === 1 ? 'bg-zinc-900 text-white border-transparent' :
+                            'bg-zinc-100 text-zinc-700 border-zinc-200'
+                          }`}
+                        >
                           {idx + 1}
                         </div>
 
@@ -221,8 +223,8 @@ export default function StatsAdmin() {
                           {/* Progress bar represent views ratio */}
                           <div className="w-full bg-zinc-100 h-2 rounded-full overflow-hidden flex">
                             <div 
-                              className="bg-gradient-to-r from-theme-primary to-theme-primary-light rounded-full transition-all duration-1000"
-                              style={{ width: `${Math.max(pct, 4)}%` }}
+                              style={{ width: `${Math.max(pct, 4)}%`, backgroundColor: 'var(--theme-primary)' }}
+                              className="rounded-full transition-all duration-1000"
                             />
                           </div>
                         </div>
@@ -267,8 +269,6 @@ export default function StatsAdmin() {
 
               {/* Informative checklist */}
               <div className="bg-zinc-900 text-white rounded-3xl p-6 shadow-lg relative overflow-hidden">
-                {/* Visual glow background */}
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-theme-secondary/20 to-transparent rounded-full filter blur-xl pointer-events-none" />
 
                 <div className="flex items-center gap-3.5 mb-4">
                   <div className="p-2 bg-white/10 rounded-xl text-theme-secondary">

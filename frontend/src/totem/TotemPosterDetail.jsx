@@ -135,16 +135,7 @@ export default function TotemPosterDetail() {
 
   return (
     <div className="min-h-screen flex flex-col bg-zinc-50 text-zinc-900 font-sans transition-colors duration-500 selection:bg-theme-secondary/20 selection:text-zinc-900 bg-dot-grid theme-transition relative overflow-hidden">
-      {/* Dynamic Animated Mesh Gradient in Background */}
-      <div
-        className="absolute inset-0 pointer-events-none transition-all duration-1000 ease-in-out opacity-40 theme-transition"
-        style={{
-          background: `
-            radial-gradient(circle at 15% 25%, rgba(var(--theme-primary-rgb, 24, 24, 27), 0.05) 0%, transparent 60%),
-            radial-gradient(circle at 85% 75%, rgba(var(--theme-secondary-rgb, 241, 120, 91), 0.06) 0%, transparent 60%)
-          `
-        }}
-      />
+
       {/* Header Toolbar */}
       <header className="flex items-center justify-between px-6 py-4 bg-white/80 backdrop-blur-md border-b border-zinc-200/60 z-10 shrink-0 shadow-sm theme-transition">
         <Link
@@ -188,7 +179,8 @@ export default function TotemPosterDetail() {
 
           <button
             onClick={requestFullscreen}
-            className="px-4 py-2.5 bg-gradient-to-r from-theme-primary to-theme-primary-light text-theme-foreground hover:opacity-95 rounded-xl text-xs font-bold transition-all flex items-center gap-2 active:scale-95 shadow-md font-display theme-transition"
+            style={{ backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' }}
+            className="px-4 py-2.5 hover:opacity-90 rounded-xl text-xs font-bold transition-all flex items-center gap-2 active:scale-95 shadow-md font-display theme-transition"
           >
             {isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />}
             {isFullscreen ? "Quitter" : "Plein Écran"}
@@ -386,7 +378,8 @@ export default function TotemPosterDetail() {
                   <button
                     disabled={!nextPub}
                     onClick={() => nextPub && navigate(`/totem/publications/${nextPub.id}${buildSearchParams()}`)}
-                    className="flex-1 py-3 px-4 bg-gradient-to-r from-theme-primary to-theme-primary-light text-theme-foreground hover:opacity-95 disabled:opacity-30 disabled:bg-zinc-100 disabled:text-zinc-400 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2 active:scale-95 shadow-md font-display theme-transition"
+                    style={nextPub ? { backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' } : {}}
+                    className="flex-1 py-3 px-4 hover:opacity-90 disabled:opacity-30 disabled:bg-zinc-100 disabled:text-zinc-400 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2 active:scale-95 shadow-md font-display theme-transition"
                   >
                     Suivant <ChevronRight size={14} />
                   </button>
