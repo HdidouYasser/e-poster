@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuthStore } from "./stores/authStore";
 import { Toaster } from "react-hot-toast";
+import Home from "./Home";
 import TotemHome from "./totem/TotemHome";
 import TotemPublications from "./totem/TotemPublications";
 import TotemPosterDetail from "./totem/TotemPosterDetail";
@@ -30,12 +31,28 @@ export default function App() {
     <>
       <Toaster
         position="top-right"
+        gutter={8}
         toastOptions={{
+          duration: 3500,
           style: {
             background: '#ffffff',
-            color: '#0f172a',
-            border: '1px solid #e2e8f0',
-            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)',
+            color: '#18181b',
+            border: '1px solid #e4e4e7',
+            borderRadius: '14px',
+            boxShadow: '0 4px 16px -4px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.06)',
+            fontFamily: "'Inter', system-ui, sans-serif",
+            fontSize: '13px',
+            fontWeight: '500',
+            padding: '10px 14px',
+          },
+          success: {
+            iconTheme: { primary: '#16a34a', secondary: '#fff' },
+          },
+          error: {
+            iconTheme: { primary: '#dc2626', secondary: '#fff' },
+          },
+          loading: {
+            iconTheme: { primary: '#18181b', secondary: '#fff' },
           },
         }}
       />
@@ -46,8 +63,8 @@ export default function App() {
         <Route path="/totem/publications/:id" element={<TotemPosterDetail />} />
         <Route path="/totem/slideshow" element={<TotemSlideshow />} />
         
-        {/* Redirection racine vers totem par défaut */}
-        <Route path="/" element={<Navigate to="/totem" replace />} />
+        {/* Page d'accueil présentant le concept */}
+        <Route path="/" element={<Home />} />
 
         {/* Back-Office : Admin */}
         <Route path="/login" element={isAuthenticated ? <Navigate to="/admin/stats" replace /> : <LoginPage />} />

@@ -24,13 +24,10 @@ export default function TotemPublications() {
 
   const [q, setQ] = useState(params.get("q") || "");
   const [showKeyboard, setShowKeyboard] = useState(false);
-  
+
   const endpoint = useMemo(() => {
     let base = `/publications?page=${page}&size=${size}`;
-    if (q.trim()) {
-      base = `/publications/search?q=${encodeURIComponent(q)}&page=${page}&size=${size}`;
-    }
-    
+    if (q.trim()) base = `/publications/search?q=${encodeURIComponent(q)}&page=${page}&size=${size}`;
     if (eventId) base += `&eventId=${encodeURIComponent(eventId)}`;
     if (category) base += `&category=${encodeURIComponent(category)}`;
     if (session) base += `&session=${encodeURIComponent(session)}`;
@@ -67,7 +64,6 @@ export default function TotemPublications() {
     [eventQuery.data, activeEventQuery.data]
   );
 
-  // Apply dynamic color theme of the selected event
   useDynamicTheme(selectedEvent?.colorPrimary, selectedEvent?.logoUrl);
 
   const eventCategories = useMemo(() => {
@@ -84,14 +80,12 @@ export default function TotemPublications() {
 
   const availableSessions = useMemo(() => {
     if (!allPubsQuery.data?.items) return [];
-    const sessions = new Set(allPubsQuery.data.items.map(p => p.session).filter(Boolean));
-    return Array.from(sessions).sort();
+    return Array.from(new Set(allPubsQuery.data.items.map(p => p.session).filter(Boolean))).sort();
   }, [allPubsQuery.data]);
 
   const availableRooms = useMemo(() => {
     if (!allPubsQuery.data?.items) return [];
-    const rooms = new Set(allPubsQuery.data.items.map(p => p.room).filter(Boolean));
-    return Array.from(rooms).sort();
+    return Array.from(new Set(allPubsQuery.data.items.map(p => p.room).filter(Boolean))).sort();
   }, [allPubsQuery.data]);
 
   useEffect(() => {
@@ -107,11 +101,7 @@ export default function TotemPublications() {
     });
   }, [page, q, category, session, room, eventId, screen, setParams]);
 
-  useIdleTimer({
-    timeoutMs: 60_000,
-    onIdle: () => navigate(`/totem?screen=${screen}`),
-    enabled: true
-  });
+  useIdleTimer({ timeoutMs: 60_000, onIdle: () => navigate(`/totem?screen=${screen}`), enabled: true });
 
   useEffect(() => {
     return sync.onMessage((msg) => {
@@ -122,59 +112,57 @@ export default function TotemPublications() {
   }, [navigate, screen]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-theme-bg-light text-zinc-900 font-sans transition-colors duration-500 bg-dot-grid theme-transition relative overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-zinc-50 text-zinc-900 font-sans theme-transition bg-dot-grid relative overflow-hidden">
 
-      {/* Header Panel */}
-      <header className="flex flex-col md:flex-row items-center justify-between px-8 py-5 bg-white/80 backdrop-blur-md border-b border-zinc-200/60 gap-4 sticky top-0 z-20 shadow-sm theme-transition">
-        <div className="flex items-center gap-4 w-full md:w-auto">
+      {/* ── Header ── */}
+      <header className="flex flex-col md:flex-row items-center justify-between px-7 py-4 bg-white border-b border-zinc-200/70 gap-3 sticky top-0 z-20 shadow-sm theme-transition">
+        <div className="flex items-center gap-3 w-full md:w-auto">
           <Link
             to={`/totem?screen=${screen}`}
-            className="px-4 py-2.5 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 text-zinc-700 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 shadow-sm shrink-0 active:scale-95 theme-transition"
+            className="px-3 py-2 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 text-zinc-700 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shrink-0 active:scale-95"
           >
-            <Home size={16} /> Accueil
+            <Home size={14} /> Accueil
           </Link>
-          
+
           {selectedEvent?.logoUrl && (
-            <img 
-              src={getMediaUrl(selectedEvent.logoUrl)} 
-              alt="Logo" 
-              className="h-10 max-w-[120px] object-contain hidden sm:block bg-zinc-50 p-1 rounded-lg border border-zinc-200 shadow-sm" 
+            <img
+              src={getMediaUrl(selectedEvent.logoUrl)}
+              alt="Logo"
+              className="h-9 max-w-[100px] object-contain hidden sm:block bg-zinc-50 p-1 rounded-lg border border-zinc-200"
             />
           )}
           <div className="hidden lg:block">
-            <h2 className="text-sm font-bold text-zinc-950 truncate max-w-[200px] font-display theme-transition">
+            <h2 className="text-sm font-bold text-zinc-900 truncate max-w-[200px] font-display theme-transition">
               {selectedEvent?.title || "Congrès E-Poster"}
             </h2>
-            <p className="text-[10px] text-zinc-500 font-medium">Recherche communications</p>
+            <p className="text-[10px] text-zinc-400 font-medium">Recherche communications</p>
           </div>
         </div>
 
-        {/* Styled search container */}
+        {/* Search bar */}
         <div className="relative flex-1 w-full md:max-w-xl">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-theme-primary theme-transition" size={18} />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
           <input
-            className="w-full bg-zinc-50/70 border border-zinc-200 focus:border-theme-primary focus:bg-white text-zinc-900 placeholder-zinc-400 pl-11 pr-12 py-3 rounded-2xl text-sm outline-none transition-all shadow-inner theme-transition"
+            className="w-full bg-zinc-50 border border-zinc-200 focus:border-zinc-400 focus:bg-white text-zinc-900 placeholder-zinc-400 pl-10 pr-11 py-2.5 rounded-xl text-sm outline-none transition-all"
             value={q}
             onChange={(e) => { setQ(e.target.value); setPage(0); }}
             onFocus={() => setShowKeyboard(true)}
             placeholder="Rechercher par titre, auteur, mot-clé..."
           />
-          <button 
+          <button
             onClick={() => setShowKeyboard(!showKeyboard)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-700 transition-colors rounded-lg hover:bg-zinc-200/50"
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-zinc-400 hover:text-zinc-700 transition-colors rounded-lg hover:bg-zinc-100"
           >
-            {showKeyboard ? <X size={18} /> : <KeyboardIcon size={18} />}
+            {showKeyboard ? <X size={16} /> : <KeyboardIcon size={16} />}
           </button>
 
           {showKeyboard && (
-            <div className="absolute top-full left-0 right-0 mt-3 p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xl z-50 animate-fade-in ring-1 ring-black/5">
+            <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-white border border-zinc-200 rounded-2xl shadow-2xl z-50 animate-scale-in">
               <Keyboard
                 keyboardRef={r => (window.keyboard = r)}
                 layoutName="default"
                 onChange={(input) => { setQ(input); setPage(0); }}
-                onKeyPress={(button) => {
-                  if (button === "{enter}") setShowKeyboard(false);
-                }}
+                onKeyPress={(button) => { if (button === "{enter}") setShowKeyboard(false); }}
                 input={q}
                 layout={{
                   default: [
@@ -185,11 +173,7 @@ export default function TotemPublications() {
                     "{space}"
                   ]
                 }}
-                display={{
-                  "{bksp}": "effacer",
-                  "{enter}": "valider",
-                  "{space}": "espace",
-                }}
+                display={{ "{bksp}": "effacer", "{enter}": "valider", "{space}": "espace" }}
               />
             </div>
           )}
@@ -198,20 +182,22 @@ export default function TotemPublications() {
         <button
           onClick={() => window.open(`${window.location.origin}/totem/publications?screen=${Number(screen) + 1}`, `totem-screen-${Number(screen) + 1}`)}
           style={{ backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' }}
-          className="w-full md:w-auto px-5 py-2.5 hover:opacity-90 rounded-xl text-sm font-bold shadow-sm transition-all flex items-center justify-center gap-2 shrink-0 active:scale-95 theme-transition font-display"
+          className="w-full md:w-auto px-4 py-2 hover:opacity-90 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shrink-0 active:scale-95 font-display"
         >
-          <Monitor size={16} /> Écran {screen === '1' ? '2' : '1'}
+          <Monitor size={14} /> Écran {screen === '1' ? '2' : '1'}
         </button>
       </header>
 
-      {/* Categories & Select Filter Toolbar */}
-      <div className="bg-white/50 backdrop-blur-sm border-b border-zinc-200/60 px-8 py-4 flex flex-col sm:flex-row gap-4 items-center justify-between z-10">
+      {/* ── Filter Toolbar ── */}
+      <div className="bg-white border-b border-zinc-100 px-7 py-3 flex flex-col sm:flex-row gap-3 items-center justify-between z-10">
         {eventCategories?.length > 0 ? (
-          <div className="flex-1 flex items-center gap-2 overflow-x-auto pb-1.5 max-w-full scrollbar-thin">
+          <div className="flex-1 flex items-center gap-2 overflow-x-auto pb-0.5 max-w-full">
             <button
               onClick={() => { setCategory(""); setPage(0); }}
               style={!category ? { backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' } : {}}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border shrink-0 theme-transition font-display ${!category ? 'border-transparent shadow-md' : 'bg-white text-zinc-600 border-zinc-200/80 hover:bg-zinc-50'}`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border shrink-0 theme-transition ${
+                !category ? 'border-transparent shadow-sm' : 'bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100'
+              }`}
             >
               Tous les thèmes
             </button>
@@ -220,20 +206,22 @@ export default function TotemPublications() {
                 key={c.id}
                 onClick={() => { setCategory(c.name); setPage(0); }}
                 style={category === c.name ? { backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' } : {}}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border shrink-0 theme-transition font-display ${category === c.name ? 'border-transparent shadow-md' : 'bg-white text-zinc-600 border-zinc-200/80 hover:bg-zinc-50'}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border shrink-0 theme-transition ${
+                  category === c.name ? 'border-transparent shadow-sm' : 'bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100'
+                }`}
               >
                 {c.name}
               </button>
             ))}
           </div>
-        ) : <div className="flex-1"></div>}
-        
-        <div className="flex gap-3 w-full sm:w-auto justify-end shrink-0">
+        ) : <div className="flex-1" />}
+
+        <div className="flex gap-2 w-full sm:w-auto justify-end shrink-0">
           {availableSessions.length > 0 && (
             <select
               value={session}
               onChange={(e) => { setSession(e.target.value); setPage(0); }}
-              className="bg-white border border-zinc-200 text-zinc-700 text-xs font-bold rounded-xl px-3 py-2 outline-none hover:bg-zinc-50 transition-colors focus:border-theme-primary shadow-sm theme-transition"
+              className="bg-zinc-50 border border-zinc-200 text-zinc-700 text-xs font-semibold rounded-lg px-3 py-1.5 outline-none hover:bg-zinc-100 transition-colors focus:border-zinc-400"
             >
               <option value="">Toutes les sessions</option>
               {availableSessions.map(s => <option key={s} value={s}>{s}</option>)}
@@ -243,7 +231,7 @@ export default function TotemPublications() {
             <select
               value={room}
               onChange={(e) => { setRoom(e.target.value); setPage(0); }}
-              className="bg-white border border-zinc-200 text-zinc-700 text-xs font-bold rounded-xl px-3 py-2 outline-none hover:bg-zinc-50 transition-colors focus:border-theme-primary shadow-sm theme-transition"
+              className="bg-zinc-50 border border-zinc-200 text-zinc-700 text-xs font-semibold rounded-lg px-3 py-1.5 outline-none hover:bg-zinc-100 transition-colors focus:border-zinc-400"
             >
               <option value="">Toutes les salles</option>
               {availableRooms.map(r => <option key={r} value={r}>{r}</option>)}
@@ -252,23 +240,25 @@ export default function TotemPublications() {
         </div>
       </div>
 
-      {/* Main Grid View */}
-      <main className="flex-1 p-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+      {/* ── Grid ── */}
+      <main className="flex-1 p-7 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {pubsQuery.isLoading ? (
-          <div className="col-span-full flex flex-col items-center justify-center p-24 animate-fade-in">
-            <div className="w-10 h-10 border-4 border-zinc-200 border-t-theme-primary rounded-full animate-spin mb-4" />
-            <p className="text-sm text-zinc-550 font-semibold tracking-wide">Recherche des communications...</p>
+          <div className="col-span-full flex flex-col items-center justify-center p-20 animate-fade-in">
+            <div className="loading-spinner mb-4" style={{ borderTopColor: 'var(--theme-primary)' }} />
+            <p className="text-sm text-zinc-400 font-semibold">Recherche des communications...</p>
           </div>
+
         ) : data.items?.length === 0 ? (
-          <div className="col-span-full text-center p-20 bg-white/60 backdrop-blur-md border border-zinc-200/60 rounded-3xl shadow-sm max-w-lg mx-auto w-full animate-fade-in my-12">
-            <Search size={48} className="mx-auto text-zinc-305 mb-4 animate-pulse" />
-            <h2 className="text-xl font-bold text-zinc-800 mb-2 font-display">Aucun e-poster trouvé</h2>
-            <p className="text-xs text-zinc-500 leading-relaxed">
-              Nous n'avons trouvé aucun document correspondant à vos critères de recherche. Essayez de simplifier ou de modifier vos filtres.
+          <div className="col-span-full text-center p-16 bg-white border border-zinc-200 rounded-3xl shadow-sm max-w-md mx-auto w-full animate-fade-in my-10">
+            <Search size={40} className="mx-auto text-zinc-300 mb-4" />
+            <h2 className="text-lg font-bold text-zinc-800 mb-2 font-display">Aucun e-poster trouvé</h2>
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              Aucun document ne correspond à vos critères. Essayez de modifier vos filtres.
             </p>
           </div>
+
         ) : (
-          data.items?.map((p) => (
+          data.items?.map((p, i) => (
             <div
               key={p.id}
               onClick={() => {
@@ -276,63 +266,57 @@ export default function TotemPublications() {
                 sync.send({ type: "NAVIGATE", screen, path });
                 navigate(path);
               }}
-              className="text-left bg-white/80 backdrop-blur-sm border border-zinc-200/60 rounded-3xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 animate-fade-in group cursor-pointer theme-transition hover:border-theme-primary/20"
+              style={{ animationDelay: `${i * 40}ms` }}
+              className="text-left bg-white border border-zinc-200 rounded-3xl overflow-hidden flex flex-col transition-all duration-200 hover:shadow-lg hover:-translate-y-1 animate-fade-in group cursor-pointer"
             >
-              {/* Card Thumbnail Canvas */}
+              {/* Thumbnail */}
               <div className="w-full aspect-[3/4] bg-zinc-50 relative border-b border-zinc-100 overflow-hidden flex items-center justify-center">
                 {p.posterUrl ? (
-                  <img 
-                    src={getPosterThumbnail(p.posterUrl)} 
-                    alt={p.title} 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                  <img
+                    src={getPosterThumbnail(p.posterUrl)}
+                    alt={p.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
                   <div className="w-full h-full bg-zinc-50 flex flex-col items-center justify-center gap-2">
-                    <ImageIcon size={32} className="text-zinc-300" />
+                    <ImageIcon size={28} className="text-zinc-300" />
                     <span className="text-[10px] text-zinc-400 font-bold tracking-wider">Affiche non disponible</span>
                   </div>
                 )}
-                
-                {/* Visual Status Indicator */}
+
                 {p.status === 'PUBLISHED' && (
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-zinc-800 px-2.5 py-1 text-[10px] font-bold rounded-lg shadow-sm border border-zinc-200/50 flex items-center gap-1.5 theme-transition">
+                  <div className="absolute top-3 right-3 bg-white text-zinc-800 px-2 py-0.5 text-[10px] font-bold rounded-lg shadow-sm border border-zinc-200/50 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-theme-secondary animate-pulse" />
                     Interactif
                   </div>
                 )}
               </div>
 
-              {/* Card metadata details */}
-              <div className="p-5 flex-1 flex flex-col justify-between">
+              {/* Content */}
+              <div className="p-4 flex-1 flex flex-col justify-between">
                 <div>
-                  {/* Category badge */}
                   {p.category && (
-                    <span className="inline-flex items-center gap-1 text-[9px] font-extrabold text-theme-primary uppercase tracking-wider mb-2 theme-transition">
-                      <Tag size={10} /> {p.category}
+                    <span className="inline-flex items-center gap-1 text-[9px] font-extrabold text-theme-primary uppercase tracking-wider mb-1.5 theme-transition">
+                      <Tag size={9} /> {p.category}
                     </span>
                   )}
-                  
-                  {/* Title */}
-                  <h3 className="text-sm font-bold line-clamp-2 leading-snug mb-1 text-zinc-900 group-hover:text-theme-primary transition-colors duration-300 font-display theme-transition">
+                  <h3 className="text-sm font-bold line-clamp-2 leading-snug mb-1 text-zinc-900 group-hover:text-theme-secondary transition-colors duration-200 font-display theme-transition">
                     {p.title}
                   </h3>
-
-                  {/* Authors */}
-                  <p className="text-xs text-zinc-500 line-clamp-1 mb-4 font-medium">
+                  <p className="text-xs text-zinc-400 line-clamp-1 mb-3">
                     {p.authors || "Auteurs non renseignés"}
                   </p>
                 </div>
 
-                {/* Date/Location Details */}
-                <div className="mt-auto pt-3 border-t border-zinc-100 flex flex-wrap gap-2">
+                <div className="mt-auto pt-3 border-t border-zinc-100 flex flex-wrap gap-1.5">
                   {p.session && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-zinc-50 text-zinc-650 rounded-lg text-[10px] font-semibold border border-zinc-200/60 theme-transition">
-                      <Clock size={10} className="text-theme-secondary" /> {p.session}
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-zinc-50 text-zinc-600 rounded-lg text-[10px] font-semibold border border-zinc-100">
+                      <Clock size={9} className="text-theme-secondary" /> {p.session}
                     </span>
                   )}
                   {p.room && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-zinc-50 text-zinc-650 rounded-lg text-[10px] font-semibold border border-zinc-200/60 theme-transition">
-                      <MapPin size={10} className="text-theme-secondary" /> {p.room}
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-zinc-50 text-zinc-600 rounded-lg text-[10px] font-semibold border border-zinc-100">
+                      <MapPin size={9} className="text-theme-secondary" /> {p.room}
                     </span>
                   )}
                 </div>
@@ -342,24 +326,24 @@ export default function TotemPublications() {
         )}
       </main>
 
-      {/* Pagination Footer */}
-      <footer className="border-t border-zinc-200 bg-white/80 backdrop-blur-md px-8 py-5 flex flex-col md:flex-row justify-between items-center gap-4 sticky bottom-0 z-20 shadow-md theme-transition">
+      {/* ── Pagination Footer ── */}
+      <footer className="border-t border-zinc-200 bg-white px-7 py-4 flex flex-col md:flex-row justify-between items-center gap-3 sticky bottom-0 z-20 shadow-md theme-transition">
         <button
           disabled={page <= 0}
           onClick={() => setPage((x) => x - 1)}
-          className="w-full md:w-auto px-5 py-2.5 bg-white hover:bg-zinc-50 border border-zinc-200 disabled:opacity-50 disabled:hover:bg-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 text-zinc-700 shadow-sm active:scale-95 theme-transition font-display"
+          className="w-full md:w-auto px-5 py-2 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 disabled:opacity-40 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 text-zinc-700 active:scale-95"
         >
-          <ChevronLeft size={14} /> Précédent
+          <ChevronLeft size={13} /> Précédent
         </button>
-        <div className="text-xs font-bold text-zinc-600 tracking-wider">
+        <div className="text-xs font-bold text-zinc-400 tracking-wider">
           PAGE {data.page + 1} / {Math.max(data.totalPages, 1)}
         </div>
         <button
           disabled={page + 1 >= data.totalPages}
           onClick={() => setPage((x) => x + 1)}
-          className="w-full md:w-auto px-5 py-2.5 bg-white hover:bg-zinc-50 border border-zinc-200 disabled:opacity-50 disabled:hover:bg-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 text-zinc-700 shadow-sm active:scale-95 theme-transition font-display"
+          className="w-full md:w-auto px-5 py-2 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 disabled:opacity-40 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 text-zinc-700 active:scale-95"
         >
-          Suivant <ChevronRight size={14} />
+          Suivant <ChevronRight size={13} />
         </button>
       </footer>
     </div>

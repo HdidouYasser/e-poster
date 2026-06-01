@@ -16,7 +16,9 @@ export default function TotemSlideshow() {
   const { data: pubsData } = useQuery({
     queryKey: ["totem-slideshow-pubs", eventId],
     queryFn: async () => {
-      const endpoint = eventId ? `/publications?eventId=${eventId}&size=100` : `/publications?size=100`;
+      const endpoint = eventId
+        ? `/publications?eventId=${eventId}&size=100`
+        : `/publications?size=100`;
       return (await publicApi.get(endpoint)).data;
     }
   });
@@ -44,138 +46,200 @@ export default function TotemSlideshow() {
     if (publications.length === 0) return;
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % publications.length);
-    }, 10000); // 10 seconds per slide
+    }, 10000);
     return () => clearInterval(interval);
   }, [publications.length]);
 
-  // If user interacts, exit slideshow
+  // Any interaction exits slideshow
   useIdleTimer({
     timeoutMs: 1000,
     onActive: () => navigate(`/totem?screen=${screen}`),
     enabled: true
   });
 
+  // ── Loading / Empty states ──
   if (!publications.length) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white font-sans">
-        <p className="text-zinc-400">Aucune publication disponible</p>
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white font-sans gap-4">
+        <ImageIcon size={40} className="text-zinc-700" />
+        <p className="text-zinc-500 text-sm font-semibold">Aucune publication disponible</p>
       </div>
     );
   }
 
   if (!selectedEvent) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white font-sans">
-        <p className="text-zinc-400">Événement non trouvé</p>
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white font-sans gap-4">
+        <Monitor size={40} className="text-zinc-700" />
+        <p className="text-zinc-500 text-sm font-semibold">Événement non trouvé</p>
         <button
           onClick={() => navigate(`/totem`)}
-          className="mt-4 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded text-sm"
+          className="mt-2 px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-xs font-semibold transition-colors"
         >
-          Retour
+          Retour à l'accueil
         </button>
       </div>
     );
   }
 
   const currentPub = publications[currentIndex];
-  const categoryName = currentPub?.category 
+  const categoryName = currentPub?.category
     ? (typeof currentPub.category === 'object' ? currentPub.category.name : currentPub.category)
     : "";
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white flex flex-col p-8 font-sans transition-opacity duration-500">
+    <div className="min-h-screen bg-zinc-950 text-white flex flex-col font-sans select-none">
+
       {/* ── Top Bar ── */}
-      <header className="flex items-center justify-between z-20 shrink-0">
+      <header className="flex items-center justify-between px-8 py-4 bg-zinc-950 border-b border-zinc-900 shrink-0 z-20">
         <div className="flex items-center gap-3">
           {selectedEvent?.logoUrl ? (
-            <img src={getMediaUrl(selectedEvent.logoUrl)} alt="logo" className="h-6 object-contain" />
+            <img
+              src={getMediaUrl(selectedEvent.logoUrl)}
+              alt="logo"
+              className="h-7 object-contain opacity-90"
+            />
           ) : (
-            <div className="w-6 h-6 rounded flex items-center justify-center bg-zinc-800">
-              <Monitor size={12} className="text-white" />
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-zinc-900 border border-zinc-800">
+              <Monitor size={14} className="text-zinc-400" />
             </div>
           )}
-          <span className="text-zinc-400 font-semibold text-xs tracking-wider uppercase">{selectedEvent?.title}</span>
+          <span className="text-zinc-500 font-semibold text-xs tracking-wider uppercase">
+            {selectedEvent?.title}
+          </span>
         </div>
-        
-        <div className="flex items-center gap-4">
-          <div className="bg-zinc-900 px-3 py-1.5 rounded-md border border-zinc-800 text-zinc-400 font-mono text-xs font-semibold">
-            <span className="text-white">{currentIndex + 1}</span> / {publications.length}
+
+        <div className="flex items-center gap-3">
+          {/* Slide counter */}
+          <div className="bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800 font-mono text-xs">
+            <span className="text-white font-bold">{currentIndex + 1}</span>
+            <span className="text-zinc-600 mx-1">/</span>
+            <span className="text-zinc-400">{publications.length}</span>
           </div>
-          <button 
+
+          {/* Dot indicators (max 10) */}
+          {publications.length <= 10 && (
+            <div className="flex items-center gap-1.5">
+              {publications.map((_, i) => (
+                <div
+                  key={i}
+                  className={`rounded-full transition-all duration-300 ${
+                    i === currentIndex
+                      ? 'w-4 h-1.5 bg-white'
+                      : 'w-1.5 h-1.5 bg-zinc-700'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+
+          <button
             onClick={() => navigate(`/totem?screen=${screen}`)}
-            className="p-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-md transition-colors text-zinc-400 hover:text-white"
+            className="p-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors text-zinc-400 hover:text-white"
           >
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
       </header>
 
-      {/* ── Main Layout ── */}
-      <main key={currentPub.id} className="flex-1 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center justify-center animate-fade-in w-full max-w-7xl mx-auto my-12">
-        
-        {/* Poster Image */}
-        <div className="w-full lg:w-1/2 aspect-[3/4] bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden flex items-center justify-center p-2 relative">
-           {currentPub.posterUrl ? (
-             <img 
-               src={getPosterThumbnail(currentPub.posterUrl)} 
-               alt={currentPub.title} 
-               className="w-full h-full object-contain" 
-             />
-           ) : (
-             <ImageIcon size={64} className="text-zinc-800" />
-           )}
+      {/* ── Main Slide Layout ── */}
+      <main
+        key={currentPub.id}
+        className="flex-1 flex flex-col lg:flex-row gap-0 items-stretch animate-fade-in"
+      >
+        {/* Poster image — left / top */}
+        <div className="w-full lg:w-1/2 bg-zinc-900 border-r border-zinc-900 flex items-center justify-center p-8 relative overflow-hidden">
+          {currentPub.posterUrl ? (
+            <img
+              src={getPosterThumbnail(currentPub.posterUrl)}
+              alt={currentPub.title}
+              className="max-w-full max-h-[70vh] object-contain rounded-xl shadow-2xl ring-1 ring-white/5"
+            />
+          ) : (
+            <div className="flex flex-col items-center gap-3 text-zinc-700">
+              <ImageIcon size={64} />
+              <span className="text-sm font-semibold">Aucune affiche</span>
+            </div>
+          )}
+
+          {/* Subtle slide number watermark */}
+          <div className="absolute bottom-4 right-4 text-zinc-800 font-mono text-[10px] font-bold tracking-wider">
+            #{currentIndex + 1}
+          </div>
         </div>
 
-        
-        {/* Poster Details */}
-        <div className="w-full lg:w-1/2 flex flex-col items-start text-left">
-           {categoryName && (
-             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-md text-xs font-semibold mb-6 text-zinc-300">
-               <Tag size={12} />
-               {categoryName}
-             </div>
-           )}
+        {/* Poster details — right / bottom */}
+        <div className="w-full lg:w-1/2 flex flex-col justify-center p-10 lg:p-14 overflow-auto">
+          {/* Category badge */}
+          {categoryName && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-lg text-xs font-semibold mb-6 text-zinc-300 w-fit">
+              <Tag size={11} className="text-zinc-500" />
+              {categoryName}
+            </div>
+          )}
 
-           <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight tracking-tight mb-6 text-white">
-             {currentPub.title}
-           </h1>
-           
-           <p className="text-xl lg:text-2xl font-medium mb-12 text-zinc-400">
-             {currentPub.authors}
-           </p>
+          {/* Title */}
+          <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold leading-tight tracking-tight mb-5 text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+            {currentPub.title}
+          </h1>
 
-           <div className="flex flex-col gap-4">
-             {currentPub.session && (
-               <div className="flex items-center gap-3">
-                 <Clock size={16} className="text-zinc-500" />
-                 <span className="text-sm font-medium text-zinc-300">Session : {currentPub.session}</span>
-               </div>
-             )}
-             {currentPub.room && (
-               <div className="flex items-center gap-3">
-                 <MapPin size={16} className="text-zinc-500" />
-                 <span className="text-sm font-medium text-zinc-300">Salle : {currentPub.room}</span>
-               </div>
-             )}
-           </div>
+          {/* Authors */}
+          <p className="text-lg lg:text-xl font-medium mb-8 text-zinc-400">
+            {currentPub.authors}
+          </p>
+
+          {/* Meta info */}
+          <div className="flex flex-col gap-3">
+            {currentPub.session && (
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0">
+                  <Clock size={14} className="text-zinc-500" />
+                </div>
+                <span className="text-sm text-zinc-300 font-medium">Session : {currentPub.session}</span>
+              </div>
+            )}
+            {currentPub.room && (
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0">
+                  <MapPin size={14} className="text-zinc-500" />
+                </div>
+                <span className="text-sm text-zinc-300 font-medium">Salle : {currentPub.room}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Abstract excerpt */}
+          {currentPub.abstractText && (
+            <div className="mt-8 p-5 bg-zinc-900/70 border border-zinc-800 rounded-2xl">
+              <p className="text-[11px] font-bold text-zinc-600 uppercase tracking-widest mb-2">Résumé</p>
+              <p className="text-sm text-zinc-400 line-clamp-4 leading-relaxed">
+                {currentPub.abstractText}
+              </p>
+            </div>
+          )}
+
+          {/* Hint */}
+          <p className="mt-10 text-[11px] text-zinc-700 font-semibold tracking-wider uppercase">
+            Touchez l'écran pour interagir
+          </p>
         </div>
       </main>
-      
+
       {/* ── Progress Bar ── */}
-      <div className="fixed bottom-0 left-0 w-full h-1 bg-zinc-900">
-        <div 
+      <div className="fixed bottom-0 left-0 w-full h-0.5 bg-zinc-900 z-30">
+        <div
           key={currentIndex}
-          className="h-full bg-white"
-          style={{ 
-            width: '100%', 
-            animation: 'progress 10s linear forwards' 
+          className="h-full bg-zinc-400"
+          style={{
+            width: '100%',
+            animation: 'slideProgress 10s linear forwards'
           }}
         />
       </div>
-      
+
       <style>{`
-        @keyframes progress {
-          0% { width: 0%; }
+        @keyframes slideProgress {
+          0%   { width: 0%; }
           100% { width: 100%; }
         }
       `}</style>

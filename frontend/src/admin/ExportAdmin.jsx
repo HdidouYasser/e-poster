@@ -1,140 +1,135 @@
-import React, { useState } from 'react';
-import { Download, FileText, RefreshCw } from 'lucide-react';
+import { useState } from 'react';
+import { Download, FileText, Braces, FileType2, RefreshCw, Database, Info } from 'lucide-react';
 import { api } from '../api';
 import toast from 'react-hot-toast';
 
-/**
- * Page d'exports pour administrateurs
- * Permet de télécharger/exporter les données en différents formats
- */
-export const ExportAdmin = () => {
-  const [isExporting, setIsExporting] = useState({
-    csv: false,
-    json: false,
-    pdf: false
-  });
+const exportCards = [
+  {
+    format: 'csv',
+    title: 'Export CSV',
+    description: 'Compatible Excel & Google Sheets',
+    icon: FileText,
+    iconBg: 'bg-emerald-50 text-emerald-600',
+    badge: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  },
+  {
+    format: 'json',
+    title: 'Export JSON',
+    description: 'Format structuré pour intégrations',
+    icon: Braces,
+    iconBg: 'bg-blue-50 text-blue-600',
+    badge: 'bg-blue-50 text-blue-700 border-blue-200',
+  },
+  {
+    format: 'pdf',
+    title: 'Export PDF',
+    description: 'Document formaté pour archivage',
+    icon: FileType2,
+    iconBg: 'bg-red-50 text-red-500',
+    badge: 'bg-red-50 text-red-600 border-red-200',
+  },
+];
+
+export default function ExportAdmin() {
+  const [isExporting, setIsExporting] = useState({ csv: false, json: false, pdf: false });
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const handleExport = async (format) => {
     setIsExporting(prev => ({ ...prev, [format]: true }));
     try {
-      let endpoint = '';
-      let filename = `export_${new Date().toISOString().split('T')[0]}`;
-      let contentType = '';
+      const endpoints = {
+        csv: '/publications/export/csv',
+        json: '/publications/export/json',
+        pdf: '/publications/export/pdf',
+      };
+      const mimes = {
+        csv: 'text/csv',
+        json: 'application/json',
+        pdf: 'application/pdf',
+      };
 
-      switch (format) {
-        case 'csv':
-          endpoint = '/publications/export/csv';
-          filename += '.csv';
-          contentType = 'text/csv';
-          break;
-        case 'json':
-          endpoint = '/publications/export/json';
-          filename += '.json';
-          contentType = 'application/json';
-          break;
-        case 'pdf':
-          endpoint = '/publications/export/pdf';
-          filename += '.pdf';
-          contentType = 'application/pdf';
-          break;
-        default:
-          return;
-      }
-
-      const response = await api.get(endpoint, {
-        responseType: format === 'pdf' ? 'blob' : 'blob',
-      });
-
-      // Créer un blob et télécharger
-      const blob = new Blob([response.data], { type: contentType });
+      const response = await api.get(endpoints[format], { responseType: 'blob' });
+      const blob = new Blob([response.data], { type: mimes[format] });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = filename;
+      a.download = `export_${new Date().toISOString().split('T')[0]}.${format}`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-
-      toast.success(`Données exportées en ${format.toUpperCase()}`);
+      toast.success(`Export ${format.toUpperCase()} téléchargé`);
     } catch (error) {
-      toast.error(`Erreur lors de l'export ${format}: ${error.message}`);
+      toast.error(`Erreur d'export ${format.toUpperCase()} : ${error.message}`);
     } finally {
       setIsExporting(prev => ({ ...prev, [format]: false }));
     }
   };
 
   const handleSyncDatabase = async () => {
+    setIsSyncing(true);
     try {
-      const response = await api.post('/admin/sync-database');
-      toast.success('Synchronisation base de données réussie');
-      console.log('Sync result:', response.data);
+      await api.post('/admin/sync-database');
+      toast.success('Base de données synchronisée avec succès');
     } catch (error) {
-      toast.error('Erreur synchronisation: ' + error.message);
+      toast.error('Erreur de synchronisation : ' + error.message);
+    } finally {
+      setIsSyncing(false);
     }
   };
 
-  const exportCards = [
-    {
-      format: 'csv',
-      title: 'Exporter en CSV',
-      description: 'Fichier compatible avec Excel/Sheets',
-      icon: FileText,
-      color: 'bg-green-50 border-green-200'
-    },
-    {
-      format: 'json',
-      title: 'Exporter en JSON',
-      description: 'Format standard pour données structurées',
-      icon: FileText,
-      color: 'bg-blue-50 border-blue-200'
-    },
-    {
-      format: 'pdf',
-      title: 'Exporter en PDF',
-      description: 'Document formaté pour impression',
-      icon: FileText,
-      color: 'bg-red-50 border-red-200'
-    }
-  ];
-
   return (
-    <div className="space-y-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Exports & Données</h1>
-        <p className="text-gray-600">Gérez les exports et la synchronisation de la base de données</p>
+    <div className="space-y-8 max-w-4xl mx-auto font-sans animate-fade-in">
+
+      {/* Header */}
+      <div>
+        <h2 className="page-title">Exports &amp; Données</h2>
+        <p className="page-subtitle">Téléchargez vos données en différents formats ou synchronisez la base</p>
       </div>
 
-      {/* Export Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Info banner */}
+      <div className="alert alert-neutral">
+        <Info size={15} className="text-zinc-400 shrink-0 mt-0.5" />
+        <p className="text-xs text-zinc-500 leading-relaxed">
+          Les exports incluent toutes les publications de la plateforme. Pour un export filtré par événement ou catégorie, utilisez les filtres dans la section <strong className="text-zinc-700">E-Posters</strong>.
+        </p>
+      </div>
+
+      {/* Export cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {exportCards.map((card) => {
           const Icon = card.icon;
+          const loading = isExporting[card.format];
           return (
-            <div
-              key={card.format}
-              className={`p-6 border rounded-lg ${card.color} hover:shadow-lg transition-shadow cursor-pointer`}
-              onClick={() => handleExport(card.format)}
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900">{card.title}</h3>
-                  <p className="text-sm text-gray-600 mt-1">{card.description}</p>
+            <div key={card.format} className="card card-body flex flex-col gap-5 group">
+              {/* Top */}
+              <div className="flex items-start justify-between">
+                <div className={`w-11 h-11 rounded-2xl flex items-center justify-center ${card.iconBg}`}>
+                  <Icon size={20} />
                 </div>
-                <Icon size={24} className="text-gray-400" />
+                <span className={`badge border ${card.badge} uppercase`}>{card.format}</span>
               </div>
 
+              {/* Info */}
+              <div className="flex-1">
+                <h3 className="text-sm font-bold text-zinc-900 font-display">{card.title}</h3>
+                <p className="text-xs text-zinc-400 mt-0.5">{card.description}</p>
+              </div>
+
+              {/* Action */}
               <button
-                disabled={isExporting[card.format]}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-200 font-medium text-sm transition-colors"
+                onClick={() => handleExport(card.format)}
+                disabled={loading}
+                className="btn btn-ghost w-full"
               >
-                {isExporting[card.format] ? (
+                {loading ? (
                   <>
-                    <div className="animate-spin h-4 w-4 border-2 border-gray-600 border-t-transparent rounded-full" />
+                    <div className="w-4 h-4 border-2 border-zinc-400 border-t-zinc-900 rounded-full animate-spin" />
                     Export en cours...
                   </>
                 ) : (
                   <>
-                    <Download size={16} />
+                    <Download size={15} />
                     Télécharger
                   </>
                 )}
@@ -144,32 +139,48 @@ export const ExportAdmin = () => {
         })}
       </div>
 
-      {/* Database Sync Section */}
-      <div className="bg-white p-6 rounded-lg border border-gray-200">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Synchronisation Base de Données</h2>
-        <p className="text-gray-600 mb-4">
-          Nettoyez les doublons et resynchronisez les données de la base de données.
-        </p>
-        <button
-          onClick={handleSyncDatabase}
-          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
-        >
-          <RefreshCw size={18} />
-          Synchroniser maintenant
-        </button>
+      {/* Database sync section */}
+      <div className="card card-body">
+        <div className="flex items-start gap-4">
+          <div className="w-11 h-11 rounded-2xl bg-zinc-100 flex items-center justify-center shrink-0">
+            <Database size={20} className="text-zinc-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-bold text-zinc-900 font-display">Synchronisation Base de Données</h3>
+            <p className="text-xs text-zinc-400 mt-0.5 mb-4">
+              Nettoyez les doublons, reindexez les publications et vérifiez l'intégrité des données.
+            </p>
+            <button
+              onClick={handleSyncDatabase}
+              disabled={isSyncing}
+              className="btn btn-primary btn-sm"
+            >
+              <RefreshCw size={14} className={isSyncing ? 'animate-spin' : ''} />
+              {isSyncing ? 'Synchronisation...' : 'Synchroniser maintenant'}
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Info Box */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <h3 className="font-semibold text-blue-900 mb-2">💡 Formats d'export</h3>
-        <ul className="text-sm text-blue-800 space-y-2">
-          <li><strong>CSV:</strong> Pour utilisation dans Excel, Google Sheets, ou bases de données</li>
-          <li><strong>JSON:</strong> Pour intégration avec d'autres systèmes ou applications mobiles</li>
-          <li><strong>PDF:</strong> Pour archivage et distribution formelle</li>
+      {/* Info box */}
+      <div className="card-dark p-6 rounded-3xl">
+        <h3 className="text-sm font-bold text-white mb-4 font-display">📋 Formats disponibles</h3>
+        <ul className="space-y-3 text-xs text-zinc-300">
+          <li className="flex items-start gap-2.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
+            <span><strong className="text-white">CSV</strong> — Pour analyse dans Excel, Google Sheets, ou import dans d'autres systèmes.</span>
+          </li>
+          <li className="flex items-start gap-2.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0" />
+            <span><strong className="text-white">JSON</strong> — Pour intégration API, applications mobiles ou archivage structuré.</span>
+          </li>
+          <li className="flex items-start gap-2.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0" />
+            <span><strong className="text-white">PDF</strong> — Pour archivage formel, impression ou distribution officielle.</span>
+          </li>
         </ul>
       </div>
+
     </div>
   );
-};
-
-export default ExportAdmin;
+}

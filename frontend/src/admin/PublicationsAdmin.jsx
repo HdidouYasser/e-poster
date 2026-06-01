@@ -244,40 +244,43 @@ export default function PublicationsAdmin() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto font-sans">
-      <div className="flex items-center justify-between flex-wrap gap-4">
+    <div className="space-y-6 max-w-6xl mx-auto font-sans animate-fade-in">
+      <div className="page-header">
         <div>
-          <h2 className="text-3xl font-bold text-slate-900 tracking-tight font-display">Publications</h2>
-          <p className="text-sm text-slate-500 mt-1">Gérez les e-posters et communications médicales</p>
+          <h2 className="page-title">Publications</h2>
+          <p className="page-subtitle">Gérez les e-posters et communications médicales</p>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2">
           <Link to="/admin/import" className="btn btn-ghost">
-            <Upload size={16} /> Importer
+            <Upload size={15} /> Importer
           </Link>
           <button onClick={exportCSV} className="btn btn-ghost">
-            <Download size={16} /> Exporter CSV
+            <Download size={15} /> Exporter CSV
           </button>
           <button onClick={() => openForm()} className="btn btn-primary">
-            <Plus size={16} /> Nouvelle Publication
+            <Plus size={15} /> Nouvelle Publication
           </button>
         </div>
       </div>
 
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
         <input
           type="text"
           value={q}
           onChange={(e) => { setQ(e.target.value); setPage(0); }}
           placeholder="Rechercher une publication (titre, description)..."
-          className="form-input text-base font-medium"
+          className="form-input"
           style={{ paddingLeft: '2.75rem' }}
         />
       </div>
 
       {isFormOpen && (
-        <form onSubmit={handleSubmit(onSubmit)} className="card-elevated p-8 space-y-6">
-          <h3 className="text-2xl font-bold text-slate-900 mb-4 font-display">{editingPub ? "Modifier la publication" : "Créer une publication"}</h3>
+        <form onSubmit={handleSubmit(onSubmit)} className="card p-7 space-y-5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold text-zinc-900 font-display">{editingPub ? "Modifier la publication" : "Créer une publication"}</h3>
+            <button type="button" onClick={closeForm} className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-xl transition-colors"><X size={16} /></button>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
@@ -458,10 +461,10 @@ export default function PublicationsAdmin() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-6 mt-6 border-t border-slate-200">
+          <div className="flex justify-end gap-3 pt-5 border-t border-zinc-100">
             <button type="button" onClick={closeForm} className="btn btn-ghost">Annuler</button>
             <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="btn btn-primary">
-              {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="animate-spin" size={16} />}
+              {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="animate-spin" size={15} />}
               Enregistrer
             </button>
           </div>
@@ -533,35 +536,48 @@ export default function PublicationsAdmin() {
         </div>
       )}
 
-      <div className="card overflow-hidden">
-        <table className="w-full text-left text-sm text-slate-700">
+      <div className="bg-white border border-zinc-200/80 rounded-3xl overflow-hidden shadow-sm">
+        <table className="w-full text-left text-sm text-zinc-700">
           <thead className="table-header">
             <tr>
-              <th className="px-6 py-4 font-semibold text-xs uppercase tracking-widest text-slate-600 w-20">Aperçu</th>
-              <th className="px-6 py-4 font-semibold text-xs uppercase tracking-widest text-slate-600">Titre & Auteurs</th>
-              <th className="px-6 py-4 font-semibold text-xs uppercase tracking-widest text-slate-600 hidden md:table-cell">Événement</th>
-              <th className="px-6 py-4 font-semibold text-xs uppercase tracking-widest text-slate-600">Statut</th>
-              <th className="px-6 py-4 font-semibold text-xs uppercase tracking-widest text-slate-600 text-right">Actions</th>
+              <th className="px-6 py-4 font-semibold text-[11px] uppercase tracking-wider text-zinc-400 w-20">Aperçu</th>
+              <th className="px-6 py-4 font-semibold text-[11px] uppercase tracking-wider text-zinc-400">Titre &amp; Auteurs</th>
+              <th className="px-6 py-4 font-semibold text-[11px] uppercase tracking-wider text-zinc-400 hidden md:table-cell">Événement</th>
+              <th className="px-6 py-4 font-semibold text-[11px] uppercase tracking-wider text-zinc-400">Statut</th>
+              <th className="px-6 py-4 font-semibold text-[11px] uppercase tracking-wider text-zinc-400 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-zinc-50">
             {isLoading ? (
-              <tr><td colSpan="5" className="px-6 py-12 text-center text-slate-400 font-medium"><Loader2 className="animate-spin inline mr-2" size={16} />Chargement...</td></tr>
+              <tr><td colSpan="5" className="px-6 py-12 text-center text-zinc-400">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="loading-spinner" />
+                  <span className="font-medium text-sm">Chargement...</span>
+                </div>
+              </td></tr>
             ) : data?.items?.length === 0 ? (
-              <tr><td colSpan="5" className="px-6 py-12 text-center text-slate-400 font-medium">Aucune publication trouvée</td></tr>
+              <tr><td colSpan="5" className="px-6 py-12">
+                <div className="empty-state">
+                  <FileImage size={36} className="empty-state-icon" />
+                  <h4 className="empty-state-title">Aucune publication trouvée</h4>
+                  <p className="empty-state-desc">Créez votre première publication ou ajustez la recherche.</p>
+                </div>
+              </td></tr>
             ) : (
               data?.items?.map((item) => (
-                <tr key={item.id} className="table-body transition-colors group">
+                <tr key={item.id} className="hover:bg-zinc-50/80 transition-colors group">
                   <td className="px-6 py-4">
                     {item.posterUrl
-                      ? item.posterUrl.toLowerCase().endsWith('.pdf') ? <div className="h-12 w-9 bg-slate-100 rounded-lg border border-slate-200 flex items-center justify-center"><span className="text-[10px] font-bold text-slate-500">PDF</span></div> : <img src={item.posterUrl} className="h-12 w-9 object-cover bg-white border border-slate-200 rounded-lg shadow-sm" alt="poster" />
-                      : <div className="h-12 w-9 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-center"><FileImage size={14} className="text-slate-300" /></div>}
+                      ? item.posterUrl.toLowerCase().endsWith('.pdf')
+                        ? <div className="h-12 w-9 bg-zinc-100 rounded-lg border border-zinc-200 flex items-center justify-center"><span className="text-[10px] font-bold text-zinc-500">PDF</span></div>
+                        : <img src={item.posterUrl} className="h-12 w-9 object-cover bg-white border border-zinc-200 rounded-lg shadow-sm" alt="poster" />
+                      : <div className="h-12 w-9 bg-zinc-50 rounded-lg border border-zinc-200 flex items-center justify-center"><FileImage size={14} className="text-zinc-300" /></div>}
                   </td>
                   <td className="px-6 py-4">
-                    <div className="font-semibold text-slate-900 text-sm mb-0.5">{item.title}</div>
-                    <div className="text-xs text-slate-500">{item.authors || "Auteurs non renseignés"}</div>
+                    <div className="font-semibold text-zinc-900 text-sm mb-0.5 font-display">{item.title}</div>
+                    <div className="text-xs text-zinc-400">{item.authors || "Auteurs non renseignés"}</div>
                   </td>
-                  <td className="px-6 py-4 text-slate-600 hidden md:table-cell text-sm">{item.event?.title || <span className="italic text-slate-300">Aucun</span>}</td>
+                  <td className="px-6 py-4 text-zinc-500 hidden md:table-cell text-sm">{item.event?.title || <span className="italic text-zinc-300">Aucun</span>}</td>
                   <td className="px-6 py-4">
                     {item.status === 'PUBLISHED' ? (
                       <span className="badge badge-success">Publié</span>
@@ -571,8 +587,8 @@ export default function PublicationsAdmin() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                      <button onClick={() => openForm(item)} className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors rounded-lg" title="Modifier"><Edit2 size={16} /></button>
-                      <button onClick={() => confirmDelete(item.id)} className="p-2 text-slate-400 hover:text-error-600 hover:bg-error-50 transition-colors rounded-lg" title="Supprimer"><Trash2 size={16} /></button>
+                      <button onClick={() => openForm(item)} className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors rounded-xl" title="Modifier"><Edit2 size={15} /></button>
+                      <button onClick={() => confirmDelete(item.id)} className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors rounded-xl" title="Supprimer"><Trash2 size={15} /></button>
                     </div>
                   </td>
                 </tr>
@@ -583,9 +599,9 @@ export default function PublicationsAdmin() {
       </div>
 
       {data && data.totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4 text-sm">
+        <div className="flex items-center justify-between pt-2">
           <button disabled={page <= 0} onClick={() => setPage(p => p - 1)} className="btn btn-ghost btn-sm">← Précédent</button>
-          <span className="font-semibold text-slate-600 text-xs px-4 py-2 bg-slate-100 rounded-lg">Page {page + 1} / {data.totalPages}</span>
+          <span className="text-xs font-bold text-zinc-400 tracking-wider">Page {page + 1} / {data.totalPages}</span>
           <button disabled={page + 1 >= data.totalPages} onClick={() => setPage(p => p + 1)} className="btn btn-ghost btn-sm">Suivant →</button>
         </div>
       )}
