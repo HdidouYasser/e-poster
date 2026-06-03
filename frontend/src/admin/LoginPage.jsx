@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 import { Lock, User, Presentation } from "lucide-react";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function LoginPage() {
   const login = useAuthStore((s) => s.login);
+  const loginWithGoogle = useAuthStore((s) => s.loginWithGoogle);
   const [username, setUsername] = useState("admin");
   const [password, setPassword] = useState("admin123");
   const [error, setError] = useState("");
@@ -90,6 +92,39 @@ export default function LoginPage() {
             {loading ? "Connexion en cours..." : "Se connecter"}
           </button>
         </form>
+
+        {/* Divider */}
+        <div className="relative my-6 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-zinc-200"></div>
+          </div>
+          <span className="relative px-3 bg-white text-xs font-semibold text-zinc-400 uppercase">Ou</span>
+        </div>
+
+        {/* Google Login */}
+        <div className="flex justify-center">
+          <GoogleLogin
+            onSuccess={async (credentialResponse) => {
+              setError("");
+              setLoading(true);
+              try {
+                await loginWithGoogle(credentialResponse.credential);
+              } catch (err) {
+                setError(err.response?.data?.message || "Connexion Google échouée");
+              } finally {
+                setLoading(false);
+              }
+            }}
+            onError={() => {
+              setError("Erreur d'authentification Google");
+            }}
+            theme="outline"
+            size="large"
+            shape="pill"
+            locale="fr"
+            width="100%"
+          />
+        </div>
 
         {/* Footer note */}
         <div className="mt-8 pt-5 border-t border-zinc-100 flex items-center justify-between">

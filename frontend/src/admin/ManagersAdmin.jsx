@@ -308,8 +308,12 @@ export default function ManagersAdmin() {
                 <tr key={m.id} className="hover:bg-zinc-50/80 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-[11px] font-bold text-white uppercase shrink-0 shadow-sm">
-                        {getInitials(m)}
+                      <div className="w-9 h-9 rounded-xl overflow-hidden bg-blue-600 flex items-center justify-center text-[11px] font-bold text-white uppercase shrink-0 shadow-sm">
+                        {m.avatarUrl ? (
+                          <img src={m.avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                        ) : (
+                          getInitials(m)
+                        )}
                       </div>
                       <div>
                         <div className="font-semibold text-zinc-900 text-sm">{getFullName(m)}</div>

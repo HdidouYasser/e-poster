@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuthStore } from "./stores/authStore";
 import { Toaster } from "react-hot-toast";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import Home from "./Home";
 import TotemHome from "./totem/TotemHome";
 import TotemPublications from "./totem/TotemPublications";
@@ -19,6 +20,9 @@ import ImportAdmin from "./admin/ImportAdmin";
 import AuditAdmin from "./admin/AuditAdmin";
 import StatsAdmin from "./admin/StatsAdmin";
 import ExportAdmin from "./admin/ExportAdmin";
+import ProfilePage from "./admin/ProfilePage";
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -30,7 +34,7 @@ export default function App() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   return (
-    <>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <Toaster
         position="top-right"
         gutter={8}
@@ -84,8 +88,9 @@ export default function App() {
           <Route path="import" element={<ImportAdmin />} />
           <Route path="audit" element={<AuditAdmin />} />
           <Route path="export" element={<ExportAdmin />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Routes>
-    </>
+    </GoogleOAuthProvider>
   );
 }
