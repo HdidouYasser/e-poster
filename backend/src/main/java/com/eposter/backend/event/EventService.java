@@ -108,8 +108,6 @@ public class EventService {
         existing.setStartDate(payload.getStartDate());
         existing.setEndDate(payload.getEndDate());
         existing.setLogoUrl(payload.getLogoUrl());
-        existing.setColorPrimary(payload.getColorPrimary());
-        existing.setColorSecondary(payload.getColorSecondary());
         existing.setBannerUrl(payload.getBannerUrl());
         existing.setProgramUrl(payload.getProgramUrl());
         existing.setRevueUrl(payload.getRevueUrl());

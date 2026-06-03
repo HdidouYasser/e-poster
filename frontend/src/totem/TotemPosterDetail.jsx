@@ -49,7 +49,7 @@ export default function TotemPosterDetail() {
   });
 
   const endpoint = useMemo(() => {
-    let base = `/publications?page=${page}&size={size}`;
+    let base = `/publications?page=${page}&size=12`;
     if (q.trim()) {
       base = `/publications/search?q=${encodeURIComponent(q)}&page=${page}&size=12`;
     }

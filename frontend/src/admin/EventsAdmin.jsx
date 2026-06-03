@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { api } from "../api";
-import { Plus, Edit2, Trash2, Search, Loader2, UploadCloud, X, Calendar, UserCheck, Eye } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, Loader2, UploadCloud, X, Calendar, UserCheck, Eye, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuthStore } from "../stores/authStore";
 
@@ -12,8 +12,6 @@ const eventSchema = z.object({
   title: z.string().min(1, "Le titre est requis"),
   description: z.string().optional(),
   status: z.string().default("ACTIVE"),
-  colorPrimary: z.string().optional(),
-  colorSecondary: z.string().optional(),
   logoUrl: z.string().optional(),
   bannerUrl: z.string().optional(),
   startDate: z.string().optional(),
@@ -88,7 +86,7 @@ export default function EventsAdmin() {
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
     resolver: zodResolver(eventSchema),
-    defaultValues: { title: "", description: "", status: "ACTIVE", colorPrimary: "#18181b", colorSecondary: "#ffffff", logoUrl: "", bannerUrl: "", startDate: "", endDate: "", programUrl: "", revueUrl: "", managerEmail: "" }
+    defaultValues: { title: "", description: "", status: "ACTIVE", logoUrl: "", bannerUrl: "", startDate: "", endDate: "", programUrl: "", revueUrl: "", managerEmail: "" }
   });
 
   const logoUrlValue = watch("logoUrl");
@@ -104,8 +102,6 @@ export default function EventsAdmin() {
         title: evt.title,
         description: evt.description || "",
         status: evt.status || "ACTIVE",
-        colorPrimary: evt.colorPrimary || "#18181b",
-        colorSecondary: evt.colorSecondary || "#ffffff",
         logoUrl: evt.logoUrl || "",
         bannerUrl: evt.bannerUrl || "",
         startDate: formatForInput(evt.startDate),
@@ -115,7 +111,7 @@ export default function EventsAdmin() {
         managerEmail: evt.manager?.email || ""
       });
     } else {
-      reset({ title: "", description: "", status: "ACTIVE", colorPrimary: "#18181b", colorSecondary: "#ffffff", logoUrl: "", bannerUrl: "", startDate: "", endDate: "", programUrl: "", revueUrl: "", managerEmail: "" });
+      reset({ title: "", description: "", status: "ACTIVE", logoUrl: "", bannerUrl: "", startDate: "", endDate: "", programUrl: "", revueUrl: "", managerEmail: "" });
     }
     setIsFormOpen(true);
   };
@@ -211,6 +207,12 @@ export default function EventsAdmin() {
                 <option value="ACTIVE">Actif</option>
                 <option value="ARCHIVED">Archivé</option>
               </select>
+              {watch("endDate") && new Date(watch("endDate")) < new Date() && (
+                <p className="text-amber-700 text-xs mt-2 flex items-center gap-1.5 font-medium bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                  <AlertTriangle size={12} className="shrink-0" />
+                  Date de fin dépassée — cet événement sera archivé automatiquement.
+                </p>
+              )}
             </div>
             <div className="md:col-span-2">
               <label className={labelCls}>Description</label>
@@ -226,20 +228,7 @@ export default function EventsAdmin() {
               <input type="datetime-local" {...register("endDate")} disabled={!isAdmin} className={inputCls} />
             </div>
 
-            <div>
-              <label className={labelCls}>Couleur Principale (Totem)</label>
-              <div className="flex items-center gap-2.5">
-                <input type="color" {...register("colorPrimary")} disabled={!isAdmin} className="h-10 w-10 rounded-xl cursor-pointer border border-zinc-200 p-0.5 bg-white" />
-                <input type="text" {...register("colorPrimary")} disabled={!isAdmin} className={inputCls + " flex-1 font-mono"} />
-              </div>
-            </div>
-            <div>
-              <label className={labelCls}>Couleur Secondaire</label>
-              <div className="flex items-center gap-2.5">
-                <input type="color" {...register("colorSecondary")} disabled={!isAdmin} className="h-10 w-10 rounded-xl cursor-pointer border border-zinc-200 p-0.5 bg-white" />
-                <input type="text" {...register("colorSecondary")} disabled={!isAdmin} className={inputCls + " flex-1 font-mono"} />
-              </div>
-            </div>
+
 
             <div className="bg-zinc-50/80 border border-zinc-200/80 p-4 rounded-2xl">
               <label className={labelCls}>Logo Événement</label>
