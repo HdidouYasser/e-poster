@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 import { Lock, User, Presentation } from "lucide-react";
 
@@ -91,9 +92,12 @@ export default function LoginPage() {
         </form>
 
         {/* Footer note */}
-        <p className="text-center text-[10px] text-zinc-400 mt-8 font-medium">
-          © 2026 AMPIIC · Plateforme E-Poster
-        </p>
+        <div className="mt-8 pt-5 border-t border-zinc-100 flex items-center justify-between">
+          <p className="text-[10px] text-zinc-400 font-medium">© 2026 AMPIIC · Plateforme E-Poster</p>
+          <Link to="/register" className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+            S'inscrire →
+          </Link>
+        </div>
       </div>
     </div>
   );

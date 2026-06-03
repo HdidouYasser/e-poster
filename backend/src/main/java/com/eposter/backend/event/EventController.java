@@ -64,12 +64,12 @@ public class EventController {
 
     @PostMapping
     public Event create(@Valid @RequestBody EventRequest request) {
-        return service.create(request.toModel());
+        return service.create(request.toModel(), request.managerEmail());
     }
 
     @PutMapping("/{id}")
     public Event update(@PathVariable Long id, @Valid @RequestBody EventRequest request) {
-        return service.update(id, request.toModel());
+        return service.update(id, request.toModel(), request.managerEmail());
     }
 
     @DeleteMapping("/{id}")
@@ -106,7 +106,8 @@ public class EventController {
             String colorSecondary,
             String bannerUrl,
             String programUrl,
-            String revueUrl
+            String revueUrl,
+            String managerEmail
     ) {
         Event toModel() {
             Event model = new Event();

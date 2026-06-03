@@ -23,8 +23,8 @@ export const FormField = ({
   const hasError = !!error;
 
   return (
-    <div className="mb-4">
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
+    <div className="form-group">
+      <label htmlFor={name} className="form-label">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -35,22 +35,14 @@ export const FormField = ({
           placeholder={placeholder}
           rows={rows}
           {...register(name)}
-          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-            hasError
-              ? 'border-red-500 focus:ring-red-500 bg-red-50'
-              : 'border-gray-300 focus:ring-blue-500'
-          }`}
+          className={`form-textarea ${hasError ? 'border-red-500 focus:border-red-500 bg-red-50' : ''}`}
           maxLength={maxLength}
         />
       ) : type === 'select' ? (
         <select
           id={name}
           {...register(name)}
-          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-            hasError
-              ? 'border-red-500 focus:ring-red-500 bg-red-50'
-              : 'border-gray-300 focus:ring-blue-500'
-          }`}
+          className={`form-select ${hasError ? 'border-red-500 focus:border-red-500 bg-red-50' : ''}`}
         >
           <option value="">-- Sélectionner --</option>
           {options?.map((opt) => (
@@ -64,7 +56,7 @@ export const FormField = ({
           id={name}
           type="checkbox"
           {...register(name)}
-          className={`rounded border-gray-300 text-blue-600 focus:ring-blue-500 ${
+          className={`rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 ${
             hasError && 'border-red-500'
           }`}
         />
@@ -75,16 +67,12 @@ export const FormField = ({
           placeholder={placeholder}
           {...register(name)}
           maxLength={maxLength}
-          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-            hasError
-              ? 'border-red-500 focus:ring-red-500 bg-red-50'
-              : 'border-gray-300 focus:ring-blue-500'
-          }`}
+          className={`form-input ${hasError ? 'border-red-500 focus:border-red-500 bg-red-50' : ''}`}
         />
       )}
 
       {helperText && !hasError && (
-        <p className="text-xs text-gray-500 mt-1">{helperText}</p>
+        <p className="form-hint">{helperText}</p>
       )}
 
       {hasError && (

@@ -82,9 +82,11 @@ export default function ExportAdmin() {
     <div className="space-y-8 max-w-4xl mx-auto font-sans animate-fade-in">
 
       {/* Header */}
-      <div>
-        <h2 className="page-title">Exports &amp; Données</h2>
-        <p className="page-subtitle">Téléchargez vos données en différents formats ou synchronisez la base</p>
+      <div className="page-header">
+        <div>
+          <h2 className="page-title">Exports &amp; Données</h2>
+          <p className="page-subtitle">Téléchargez vos données en différents formats ou synchronisez la base</p>
+        </div>
       </div>
 
       {/* Info banner */}

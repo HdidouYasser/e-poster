@@ -49,6 +49,9 @@ public class Event {
     @OneToMany(mappedBy = "event")
     @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Screen> screens = new ArrayList<>();
+    @jakarta.persistence.ManyToOne
+    @jakarta.persistence.JoinColumn(name = "manager_id")
+    private com.eposter.backend.auth.User manager;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -86,4 +89,6 @@ public class Event {
     @com.fasterxml.jackson.annotation.JsonIgnore
     public List<Screen> getScreens() { return screens; }
     public void setScreens(List<Screen> screens) { this.screens = screens; }
+    public com.eposter.backend.auth.User getManager() { return manager; }
+    public void setManager(com.eposter.backend.auth.User manager) { this.manager = manager; }
 }

@@ -63,9 +63,11 @@ export default function ImportAdmin() {
   return (
     <div className="space-y-6 max-w-3xl mx-auto font-sans">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-zinc-900 tracking-tight font-display">Import en Masse</h2>
-        <p className="text-sm text-zinc-400 mt-0.5">Importez des publications depuis un fichier Excel ou CSV</p>
+      <div className="page-header">
+        <div>
+          <h2 className="page-title">Import en Masse</h2>
+          <p className="page-subtitle">Importez des publications depuis un fichier Excel ou CSV</p>
+        </div>
       </div>
 
       {/* Info card */}
@@ -147,7 +149,7 @@ export default function ImportAdmin() {
         <button
           onClick={handleImport}
           disabled={!file || importMutation.isPending}
-          className="w-full bg-zinc-900 hover:bg-zinc-800 active:scale-[0.99] text-white px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2.5 transition-all disabled:opacity-40 shadow-sm"
+          className="btn btn-primary btn-lg w-full"
         >
           {importMutation.isPending
             ? <><Loader2 className="animate-spin" size={17} /> Importation en cours...</>

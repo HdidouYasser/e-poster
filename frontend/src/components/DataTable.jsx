@@ -40,26 +40,26 @@ export const DataTable = ({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+    <div className="table-wrapper">
       {/* Search Bar */}
       {onSearch && (
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-4 border-b border-zinc-200/60">
           <div className="relative">
             <Search
               size={18}
-              className="absolute left-3 top-3 text-gray-400"
+              className="absolute left-3 top-3 text-zinc-400"
             />
             <input
               type="text"
               placeholder="Rechercher..."
               value={localSearch}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="form-input pl-10 pr-10"
             />
             {localSearch && (
               <button
                 onClick={handleClearSearch}
-                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-3 text-zinc-400 hover:text-zinc-600"
               >
                 <X size={18} />
               </button>
@@ -75,18 +75,18 @@ export const DataTable = ({
             <LoadingState type="table" count={5} />
           </div>
         ) : data.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
+          <div className="p-8 text-center text-zinc-500">
             Aucune donnée disponible
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <table className="table-base">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
+              <tr className="table-head">
                 {columns.map((col) => (
                   <th
                     key={col.key}
-                    className={`px-6 py-3 text-left font-semibold text-gray-700 ${
-                      col.sortable ? 'cursor-pointer hover:bg-gray-100' : ''
+                    className={`${
+                      col.sortable ? 'cursor-pointer hover:bg-zinc-100' : ''
                     }`}
                     onClick={() => col.sortable && handleSort(col.key)}
                   >
@@ -102,22 +102,21 @@ export const DataTable = ({
                     </div>
                   </th>
                 ))}
-                {actions && <th className="px-6 py-3 text-left font-semibold text-gray-700">Actions</th>}
+                {actions && <th>Actions</th>}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="table-body">
               {data.map((row, idx) => (
                 <tr
                   key={row[rowKey] || idx}
-                  className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
                 >
                   {columns.map((col) => (
-                    <td key={col.key} className="px-6 py-4">
+                    <td key={col.key}>
                       {col.render ? col.render(row) : row[col.key]}
                     </td>
                   ))}
                   {actions && (
-                    <td className="px-6 py-4">
+                    <td>
                       <div className="flex gap-2">
                         {actions(row)}
                       </div>

@@ -4,7 +4,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { api } from "../api";
-import { Plus, Edit2, Trash2, Search, Loader2, UploadCloud, FileImage, Download, Upload } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, Loader2, UploadCloud, FileImage, Download, Upload, X } from "lucide-react";
 import toast from "react-hot-toast";
 import CreatableSelect from "react-select/creatable";
 import { Link } from "react-router-dom";
@@ -291,12 +291,12 @@ export default function PublicationsAdmin() {
               </select>
             </div>
             <div>
-              <label className="form-label">Titre <span className="text-error-500 normal-case">*</span></label>
+              <label className="form-label">Titre <span className="text-red-500 normal-case">*</span></label>
               <input {...register("title")} placeholder="Titre de la publication" className="form-input" />
-              {errors.title && <p className="text-error-500 text-xs mt-1 font-medium">{errors.title.message}</p>}
+              {errors.title && <p className="form-error">{errors.title.message}</p>}
             </div>
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Auteurs (Base de données)</label>
+              <label className="form-label">Auteurs (Base de données)</label>
               <Controller
                 name="authorIds"
                 control={control}
@@ -332,7 +332,7 @@ export default function PublicationsAdmin() {
               <textarea {...register("abstractText")} placeholder="Résumé scientifique détaillé..." rows={6} className="form-textarea" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Catégories (Base de données)</label>
+              <label className="form-label">Catégories (Base de données)</label>
               <Controller
                 name="categoryIds"
                 control={control}
@@ -356,28 +356,28 @@ export default function PublicationsAdmin() {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Catégorie <span className="normal-case font-normal text-zinc-400">(texte libre)</span></label>
-              <input {...register("category")} placeholder="Ex: Santé, Technologie..." className="w-full bg-zinc-50/70 border border-zinc-200 text-zinc-900 px-3.5 py-2.5 rounded-xl focus:border-zinc-400 focus:bg-white outline-none text-sm transition-all shadow-inner" />
+              <label className="form-label">Catégorie <span className="normal-case font-normal text-zinc-400">(texte libre)</span></label>
+              <input {...register("category")} placeholder="Ex: Santé, Technologie..." className="form-input" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Session</label>
-              <input {...register("session")} placeholder="Ex: Session 1" className="w-full bg-zinc-50/70 border border-zinc-200 text-zinc-900 px-3.5 py-2.5 rounded-xl focus:border-zinc-400 focus:bg-white outline-none text-sm transition-all shadow-inner" />
+              <label className="form-label">Session</label>
+              <input {...register("session")} placeholder="Ex: Session 1" className="form-input" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Salle</label>
-              <input {...register("room")} placeholder="Ex: Salle A" className="w-full bg-zinc-50/70 border border-zinc-200 text-zinc-900 px-3.5 py-2.5 rounded-xl focus:border-zinc-400 focus:bg-white outline-none text-sm transition-all shadow-inner" />
+              <label className="form-label">Salle</label>
+              <input {...register("room")} placeholder="Ex: Salle A" className="form-input" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Statut</label>
-              <select {...register("status")} className="w-full bg-zinc-50/70 border border-zinc-200 text-zinc-900 px-3.5 py-2.5 rounded-xl focus:border-zinc-400 focus:bg-white outline-none text-sm transition-all shadow-inner">
+              <label className="form-label">Statut</label>
+              <select {...register("status")} className="form-select">
                 <option value="DRAFT">Brouillon (Draft)</option>
                 <option value="PUBLISHED">Publié (Visible Totem)</option>
               </select>
             </div>
             <div className="md:col-span-2 space-y-5">
               {/* Zone 1: Poster Principal */}
-              <div className="bg-zinc-50/80 p-5 border border-zinc-200/80 rounded-2xl">
-                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">Image Principale (Affiche du Totem)</label>
+              <div className="bg-zinc-50/60 p-5 border border-zinc-200/80 rounded-2xl">
+                <label className="form-label mb-3">Image Principale (Affiche du Totem)</label>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                   {posterUrlValue ? (
                     <div className="relative group shrink-0">
@@ -393,10 +393,10 @@ export default function PublicationsAdmin() {
                     </div>
                   )}
                   <div className="flex-1 space-y-3 w-full">
-                    <input {...register("posterUrl")} placeholder="URL de l'image principale" className="w-full bg-white border border-zinc-200 text-zinc-900 px-3.5 py-2.5 rounded-xl outline-none focus:border-zinc-400 text-sm transition-all" />
+                    <input {...register("posterUrl")} placeholder="URL de l'image principale" className="form-input" />
                     <div>
                       <input type="file" id="posterUpload" onChange={handleFileUpload} className="hidden" accept="image/*,application/pdf" />
-                      <label htmlFor="posterUpload" className="inline-flex items-center gap-2 cursor-pointer bg-white hover:bg-zinc-100 text-zinc-700 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors border border-zinc-200">
+                      <label htmlFor="posterUpload" className="inline-flex items-center gap-2 cursor-pointer bg-white hover:bg-zinc-100 text-zinc-700 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all border border-zinc-200 shadow-sm active:scale-[0.98]">
                         {uploadingFile ? <Loader2 className="animate-spin text-zinc-900" size={15} /> : <UploadCloud size={15} className="text-zinc-600" />}
                         {uploadingFile ? "Upload en cours..." : "Téléverser une image"}
                       </label>
@@ -409,12 +409,12 @@ export default function PublicationsAdmin() {
               <div className="bg-white p-5 border border-zinc-200/80 rounded-2xl shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h4 className="text-sm font-semibold text-zinc-900 font-display">Médias Attachés</h4>
+                    <h4 className="text-sm font-bold text-zinc-900 font-display">Médias Attachés</h4>
                     <p className="text-xs text-zinc-400 mt-0.5">Documents PDF, vidéos supplémentaires, etc.</p>
                   </div>
                   <div>
                     <input type="file" id="mediaUpload" onChange={handleMediaUpload} className="hidden" accept=".pdf,video/*,image/*" />
-                    <label htmlFor="mediaUpload" className="inline-flex items-center gap-2 cursor-pointer bg-zinc-900 hover:bg-zinc-800 active:scale-[0.97] text-white px-3 py-2 rounded-xl text-xs font-semibold transition-all">
+                    <label htmlFor="mediaUpload" className="inline-flex items-center gap-2 cursor-pointer bg-zinc-900 hover:bg-zinc-800 active:scale-[0.97] text-white px-3 py-2 rounded-xl text-xs font-semibold transition-all shadow-sm">
                       {uploadingFile ? <Loader2 className="animate-spin" size={13} /> : <Plus size={13} />}
                       Ajouter un fichier
                     </label>
@@ -423,15 +423,15 @@ export default function PublicationsAdmin() {
 
                 <div className="space-y-2">
                   {(!watch("mediaList") || watch("mediaList").length === 0) ? (
-                    <div className="text-center py-7 text-sm text-zinc-400 bg-zinc-50/80 rounded-2xl border-2 border-dashed border-zinc-200">
+                    <div className="text-center py-7 text-xs text-zinc-400 bg-zinc-50/50 rounded-2xl border-2 border-dashed border-zinc-200">
                       Aucun média attaché
                     </div>
                   ) : (
                     watch("mediaList").map((media, index) => (
-                      <div key={index} className="flex items-center justify-between p-3.5 bg-zinc-50/80 border border-zinc-200/80 rounded-2xl group hover:bg-white transition-colors">
+                      <div key={index} className="flex items-center justify-between p-3.5 bg-zinc-50/50 border border-zinc-200/80 rounded-2xl group hover:bg-white transition-all shadow-inner">
                         <div className="flex items-center gap-3 overflow-hidden">
                           {media.thumbnailPath ? (
-                            <img src={media.thumbnailPath} alt="thumb" className="w-10 h-10 object-cover rounded-xl border border-zinc-200" />
+                            <img src={media.thumbnailPath} alt="thumb" className="w-10 h-10 rounded-xl object-cover border border-zinc-200" />
                           ) : (
                             <div className="w-10 h-10 bg-zinc-100 rounded-xl border border-zinc-200 flex items-center justify-center shrink-0">
                               <span className="text-xs font-bold text-zinc-400">{media.fileType}</span>
@@ -492,8 +492,8 @@ export default function PublicationsAdmin() {
               <div><label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Email</label><input type="email" name="email" className="w-full bg-zinc-50/70 border border-zinc-200 text-zinc-900 px-3.5 py-2.5 rounded-xl focus:border-zinc-400 outline-none text-sm transition-all" /></div>
               <div><label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Affiliation</label><input name="affiliation" className="w-full bg-zinc-50/70 border border-zinc-200 text-zinc-900 px-3.5 py-2.5 rounded-xl focus:border-zinc-400 outline-none text-sm transition-all" /></div>
               <div className="flex justify-end gap-2.5 pt-2 border-t border-zinc-100">
-                <button type="button" onClick={() => setInlineAuthorModal({ isOpen: false, initialName: "" })} className="px-4 py-2.5 text-zinc-600 hover:bg-zinc-100 rounded-xl text-sm font-semibold transition-all">Annuler</button>
-                <button type="submit" disabled={createInlineAuthorMutation.isPending} className="px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] text-white rounded-xl text-sm font-semibold flex items-center gap-2 transition-all disabled:opacity-50">
+                <button type="button" onClick={() => setInlineAuthorModal({ isOpen: false, initialName: "" })} className="btn btn-ghost">Annuler</button>
+                <button type="submit" disabled={createInlineAuthorMutation.isPending} className="btn btn-primary">
                   {createInlineAuthorMutation.isPending && <Loader2 size={14} className="animate-spin"/>} Créer
                 </button>
               </div>
@@ -526,8 +526,8 @@ export default function PublicationsAdmin() {
                 </select>
               </div>
               <div className="flex justify-end gap-2.5 pt-2 border-t border-zinc-100">
-                <button type="button" onClick={() => setInlineCategoryModal({ isOpen: false, initialName: "" })} className="px-4 py-2.5 text-zinc-600 hover:bg-zinc-100 rounded-xl text-sm font-semibold transition-all">Annuler</button>
-                <button type="submit" disabled={createInlineCategoryMutation.isPending} className="px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] text-white rounded-xl text-sm font-semibold flex items-center gap-2 transition-all disabled:opacity-50">
+                <button type="button" onClick={() => setInlineCategoryModal({ isOpen: false, initialName: "" })} className="btn btn-ghost">Annuler</button>
+                <button type="submit" disabled={createInlineCategoryMutation.isPending} className="btn btn-primary">
                   {createInlineCategoryMutation.isPending && <Loader2 size={14} className="animate-spin"/>} Créer
                 </button>
               </div>

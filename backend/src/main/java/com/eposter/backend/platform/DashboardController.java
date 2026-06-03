@@ -20,7 +20,13 @@ public class DashboardController {
 
     @GetMapping("/stats")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<DashboardDTO> getDashboardStats() {
+    public ResponseEntity<DashboardDTO> getDashboardStats(org.springframework.security.core.Authentication authentication) {
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getName())) {
+            String username = authentication.getName();
+            boolean isManager = authentication.getAuthorities().stream()
+                    .anyMatch(a -> "ROLE_EVENT_MANAGER".equals(a.getAuthority()));
+            return ResponseEntity.ok(dashboardService.getDashboardStatsForUser(username, isManager));
+        }
         return ResponseEntity.ok(dashboardService.getDashboardStats());
     }
 }

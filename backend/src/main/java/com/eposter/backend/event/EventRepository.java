@@ -12,6 +12,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     Page<Event> findByDeletedAtIsNull(Pageable pageable);
 
+    Page<Event> findByManagerEmailAndDeletedAtIsNull(String email, Pageable pageable);
+
     Optional<Event> findByIdAndDeletedAtIsNull(Long id);
 
     @Query(
@@ -29,10 +31,37 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     )
     Page<Event> searchFullText(@Param("q") String q, Pageable pageable);
 
+    @Query(
+            value = """
+                    SELECT * FROM events e
+                    INNER JOIN users u ON e.manager_id = u.id
+                    WHERE e.deleted_at IS NULL
+                      AND u.email = :email
+                      AND MATCH(e.title, e.description) AGAINST (:q IN NATURAL LANGUAGE MODE)
+                    """,
+            countQuery = """
+                    SELECT COUNT(*) FROM events e
+                    INNER JOIN users u ON e.manager_id = u.id
+                    WHERE e.deleted_at IS NULL
+                      AND u.email = :email
+                      AND MATCH(e.title, e.description) AGAINST (:q IN NATURAL LANGUAGE MODE)
+                    """,
+            nativeQuery = true
+    )
+    Page<Event> searchFullTextByManager(@Param("q") String q, @Param("email") String email, Pageable pageable);
+
     Optional<Event> findFirstByStatusIgnoreCaseAndDeletedAtIsNullOrderByUpdatedAtDesc(String status);
 
     // Dashboard methods
     long countByEndDateAfter(java.time.Instant date);
     
     java.util.List<Event> findByStartDateGreaterThanEqualOrderByStartDateAsc(java.time.Instant date);
+
+    long countByManagerEmailAndDeletedAtIsNull(String email);
+
+    @Query("SELECT COUNT(e) FROM Event e WHERE e.manager.email = :email AND e.endDate > :date AND e.deletedAt IS NULL")
+    long countByManagerEmailAndEndDateAfterAndDeletedAtIsNull(@Param("email") String email, @Param("date") java.time.Instant date);
+
+    @Query("SELECT e FROM Event e WHERE e.manager.email = :email AND e.startDate >= :date AND e.deletedAt IS NULL ORDER BY e.startDate ASC")
+    java.util.List<Event> findByManagerEmailAndStartDateGreaterThanEqualAndDeletedAtIsNullOrderByStartDateAsc(@Param("email") String email, @Param("date") java.time.Instant date);
 }

@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.eposter.backend.audit.AuditService;
@@ -31,13 +33,42 @@ public class PublicationService {
         this.categoryRepository = categoryRepository;
     }
 
+    private String getCurrentUserEmail() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
+            return auth.getName();
+        }
+        return null;
+    }
+
+    private boolean isEventManager() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+            return auth.getAuthorities().stream()
+                    .anyMatch(a -> "ROLE_EVENT_MANAGER".equals(a.getAuthority()));
+        }
+        return false;
+    }
+
     public Page<Publication> list(Pageable pageable) {
+        if (isEventManager()) {
+            String email = getCurrentUserEmail();
+            if (email != null) {
+                return repository.findByEvent_Manager_EmailAndDeletedAtIsNull(email, pageable);
+            }
+        }
         return repository.findByDeletedAtIsNull(pageable);
     }
 
     public Page<Publication> listByEventId(String eventId, Pageable pageable) {
         Long id = null;
         try { id = Long.parseLong(eventId); } catch (NumberFormatException e) {}
+        if (isEventManager()) {
+            String email = getCurrentUserEmail();
+            if (email != null) {
+                return repository.findByEvent_Manager_EmailAndEvent_IdAndDeletedAtIsNull(email, id, pageable);
+            }
+        }
         return repository.findByEvent_IdAndDeletedAtIsNull(id, pageable);
     }
 
@@ -70,11 +101,41 @@ public class PublicationService {
             org.springframework.data.domain.Sort.by(orders)
         );
         
-        return repository.searchFullText(query, eventIdLong, session, room, category, nativePageable);
+        String rawQ = (query != null) ? query.trim() : "";
+        String formattedQ = "";
+        if (query != null && !query.isBlank()) {
+            String[] words = query.trim().split("\\s+");
+            StringBuilder booleanQuery = new StringBuilder();
+            for (String w : words) {
+                if (!w.endsWith("*") && !w.startsWith("+") && !w.startsWith("-") && w.length() > 0) {
+                    booleanQuery.append("+").append(w).append("* ");
+                } else {
+                    booleanQuery.append(w).append(" ");
+                }
+            }
+            formattedQ = booleanQuery.toString().trim();
+        } else {
+            formattedQ = query;
+        }
+
+        if (isEventManager()) {
+            String email = getCurrentUserEmail();
+            if (email != null) {
+                return repository.searchFullTextByManager(formattedQ, rawQ, eventIdLong, session, room, category, email, nativePageable);
+            }
+        }
+        return repository.searchFullText(formattedQ, rawQ, eventIdLong, session, room, category, nativePageable);
     }
 
     public Publication getById(Long id) {
-        return repository.findByIdAndDeletedAtIsNull(id).orElseThrow(() -> new IllegalArgumentException("Publication not found"));
+        Publication pub = repository.findByIdAndDeletedAtIsNull(id).orElseThrow(() -> new IllegalArgumentException("Publication not found"));
+        if (isEventManager()) {
+            String email = getCurrentUserEmail();
+            if (email != null && (pub.getEvent() == null || pub.getEvent().getManager() == null || !email.equals(pub.getEvent().getManager().getEmail()))) {
+                throw new IllegalArgumentException("Access Denied: You do not manage this publication's event");
+            }
+        }
+        return pub;
     }
 
     public Publication create(Publication payload) {
@@ -87,6 +148,12 @@ public class PublicationService {
             Long eventId = Long.parseLong(payload.getEventId());
             Event event = eventRepository.findById(eventId)
                     .orElseThrow(() -> new IllegalArgumentException("Event not found"));
+            if (isEventManager()) {
+                String email = getCurrentUserEmail();
+                if (email != null && (event.getManager() == null || !email.equals(event.getManager().getEmail()))) {
+                    throw new IllegalArgumentException("Access Denied: You do not manage this event");
+                }
+            }
             payload.setEvent(event);
         }
         
@@ -104,11 +171,17 @@ public class PublicationService {
     }
 
     public Publication update(Long id, Publication payload) {
-        Publication existing = getById(id);
+        Publication existing = getById(id); // Performs existing ownership check
         if (payload.getEventId() != null && !payload.getEventId().isBlank()) {
             Long eventId = Long.parseLong(payload.getEventId());
             Event event = eventRepository.findById(eventId)
                     .orElseThrow(() -> new IllegalArgumentException("Event not found"));
+            if (isEventManager()) {
+                String email = getCurrentUserEmail();
+                if (email != null && (event.getManager() == null || !email.equals(event.getManager().getEmail()))) {
+                    throw new IllegalArgumentException("Access Denied: You do not manage this event");
+                }
+            }
             existing.setEvent(event);
         } else {
             existing.setEvent(null);
@@ -143,6 +216,44 @@ public class PublicationService {
     }
     
     private void processRelations(Publication publication) {
+        // If authors free-text field is filled, extract and save new authors
+        if ((publication.getAuthorIds() == null || publication.getAuthorIds().isEmpty()) && 
+            publication.getAuthors() != null && !publication.getAuthors().isBlank()) {
+            List<Long> extractedAuthorIds = new ArrayList<>();
+            String[] authorNames = publication.getAuthors().split(",");
+            for (String authorName : authorNames) {
+                authorName = authorName.trim();
+                if (authorName.isBlank()) continue;
+
+                String[] nameParts = authorName.split("\\s+");
+                String firstName = "";
+                String lastName = "";
+                if (nameParts.length == 1) {
+                    lastName = nameParts[0];
+                } else if (nameParts.length > 1) {
+                    firstName = nameParts[0];
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 1; i < nameParts.length; i++) {
+                        sb.append(nameParts[i]).append(" ");
+                    }
+                    lastName = sb.toString().trim();
+                }
+
+                String finalFirst = firstName;
+                String finalLast = lastName;
+                Author author = authorRepository.findByFirstNameIgnoreCaseAndLastNameIgnoreCase(firstName, lastName)
+                        .orElseGet(() -> {
+                            Author newAuthor = new Author();
+                            newAuthor.setFirstName(finalFirst);
+                            newAuthor.setLastName(finalLast);
+                            newAuthor.setCreatedAt(Instant.now());
+                            return authorRepository.save(newAuthor);
+                        });
+                extractedAuthorIds.add(author.getId());
+            }
+            publication.setAuthorIds(extractedAuthorIds);
+        }
+
         if (publication.getAuthorIds() != null) {
             publication.getPublicationAuthors().clear();
             List<String> authorNames = new ArrayList<>();
@@ -163,6 +274,30 @@ public class PublicationService {
             }
         }
         
+        // If category free-text field is filled, extract and save new categories
+        if ((publication.getCategoryIds() == null || publication.getCategoryIds().isEmpty()) && 
+            publication.getCategory() != null && !publication.getCategory().isBlank()) {
+            List<Long> extractedCategoryIds = new ArrayList<>();
+            String[] catNames = publication.getCategory().split(",");
+            for (String catName : catNames) {
+                catName = catName.trim();
+                if (catName.isBlank()) continue;
+
+                String finalCatName = catName;
+                Category category = categoryRepository.findByNameIgnoreCaseAndDeletedAtIsNull(catName)
+                        .orElseGet(() -> {
+                            Category newCat = new Category();
+                            newCat.setName(finalCatName);
+                            newCat.setType("THEME");
+                            newCat.setEvent(publication.getEvent());
+                            newCat.setCreatedAt(Instant.now());
+                            return categoryRepository.save(newCat);
+                        });
+                extractedCategoryIds.add(category.getId());
+            }
+            publication.setCategoryIds(extractedCategoryIds);
+        }
+
         if (publication.getCategoryIds() != null) {
             publication.getPublicationCategories().clear();
             List<String> categoryNames = new ArrayList<>();

@@ -97,6 +97,8 @@ export default {
         '13': '3.25rem',
         '15': '3.75rem',
         '17': '4.25rem',
+        '18': '4.5rem',
+        '30': '7.5rem',
       },
       borderRadius: {
         'xl': '0.75rem',

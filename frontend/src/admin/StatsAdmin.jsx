@@ -218,7 +218,7 @@ export default function StatsAdmin() {
                           <div className="w-full bg-zinc-100 h-1.5 rounded-full overflow-hidden">
                             <div 
                               style={{ width: `${Math.max(pct, 4)}%`, backgroundColor: 'var(--theme-primary)' }}
-                              className="h-full rounded-full transition-all duration-1000"
+                              className="h-full rounded-full transition-all duration-1000 animate-progress"
                             />
                           </div>
                         </div>

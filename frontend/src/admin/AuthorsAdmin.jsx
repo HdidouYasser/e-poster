@@ -15,8 +15,8 @@ const authorSchema = z.object({
   isCorresponding: z.boolean().default(false)
 });
 
-const inputCls = "w-full bg-zinc-50/70 border border-zinc-200 text-zinc-900 px-3.5 py-2.5 rounded-xl focus:border-zinc-400 focus:bg-white outline-none text-sm transition-all shadow-inner";
-const labelCls = "block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5";
+const inputCls = "form-input";
+const labelCls = "form-label";
 
 export default function AuthorsAdmin() {
   const queryClient = useQueryClient();
@@ -87,14 +87,14 @@ export default function AuthorsAdmin() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto font-sans">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <div>
-          <h2 className="text-2xl font-bold text-zinc-900 tracking-tight font-display">Auteurs</h2>
-          <p className="text-sm text-zinc-400 mt-0.5">Chercheurs et correspondants des publications</p>
+          <h2 className="page-title">Auteurs</h2>
+          <p className="page-subtitle">Chercheurs et correspondants des publications</p>
         </div>
         <button
           onClick={() => openForm()}
-          className="bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] text-white px-4 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all shadow-sm"
+          className="btn btn-primary"
         >
           <Plus size={16} /> Nouvel Auteur
         </button>
@@ -130,7 +130,7 @@ export default function AuthorsAdmin() {
               <label className={labelCls}>Affiliation</label>
               <input {...register("affiliation")} placeholder="Université, CHU..." className={inputCls} />
             </div>
-            <div className="md:col-span-2 flex items-center gap-3 p-4 bg-zinc-50/80 rounded-2xl border border-zinc-200/80">
+            <div className="md:col-span-2 card-muted p-4 flex items-center gap-3">
               <input
                 type="checkbox"
                 id="isCorresponding"
@@ -144,9 +144,9 @@ export default function AuthorsAdmin() {
           </div>
 
           <div className="flex justify-end gap-3 pt-5 border-t border-zinc-100 mt-2">
-            <button type="button" onClick={closeForm} className="px-4 py-2.5 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-xl text-sm font-semibold transition-all">Annuler</button>
-            <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] text-white px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all disabled:opacity-50">
-              {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="animate-spin" size={16} />} Enregistrer
+            <button type="button" onClick={closeForm} className="btn btn-ghost">Annuler</button>
+            <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="btn btn-primary">
+              {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="animate-spin" size={15} />} Enregistrer
             </button>
           </div>
         </form>

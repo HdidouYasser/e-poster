@@ -1,9 +1,10 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { publicApi, getMediaUrl, getPosterThumbnail } from "../api";
+import { publicApi, getMediaUrl } from "../api";
 import { useIdleTimer } from "../hooks/useIdleTimer";
-import { X, Image as ImageIcon, Monitor, Clock, MapPin, Tag } from "lucide-react";
+import { X, Image as ImageIcon, Monitor, Play, Pause, SkipBack, SkipForward } from "lucide-react";
+import { useDynamicTheme } from "../hooks/useDynamicTheme";
 
 export default function TotemSlideshow() {
   const navigate = useNavigate();
@@ -12,13 +13,13 @@ export default function TotemSlideshow() {
   const screen = params.get("screen") || "1";
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [speed, setSpeed] = useState(10000);
 
   const { data: pubsData } = useQuery({
     queryKey: ["totem-slideshow-pubs", eventId],
     queryFn: async () => {
-      const endpoint = eventId
-        ? `/publications?eventId=${eventId}&size=100`
-        : `/publications?size=100`;
+      const endpoint = eventId ? `/publications?eventId=${eventId}&size=100` : `/publications?size=100`;
       return (await publicApi.get(endpoint)).data;
     }
   });
@@ -40,41 +41,48 @@ export default function TotemSlideshow() {
     [eventQuery.data, activeEventQuery.data]
   );
 
+  useDynamicTheme(selectedEvent?.colorPrimary, selectedEvent?.logoUrl);
+
   const publications = useMemo(() => pubsData?.items || [], [pubsData]);
 
   useEffect(() => {
-    if (publications.length === 0) return;
+    if (publications.length === 0 || !isPlaying) return;
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % publications.length);
-    }, 10000);
+    }, speed);
     return () => clearInterval(interval);
-  }, [publications.length]);
+  }, [publications.length, isPlaying, speed]);
 
-  // Any interaction exits slideshow
+  // If user interacts, exit slideshow
   useIdleTimer({
     timeoutMs: 1000,
     onActive: () => navigate(`/totem?screen=${screen}`),
     enabled: true
   });
 
-  // ── Loading / Empty states ──
   if (!publications.length) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white font-sans gap-4">
-        <ImageIcon size={40} className="text-zinc-700" />
-        <p className="text-zinc-500 text-sm font-semibold">Aucune publication disponible</p>
+      <div className="min-h-screen bg-zinc-50 flex flex-col items-center justify-center text-zinc-900 font-sans gap-4">
+        <ImageIcon size={48} className="text-zinc-300" />
+        <p className="text-zinc-600 font-semibold">Aucune publication disponible</p>
+        <button
+          onClick={() => navigate(`/totem?screen=${screen}`)}
+          className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md"
+        >
+          Retour à l'accueil
+        </button>
       </div>
     );
   }
 
   if (!selectedEvent) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white font-sans gap-4">
-        <Monitor size={40} className="text-zinc-700" />
-        <p className="text-zinc-500 text-sm font-semibold">Événement non trouvé</p>
+      <div className="min-h-screen bg-zinc-50 flex flex-col items-center justify-center text-zinc-900 font-sans gap-4">
+        <Monitor size={48} className="text-zinc-300" />
+        <p className="text-zinc-600 font-semibold">Événement non trouvé</p>
         <button
-          onClick={() => navigate(`/totem`)}
-          className="mt-2 px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-xs font-semibold transition-colors"
+          onClick={() => navigate(`/totem?screen=${screen}`)}
+          className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md"
         >
           Retour à l'accueil
         </button>
@@ -83,163 +91,157 @@ export default function TotemSlideshow() {
   }
 
   const currentPub = publications[currentIndex];
-  const categoryName = currentPub?.category
+  const categoryName = currentPub?.category 
     ? (typeof currentPub.category === 'object' ? currentPub.category.name : currentPub.category)
     : "";
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white flex flex-col font-sans select-none">
-
+    <div className="min-h-screen bg-white text-zinc-900 flex flex-col font-sans">
       {/* ── Top Bar ── */}
-      <header className="flex items-center justify-between px-8 py-4 bg-zinc-950 border-b border-zinc-900 shrink-0 z-20">
-        <div className="flex items-center gap-3">
+      <header className="flex items-center justify-between px-8 py-4 bg-white border-b border-zinc-200 z-20 shrink-0 shadow-sm">
+        <div className="flex items-center gap-4">
           {selectedEvent?.logoUrl ? (
-            <img
-              src={getMediaUrl(selectedEvent.logoUrl)}
-              alt="logo"
-              className="h-7 object-contain opacity-90"
-            />
+            <img src={getMediaUrl(selectedEvent.logoUrl)} alt="logo" className="h-10 object-contain" />
           ) : (
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-zinc-900 border border-zinc-800">
-              <Monitor size={14} className="text-zinc-400" />
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-600 text-white">
+              <Monitor size={16} />
             </div>
           )}
-          <span className="text-zinc-500 font-semibold text-xs tracking-wider uppercase">
-            {selectedEvent?.title}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {/* Slide counter */}
-          <div className="bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800 font-mono text-xs">
-            <span className="text-white font-bold">{currentIndex + 1}</span>
-            <span className="text-zinc-600 mx-1">/</span>
-            <span className="text-zinc-400">{publications.length}</span>
+          <div>
+            <h1 className="text-sm font-bold text-zinc-900">Diaporama</h1>
+            <p className="text-xs text-zinc-500">{selectedEvent?.title || "En direct"}</p>
           </div>
-
-          {/* Dot indicators (max 10) */}
-          {publications.length <= 10 && (
-            <div className="flex items-center gap-1.5">
-              {publications.map((_, i) => (
-                <div
-                  key={i}
-                  className={`rounded-full transition-all duration-300 ${
-                    i === currentIndex
-                      ? 'w-4 h-1.5 bg-white'
-                      : 'w-1.5 h-1.5 bg-zinc-700'
-                  }`}
-                />
-              ))}
-            </div>
-          )}
-
-          <button
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <div className="px-4 py-2 bg-zinc-100 rounded-lg border border-zinc-200 text-sm font-semibold text-zinc-700">
+            {currentIndex + 1} / {publications.length}
+          </div>
+          <button 
             onClick={() => navigate(`/totem?screen=${screen}`)}
-            className="p-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors text-zinc-400 hover:text-white"
+            className="p-2 hover:bg-zinc-100 rounded-lg transition-all border border-zinc-200"
+            title="Quitter le diaporama"
           >
-            <X size={15} />
+            <X size={18} />
           </button>
         </div>
       </header>
 
-      {/* ── Main Slide Layout ── */}
-      <main
-        key={currentPub.id}
-        className="flex-1 flex flex-col lg:flex-row gap-0 items-stretch animate-fade-in"
-      >
-        {/* Poster image — left / top */}
-        <div className="w-full lg:w-1/2 bg-zinc-900 border-r border-zinc-900 flex items-center justify-center p-8 relative overflow-hidden">
-          {currentPub.posterUrl ? (
-            <img
-              src={getPosterThumbnail(currentPub.posterUrl)}
-              alt={currentPub.title}
-              className="max-w-full max-h-[70vh] object-contain rounded-xl shadow-2xl ring-1 ring-white/5"
-            />
-          ) : (
-            <div className="flex flex-col items-center gap-3 text-zinc-700">
-              <ImageIcon size={64} />
-              <span className="text-sm font-semibold">Aucune affiche</span>
-            </div>
-          )}
-
-          {/* Subtle slide number watermark */}
-          <div className="absolute bottom-4 right-4 text-zinc-800 font-mono text-[10px] font-bold tracking-wider">
-            #{currentIndex + 1}
+      {/* ── Main Content ── */}
+      <main className="flex-1 flex flex-col lg:flex-row gap-8 lg:gap-12 items-center justify-center p-8 w-full max-w-6xl mx-auto">
+        
+        {/* Poster Display */}
+        <div className="w-full lg:w-2/3 flex items-center justify-center">
+          <div className="w-full aspect-[3/4] bg-white border-2 border-zinc-200 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg">
+            {currentPub?.posterUrl ? (
+              <img 
+                src={getMediaUrl(currentPub.posterUrl)} 
+                alt={currentPub?.title} 
+                className="w-full h-full object-contain" 
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full space-y-4 text-zinc-400">
+                <ImageIcon size={64} className="opacity-50" />
+                <p>Pas d'image disponible</p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Poster details — right / bottom */}
-        <div className="w-full lg:w-1/2 flex flex-col justify-center p-10 lg:p-14 overflow-auto">
-          {/* Category badge */}
-          {categoryName && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-lg text-xs font-semibold mb-6 text-zinc-300 w-fit">
-              <Tag size={11} className="text-zinc-500" />
-              {categoryName}
-            </div>
-          )}
+        
+        {/* Publication Info & Controls */}
+        <div className="w-full lg:w-1/3 flex flex-col gap-6">
+           {categoryName && (
+             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 border border-blue-300 rounded-full text-xs font-semibold text-blue-700 w-fit">
+               {categoryName}
+             </div>
+           )}
 
-          {/* Title */}
-          <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold leading-tight tracking-tight mb-5 text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
-            {currentPub.title}
-          </h1>
+           <h2 className="text-2xl lg:text-3xl font-bold leading-tight tracking-tight mb-3 text-zinc-900">
+             {currentPub?.title}
+           </h2>
+           
+           {currentPub?.authors && (
+             <p className="text-base lg:text-lg font-medium mb-6 text-zinc-600">
+               par {currentPub.authors}
+             </p>
+           )}
 
-          {/* Authors */}
-          <p className="text-lg lg:text-xl font-medium mb-8 text-zinc-400">
-            {currentPub.authors}
-          </p>
+           {/* Info items */}
+           <div className="flex flex-col gap-3 mb-8 py-4 border-t border-b border-zinc-200">
+             {currentPub?.session && (
+               <div className="flex items-center gap-3 text-sm">
+                 <span className="font-semibold text-zinc-900 min-w-20">Session :</span>
+                 <span className="text-zinc-600">{currentPub.session}</span>
+               </div>
+             )}
+             {currentPub?.room && (
+               <div className="flex items-center gap-3 text-sm">
+                 <span className="font-semibold text-zinc-900 min-w-20">Salle :</span>
+                 <span className="text-zinc-600">{currentPub.room}</span>
+               </div>
+             )}
+           </div>
 
-          {/* Meta info */}
-          <div className="flex flex-col gap-3">
-            {currentPub.session && (
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0">
-                  <Clock size={14} className="text-zinc-500" />
-                </div>
-                <span className="text-sm text-zinc-300 font-medium">Session : {currentPub.session}</span>
-              </div>
-            )}
-            {currentPub.room && (
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0">
-                  <MapPin size={14} className="text-zinc-500" />
-                </div>
-                <span className="text-sm text-zinc-300 font-medium">Salle : {currentPub.room}</span>
-              </div>
-            )}
-          </div>
+           {/* Playback Controls */}
+           <div className="flex items-center gap-3 mb-4">
+             <button
+               onClick={() => setIsPlaying(!isPlaying)}
+               className="p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all shadow-md"
+             >
+               {isPlaying ? <Pause size={20} /> : <Play size={20} className="fill-current" />}
+             </button>
+             <span className="text-xs font-semibold text-zinc-600">
+               {isPlaying ? "En lecture" : "Pause"}
+             </span>
+           </div>
 
-          {/* Abstract excerpt */}
-          {currentPub.abstractText && (
-            <div className="mt-8 p-5 bg-zinc-900/70 border border-zinc-800 rounded-2xl">
-              <p className="text-[11px] font-bold text-zinc-600 uppercase tracking-widest mb-2">Résumé</p>
-              <p className="text-sm text-zinc-400 line-clamp-4 leading-relaxed">
-                {currentPub.abstractText}
-              </p>
-            </div>
-          )}
+           {/* Speed Control */}
+           <div className="flex gap-2 flex-wrap">
+             {[5000, 10000, 15000, 20000].map(duration => (
+               <button
+                 key={duration}
+                 onClick={() => setSpeed(duration)}
+                 className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                   speed === duration
+                     ? "bg-blue-600 text-white shadow-md"
+                     : "bg-zinc-100 hover:bg-zinc-200 text-zinc-700 border border-zinc-200"
+                 }`}
+               >
+                 {duration / 1000}s
+               </button>
+             ))}
+           </div>
 
-          {/* Hint */}
-          <p className="mt-10 text-[11px] text-zinc-700 font-semibold tracking-wider uppercase">
-            Touchez l'écran pour interagir
-          </p>
+           {/* Navigation */}
+           <div className="flex gap-2 mt-4">
+             <button
+               onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
+               className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-700 rounded-lg text-sm font-semibold transition-all"
+             >
+               <SkipBack size={16} className="inline mr-1" /> Précédent
+             </button>
+             <button
+               onClick={() => setCurrentIndex(Math.min(publications.length - 1, currentIndex + 1))}
+               className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-700 rounded-lg text-sm font-semibold transition-all"
+             >
+               Suivant <SkipForward size={16} className="inline ml-1" />
+             </button>
+           </div>
         </div>
       </main>
-
+      
       {/* ── Progress Bar ── */}
-      <div className="fixed bottom-0 left-0 w-full h-0.5 bg-zinc-900 z-30">
-        <div
-          key={currentIndex}
-          className="h-full bg-zinc-400"
-          style={{
-            width: '100%',
-            animation: 'slideProgress 10s linear forwards'
-          }}
+      <div className="w-full h-1 bg-zinc-200">
+        <div 
+          className="h-full bg-blue-600 transition-all duration-300"
+          style={{ width: `${((currentIndex + 1) / publications.length) * 100}%` }}
         />
       </div>
-
+      
       <style>{`
-        @keyframes slideProgress {
-          0%   { width: 0%; }
+        @keyframes progress {
+          0% { width: 0%; }
           100% { width: 100%; }
         }
       `}</style>

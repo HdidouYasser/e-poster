@@ -10,6 +10,9 @@ public interface ScreenRepository extends JpaRepository<Screen, Long> {
 
     List<Screen> findByDeletedAtIsNull();
 
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(s) FROM Screen s WHERE s.event.manager.email = :email AND s.deletedAt IS NULL")
+    long countByEventManagerEmail(@org.springframework.data.repository.query.Param("email") String email);
+
     Optional<Screen> findByIdAndDeletedAtIsNull(Long id);
 }
 

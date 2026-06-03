@@ -33,9 +33,11 @@ export default function AuditAdmin() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto font-sans">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-zinc-900 tracking-tight font-display">Logs d'Audit</h2>
-        <p className="text-sm text-zinc-400 mt-0.5">Historique complet des opérations effectuées sur la plateforme</p>
+      <div className="page-header">
+        <div>
+          <h2 className="page-title">Logs d'Audit</h2>
+          <p className="page-subtitle">Historique complet des opérations effectuées sur la plateforme</p>
+        </div>
       </div>
 
       {/* Table */}

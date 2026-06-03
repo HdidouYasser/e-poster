@@ -13,5 +13,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     List<Category> findByDeletedAtIsNull();
 
     Optional<Category> findByIdAndDeletedAtIsNull(Long id);
+
+    Optional<Category> findByNameIgnoreCaseAndDeletedAtIsNull(String name);
 }
 

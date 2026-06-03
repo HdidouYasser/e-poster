@@ -7,11 +7,13 @@ import TotemPublications from "./totem/TotemPublications";
 import TotemPosterDetail from "./totem/TotemPosterDetail";
 import TotemSlideshow from "./totem/TotemSlideshow";
 import LoginPage from "./admin/LoginPage";
+import RegisterPage from "./admin/RegisterPage";
 import AdminLayout from "./admin/AdminLayout";
 import EventsAdmin from "./admin/EventsAdmin";
 import PublicationsAdmin from "./admin/PublicationsAdmin";
 import CategoriesAdmin from "./admin/CategoriesAdmin";
 import AuthorsAdmin from "./admin/AuthorsAdmin";
+import ManagersAdmin from "./admin/ManagersAdmin";
 import ScreensAdmin from "./admin/ScreensAdmin";
 import ImportAdmin from "./admin/ImportAdmin";
 import AuditAdmin from "./admin/AuditAdmin";
@@ -68,6 +70,7 @@ export default function App() {
 
         {/* Back-Office : Admin */}
         <Route path="/login" element={isAuthenticated ? <Navigate to="/admin/stats" replace /> : <LoginPage />} />
+        <Route path="/register" element={isAuthenticated ? <Navigate to="/admin/stats" replace /> : <RegisterPage />} />
         
         <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/admin/stats" replace />} />
@@ -77,6 +80,7 @@ export default function App() {
           <Route path="screens" element={<ScreensAdmin />} />
           <Route path="categories" element={<CategoriesAdmin />} />
           <Route path="authors" element={<AuthorsAdmin />} />
+          <Route path="managers" element={<ManagersAdmin />} />
           <Route path="import" element={<ImportAdmin />} />
           <Route path="audit" element={<AuditAdmin />} />
           <Route path="export" element={<ExportAdmin />} />

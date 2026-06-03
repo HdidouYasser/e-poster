@@ -4,7 +4,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { api } from "../api";
-import { Plus, Edit2, Trash2, Loader2, Layers, GripVertical, X, Monitor } from "lucide-react";
+import { Plus, Edit2, Trash2, Loader2, Layers, GripVertical, X, Monitor, ChevronUp, ChevronDown } from "lucide-react";
 import toast from "react-hot-toast";
 
 const screenSchema = z.object({
@@ -14,8 +14,8 @@ const screenSchema = z.object({
   eventId: z.number().min(1, "L'événement est requis"),
 });
 
-const inputCls = "w-full bg-zinc-50/70 border border-zinc-200 text-zinc-900 px-3.5 py-2.5 rounded-xl focus:border-zinc-400 focus:bg-white outline-none text-sm transition-all shadow-inner";
-const labelCls = "block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5";
+const inputCls = "form-input";
+const labelCls = "form-label";
 
 export default function ScreensAdmin() {
   const queryClient = useQueryClient();
@@ -94,14 +94,14 @@ export default function ScreensAdmin() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto font-sans">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <div>
-          <h2 className="text-2xl font-bold text-zinc-900 tracking-tight font-display">Écrans / Totems</h2>
-          <p className="text-sm text-zinc-400 mt-0.5">Configurez les kiosques et totems d'affichage</p>
+          <h2 className="page-title">Écrans / Totems</h2>
+          <p className="page-subtitle">Configurez les kiosques et totems d'affichage</p>
         </div>
         <button
           onClick={() => openForm()}
-          className="bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] text-white px-4 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all shadow-sm"
+          className="btn btn-primary"
         >
           <Plus size={16} /> Nouvel Écran
         </button>
@@ -126,7 +126,7 @@ export default function ScreensAdmin() {
 
             <div>
               <label className={labelCls}>Événement Associé <span className="text-red-400 normal-case">*</span></label>
-              <select {...register("eventId", { valueAsNumber: true })} className={inputCls}>
+              <select {...register("eventId", { valueAsNumber: true })} className="form-select">
                 <option value={0}>Sélectionner un événement</option>
                 {eventsData?.items?.map(e => <option key={e.id} value={e.id}>{e.title}</option>)}
               </select>
@@ -135,7 +135,7 @@ export default function ScreensAdmin() {
 
             <div>
               <label className={labelCls}>Mode d'affichage</label>
-              <select {...register("mode")} className={inputCls}>
+              <select {...register("mode")} className="form-select">
                 <option value="INTERACTIVE">Interactif (Recherche & Navigation)</option>
                 <option value="SLIDESHOW">Diaporama Automatique (Slideshow)</option>
               </select>
@@ -148,9 +148,9 @@ export default function ScreensAdmin() {
           </div>
 
           <div className="flex justify-end gap-3 pt-5 border-t border-zinc-100 mt-2">
-            <button type="button" onClick={closeForm} className="px-4 py-2.5 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-xl text-sm font-semibold transition-all">Annuler</button>
-            <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] text-white px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all disabled:opacity-50">
-              {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="animate-spin" size={16} />} Enregistrer
+            <button type="button" onClick={closeForm} className="btn btn-ghost">Annuler</button>
+            <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="btn btn-primary">
+              {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="animate-spin" size={15} />} Enregistrer
             </button>
           </div>
         </form>
@@ -303,21 +303,37 @@ function ScreenLayoutModal({ screen, onClose }) {
               ) : (
                 fields.map((field, index) => (
                   <div key={field.id} className="flex items-center gap-3 bg-white p-3.5 border border-zinc-200/80 rounded-2xl shadow-sm">
-                    <div className="flex flex-col gap-0.5 items-center text-zinc-300">
-                      <button type="button" disabled={index === 0} onClick={() => move(index, index - 1)} className="hover:text-zinc-600 disabled:opacity-20 text-xs leading-none">▲</button>
+                    <div className="flex flex-col gap-0.5 items-center">
+                      <button
+                        type="button"
+                        disabled={index === 0}
+                        onClick={() => move(index, index - 1)}
+                        className="p-1 hover:bg-zinc-100 hover:text-zinc-900 rounded disabled:opacity-25 text-zinc-400 transition-colors cursor-pointer"
+                        title="Monter"
+                      >
+                        <ChevronUp size={14} />
+                      </button>
                       <span className="font-mono text-[10px] bg-zinc-100 px-1.5 py-0.5 rounded-lg text-zinc-500 font-bold">{index + 1}</span>
-                      <button type="button" disabled={index === fields.length - 1} onClick={() => move(index, index + 1)} className="hover:text-zinc-600 disabled:opacity-20 text-xs leading-none">▼</button>
+                      <button
+                        type="button"
+                        disabled={index === fields.length - 1}
+                        onClick={() => move(index, index + 1)}
+                        className="p-1 hover:bg-zinc-100 hover:text-zinc-900 rounded disabled:opacity-25 text-zinc-400 transition-colors cursor-pointer"
+                        title="Descendre"
+                      >
+                        <ChevronDown size={14} />
+                      </button>
                     </div>
 
                     <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <input
                         {...register(`sections.${index}.title`)}
                         placeholder="Titre de la section (ex: Session Matin)"
-                        className="w-full bg-zinc-50/70 border border-zinc-200 text-zinc-900 px-3 py-2 rounded-xl focus:bg-white focus:border-zinc-400 outline-none text-sm transition-all"
+                        className="form-input"
                       />
                       <select
                         {...register(`sections.${index}.publicationId`)}
-                        className="w-full bg-zinc-50/70 border border-zinc-200 text-zinc-900 px-3 py-2 rounded-xl focus:bg-white focus:border-zinc-400 outline-none text-sm transition-all"
+                        className="form-select"
                       >
                         <option value="">— Sélectionner une publication —</option>
                         {publications?.map(p => (
@@ -330,6 +346,7 @@ function ScreenLayoutModal({ screen, onClose }) {
                       type="button"
                       onClick={() => remove(index)}
                       className="p-1.5 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                      title="Supprimer la section"
                     >
                       <Trash2 size={15} />
                     </button>
@@ -350,13 +367,13 @@ function ScreenLayoutModal({ screen, onClose }) {
 
         {/* Modal footer */}
         <div className="p-5 border-t border-zinc-100 bg-white flex justify-end gap-3 rounded-b-3xl">
-          <button onClick={onClose} className="px-4 py-2.5 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-xl text-sm font-semibold transition-all">Annuler</button>
+          <button onClick={onClose} className="btn btn-ghost">Annuler</button>
           <button
             onClick={handleSubmit(onSubmit)}
             disabled={updateLayoutMutation.isPending}
-            className="bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] text-white px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all shadow-sm disabled:opacity-50"
+            className="btn btn-primary"
           >
-            {updateLayoutMutation.isPending && <Loader2 className="animate-spin" size={16} />}
+            {updateLayoutMutation.isPending && <Loader2 className="animate-spin" size={15} />}
             Enregistrer le parcours
           </button>
         </div>

@@ -60,6 +60,82 @@ public class DashboardService {
                                totalViews, recentViews, topPubs, upcomingEvts, health);
     }
 
+    public DashboardDTO getDashboardStatsForUser(String email, boolean isManager) {
+        if (!isManager || email == null) {
+            return getDashboardStats();
+        }
+
+        long totalPublications = publicationRepository.countByEventManagerEmail(email);
+        long totalScreens = screenRepository.countByEventManagerEmail(email);
+        long totalEvents = eventRepository.countByManagerEmailAndDeletedAtIsNull(email);
+        long totalCategories = categoryRepository.count();
+        
+        // Active events (end date after now)
+        Instant now = Instant.now();
+        long activeEvents = eventRepository.countByManagerEmailAndEndDateAfterAndDeletedAtIsNull(email, now);
+        
+        // Total and recent views
+        long totalViews = publicationRepository.sumViewCountByEventManagerEmail(email);
+        long recentViews = getRecentViewsForManager(email, now);
+        
+        // Top publications by views
+        List<DashboardDTO.PublicationStatsDTO> topPubs = getTopPublicationsForManager(email);
+        
+        // Upcoming events
+        List<DashboardDTO.EventStatsDTO> upcomingEvts = getUpcomingEventsForManager(email, now);
+        
+        // Health status
+        DashboardDTO.DashboardHealthDTO health = getHealthStatus();
+
+        return new DashboardDTO(totalPublications, totalScreens, activeEvents, 
+                                totalEvents, totalCategories,
+                                totalViews, recentViews, topPubs, upcomingEvts, health);
+    }
+
+    private long getRecentViewsForManager(String email, Instant since) {
+        Instant sevenDaysAgo = since.minusSeconds(7 * 24 * 60 * 60);
+        List<Publication> recentPubs = publicationRepository.findTop5ByEventManagerEmailOrderByViewCountDesc(email, org.springframework.data.domain.PageRequest.of(0, 5));
+        return recentPubs.stream()
+            .filter(p -> p.getCreatedAt() != null && p.getCreatedAt().isAfter(sevenDaysAgo))
+            .mapToLong(p -> p.getViewCount() != null ? p.getViewCount().longValue() : 0L)
+            .sum();
+    }
+
+    private List<DashboardDTO.PublicationStatsDTO> getTopPublicationsForManager(String email) {
+        List<Publication> topFive = publicationRepository.findTop5ByEventManagerEmailOrderByViewCountDesc(email, org.springframework.data.domain.PageRequest.of(0, 5));
+        List<DashboardDTO.PublicationStatsDTO> dtos = new ArrayList<>();
+        for (Publication pub : topFive) {
+            dtos.add(new DashboardDTO.PublicationStatsDTO(
+                pub.getId(),
+                pub.getTitle(),
+                pub.getAuthors(),
+                pub.getPosterUrl(),
+                pub.getViewCount() != null ? pub.getViewCount().longValue() : 0L,
+                pub.getCreatedAt()
+            ));
+        }
+        return dtos;
+    }
+
+    private List<DashboardDTO.EventStatsDTO> getUpcomingEventsForManager(String email, Instant now) {
+        List<Event> upcoming = eventRepository.findByManagerEmailAndStartDateGreaterThanEqualAndDeletedAtIsNullOrderByStartDateAsc(email, now);
+        List<DashboardDTO.EventStatsDTO> dtos = new ArrayList<>();
+        
+        int limit = Math.min(upcoming.size(), 5);
+        for (int i = 0; i < limit; i++) {
+            Event event = upcoming.get(i);
+            long pubCount = publicationRepository.countPublicationsByEvent(event.getId());
+            dtos.add(new DashboardDTO.EventStatsDTO(
+                event.getId(),
+                event.getTitle(),
+                event.getStartDate(),
+                pubCount,
+                event.getStatus()
+            ));
+        }
+        return dtos;
+    }
+
     private long getTotalViews() {
         return publicationRepository.sumViewCount();
     }

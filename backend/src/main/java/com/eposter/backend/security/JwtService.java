@@ -20,17 +20,21 @@ public class JwtService {
     @Value("${app.security.jwt-expiration-ms}")
     private long jwtExpirationMs;
 
-    public String generateToken(String username) {
+    public String generateToken(String username, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
         return Jwts.builder()
                 .subject(username)
-                .claims(Map.of("role", "ADMIN"))
+                .claims(Map.of("role", role))
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    public String extractRole(String token) {
+        return extractAllClaims(token).get("role", String.class);
     }
 
     public String extractUsername(String token) {

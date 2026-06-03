@@ -25,6 +25,12 @@ public class AuthController {
         return authService.login(request);
     }
 
+    @PostMapping("/register")
+    @ResponseStatus(HttpStatus.CREATED)
+    public AuthDtos.LoginResponse register(@Valid @RequestBody AuthDtos.RegisterRequest request) {
+        return authService.register(request);
+    }
+
     @GetMapping("/me")
     public String me() {
         return "authenticated";
@@ -32,7 +38,8 @@ public class AuthController {
 
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public String invalidCredentials(IllegalArgumentException ex) {
-        return ex.getMessage();
+    public java.util.Map<String, String> invalidCredentials(IllegalArgumentException ex) {
+        return java.util.Map.of("message", ex.getMessage());
     }
 }
+
