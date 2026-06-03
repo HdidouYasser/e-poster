@@ -4,10 +4,11 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { api } from "../api";
-import { Plus, Edit2, Trash2, Search, Loader2, UploadCloud, FileImage, Download, Upload, X } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, Loader2, UploadCloud, FileImage, Download, Upload, X, Eye } from "lucide-react";
 import toast from "react-hot-toast";
 import CreatableSelect from "react-select/creatable";
 import { Link } from "react-router-dom";
+import { useAuthStore } from "../stores/authStore";
 
 const pubSchema = z.object({
   eventId: z.string().optional(),
@@ -27,6 +28,8 @@ const pubSchema = z.object({
 
 export default function PublicationsAdmin() {
   const queryClient = useQueryClient();
+  const role = useAuthStore((s) => s.role);
+  const isAdmin = role !== "ROLE_EVENT_MANAGER";
   const [q, setQ] = useState("");
   const [page, setPage] = useState(0);
   const [editingPub, setEditingPub] = useState(null);
@@ -251,15 +254,19 @@ export default function PublicationsAdmin() {
           <p className="page-subtitle">Gérez les e-posters et communications médicales</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link to="/admin/import" className="btn btn-ghost">
-            <Upload size={15} /> Importer
-          </Link>
+          {isAdmin && (
+            <Link to="/admin/import" className="btn btn-ghost">
+              <Upload size={15} /> Importer
+            </Link>
+          )}
           <button onClick={exportCSV} className="btn btn-ghost">
             <Download size={15} /> Exporter CSV
           </button>
-          <button onClick={() => openForm()} className="btn btn-primary">
-            <Plus size={15} /> Nouvelle Publication
-          </button>
+          {isAdmin && (
+            <button onClick={() => openForm()} className="btn btn-primary">
+              <Plus size={15} /> Nouvelle Publication
+            </button>
+          )}
         </div>
       </div>
 
@@ -278,21 +285,25 @@ export default function PublicationsAdmin() {
       {isFormOpen && (
         <form onSubmit={handleSubmit(onSubmit)} className="card p-7 space-y-5">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-zinc-900 font-display">{editingPub ? "Modifier la publication" : "Créer une publication"}</h3>
+            <h3 className="text-base font-bold text-zinc-900 font-display">
+              {editingPub 
+                ? isAdmin ? "Modifier la publication" : "Consulter la publication" 
+                : "Créer une publication"}
+            </h3>
             <button type="button" onClick={closeForm} className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-xl transition-colors"><X size={16} /></button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label className="form-label">Événement <span className="normal-case font-normal text-slate-400">(optionnel)</span></label>
-              <select {...register("eventId")} className="form-select">
+              <select {...register("eventId")} disabled={!isAdmin} className="form-select">
                 <option value="">Aucun événement sélectionné</option>
                 {eventsData?.items?.map(e => <option key={e.id} value={e.id}>{e.title}</option>)}
               </select>
             </div>
             <div>
               <label className="form-label">Titre <span className="text-red-500 normal-case">*</span></label>
-              <input {...register("title")} placeholder="Titre de la publication" className="form-input" />
+              <input {...register("title")} disabled={!isAdmin} placeholder="Titre de la publication" className="form-input" />
               {errors.title && <p className="form-error">{errors.title.message}</p>}
             </div>
             <div className="md:col-span-2">
@@ -306,6 +317,7 @@ export default function PublicationsAdmin() {
                   return (
                     <CreatableSelect
                       isMulti
+                      isDisabled={!isAdmin}
                       options={options}
                       value={selectedOptions}
                       onChange={(selected) => onChange(selected.map(s => s.value))}
@@ -321,15 +333,15 @@ export default function PublicationsAdmin() {
             </div>
             <div className="md:col-span-2">
               <label className="form-label">Auteurs libres <span className="normal-case font-normal text-slate-400">(texte brut, séparés par virgule)</span></label>
-              <input {...register("authors")} placeholder="Ex: Jean Dupont, Marie Curie" className="form-input" />
+              <input {...register("authors")} disabled={!isAdmin} placeholder="Ex: Jean Dupont, Marie Curie" className="form-input" />
             </div>
             <div className="md:col-span-2">
               <label className="form-label">Description / Résumé court</label>
-              <textarea {...register("description")} placeholder="Résumé court..." rows={3} className="form-textarea" />
+              <textarea {...register("description")} disabled={!isAdmin} placeholder="Résumé court..." rows={3} className="form-textarea" />
             </div>
             <div className="md:col-span-2">
               <label className="form-label">Résumé Complet (Abstract)</label>
-              <textarea {...register("abstractText")} placeholder="Résumé scientifique détaillé..." rows={6} className="form-textarea" />
+              <textarea {...register("abstractText")} disabled={!isAdmin} placeholder="Résumé scientifique détaillé..." rows={6} className="form-textarea" />
             </div>
             <div>
               <label className="form-label">Catégories (Base de données)</label>
@@ -342,6 +354,7 @@ export default function PublicationsAdmin() {
                   return (
                     <CreatableSelect
                       isMulti
+                      isDisabled={!isAdmin}
                       options={options}
                       value={selectedOptions}
                       onChange={(selected) => onChange(selected.map(s => s.value))}
@@ -357,19 +370,19 @@ export default function PublicationsAdmin() {
             </div>
             <div>
               <label className="form-label">Catégorie <span className="normal-case font-normal text-zinc-400">(texte libre)</span></label>
-              <input {...register("category")} placeholder="Ex: Santé, Technologie..." className="form-input" />
+              <input {...register("category")} disabled={!isAdmin} placeholder="Ex: Santé, Technologie..." className="form-input" />
             </div>
             <div>
               <label className="form-label">Session</label>
-              <input {...register("session")} placeholder="Ex: Session 1" className="form-input" />
+              <input {...register("session")} disabled={!isAdmin} placeholder="Ex: Session 1" className="form-input" />
             </div>
             <div>
               <label className="form-label">Salle</label>
-              <input {...register("room")} placeholder="Ex: Salle A" className="form-input" />
+              <input {...register("room")} disabled={!isAdmin} placeholder="Ex: Salle A" className="form-input" />
             </div>
             <div>
               <label className="form-label">Statut</label>
-              <select {...register("status")} className="form-select">
+              <select {...register("status")} disabled={!isAdmin} className="form-select">
                 <option value="DRAFT">Brouillon (Draft)</option>
                 <option value="PUBLISHED">Publié (Visible Totem)</option>
               </select>
@@ -393,14 +406,16 @@ export default function PublicationsAdmin() {
                     </div>
                   )}
                   <div className="flex-1 space-y-3 w-full">
-                    <input {...register("posterUrl")} placeholder="URL de l'image principale" className="form-input" />
-                    <div>
-                      <input type="file" id="posterUpload" onChange={handleFileUpload} className="hidden" accept="image/*,application/pdf" />
-                      <label htmlFor="posterUpload" className="inline-flex items-center gap-2 cursor-pointer bg-white hover:bg-zinc-100 text-zinc-700 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all border border-zinc-200 shadow-sm active:scale-[0.98]">
-                        {uploadingFile ? <Loader2 className="animate-spin text-zinc-900" size={15} /> : <UploadCloud size={15} className="text-zinc-600" />}
-                        {uploadingFile ? "Upload en cours..." : "Téléverser une image"}
-                      </label>
-                    </div>
+                    <input {...register("posterUrl")} disabled={!isAdmin} placeholder="URL de l'image principale" className="form-input" />
+                    {isAdmin && (
+                      <div>
+                        <input type="file" id="posterUpload" onChange={handleFileUpload} className="hidden" accept="image/*,application/pdf" />
+                        <label htmlFor="posterUpload" className="inline-flex items-center gap-2 cursor-pointer bg-white hover:bg-zinc-100 text-zinc-700 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all border border-zinc-200 shadow-sm active:scale-[0.98]">
+                          {uploadingFile ? <Loader2 className="animate-spin text-zinc-900" size={15} /> : <UploadCloud size={15} className="text-zinc-600" />}
+                          {uploadingFile ? "Upload en cours..." : "Téléverser une image"}
+                        </label>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -412,13 +427,15 @@ export default function PublicationsAdmin() {
                     <h4 className="text-sm font-bold text-zinc-900 font-display">Médias Attachés</h4>
                     <p className="text-xs text-zinc-400 mt-0.5">Documents PDF, vidéos supplémentaires, etc.</p>
                   </div>
-                  <div>
-                    <input type="file" id="mediaUpload" onChange={handleMediaUpload} className="hidden" accept=".pdf,video/*,image/*" />
-                    <label htmlFor="mediaUpload" className="inline-flex items-center gap-2 cursor-pointer bg-zinc-900 hover:bg-zinc-800 active:scale-[0.97] text-white px-3 py-2 rounded-xl text-xs font-semibold transition-all shadow-sm">
-                      {uploadingFile ? <Loader2 className="animate-spin" size={13} /> : <Plus size={13} />}
-                      Ajouter un fichier
-                    </label>
-                  </div>
+                  {isAdmin && (
+                    <div>
+                      <input type="file" id="mediaUpload" onChange={handleMediaUpload} className="hidden" accept=".pdf,video/*,image/*" />
+                      <label htmlFor="mediaUpload" className="inline-flex items-center gap-2 cursor-pointer bg-zinc-900 hover:bg-zinc-800 active:scale-[0.97] text-white px-3 py-2 rounded-xl text-xs font-semibold transition-all shadow-sm">
+                        {uploadingFile ? <Loader2 className="animate-spin" size={13} /> : <Plus size={13} />}
+                        Ajouter un fichier
+                      </label>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -442,17 +459,19 @@ export default function PublicationsAdmin() {
                             <div className="text-xs text-zinc-400 truncate">{media.filePath}</div>
                           </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const list = [...watch("mediaList")];
-                            list.splice(index, 1);
-                            setValue("mediaList", list);
-                          }}
-                          className="p-1.5 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors shrink-0"
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                        {isAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const list = [...watch("mediaList")];
+                              list.splice(index, 1);
+                              setValue("mediaList", list);
+                            }}
+                            className="p-1.5 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors shrink-0"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        )}
                       </div>
                     ))
                   )}
@@ -462,11 +481,13 @@ export default function PublicationsAdmin() {
           </div>
 
           <div className="flex justify-end gap-3 pt-5 border-t border-zinc-100">
-            <button type="button" onClick={closeForm} className="btn btn-ghost">Annuler</button>
-            <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="btn btn-primary">
-              {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="animate-spin" size={15} />}
-              Enregistrer
-            </button>
+            <button type="button" onClick={closeForm} className="btn btn-ghost">{isAdmin ? "Annuler" : "Fermer"}</button>
+            {isAdmin && (
+              <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="btn btn-primary">
+                {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="animate-spin" size={15} />}
+                Enregistrer
+              </button>
+            )}
           </div>
         </form>
       )}
@@ -587,8 +608,14 @@ export default function PublicationsAdmin() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                      <button onClick={() => openForm(item)} className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors rounded-xl" title="Modifier"><Edit2 size={15} /></button>
-                      <button onClick={() => confirmDelete(item.id)} className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors rounded-xl" title="Supprimer"><Trash2 size={15} /></button>
+                      {isAdmin ? (
+                        <>
+                          <button onClick={() => openForm(item)} className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors rounded-xl" title="Modifier"><Edit2 size={15} /></button>
+                          <button onClick={() => confirmDelete(item.id)} className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors rounded-xl" title="Supprimer"><Trash2 size={15} /></button>
+                        </>
+                      ) : (
+                        <button onClick={() => openForm(item)} className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors rounded-xl" title="Consulter"><Eye size={15} /></button>
+                      )}
                     </div>
                   </td>
                 </tr>

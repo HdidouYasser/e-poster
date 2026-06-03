@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { api } from "../api";
-import { Plus, Edit2, Trash2, Search, Loader2, UploadCloud, X, Calendar, UserCheck } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, Loader2, UploadCloud, X, Calendar, UserCheck, Eye } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuthStore } from "../stores/authStore";
 
@@ -162,12 +162,14 @@ export default function EventsAdmin() {
           <h2 className="page-title">Événements</h2>
           <p className="page-subtitle">Gérez les congrès et événements médicaux</p>
         </div>
-        <button
-          onClick={() => openForm()}
-          className="btn btn-primary"
-        >
-          <Plus size={16} /> Nouvel Événement
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => openForm()}
+            className="btn btn-primary"
+          >
+            <Plus size={16} /> Nouvel Événement
+          </button>
+        )}
       </div>
 
       {/* Search */}
@@ -187,7 +189,11 @@ export default function EventsAdmin() {
       {isFormOpen && (
         <form onSubmit={handleSubmit(onSubmit)} className="bg-white border border-zinc-200/80 p-7 rounded-3xl space-y-5 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-base font-bold text-zinc-900 font-display">{editingEvent ? "Modifier l'événement" : "Créer un événement"}</h3>
+            <h3 className="text-base font-bold text-zinc-900 font-display">
+              {editingEvent 
+                ? isAdmin ? "Modifier l'événement" : "Consulter l'événement" 
+                : "Créer un événement"}
+            </h3>
             <button type="button" onClick={closeForm} className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-xl transition-colors">
               <X size={16} />
             </button>
@@ -196,42 +202,42 @@ export default function EventsAdmin() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label className={labelCls}>Titre <span className="text-red-500 normal-case">*</span></label>
-              <input {...register("title")} className={inputCls} />
+              <input {...register("title")} disabled={!isAdmin} className={inputCls} />
               {errors.title && <p className="text-red-500 text-xs mt-1 font-medium">{errors.title.message}</p>}
             </div>
             <div>
               <label className={labelCls}>Statut</label>
-              <select {...register("status")} className="form-select">
+              <select {...register("status")} disabled={!isAdmin} className="form-select">
                 <option value="ACTIVE">Actif</option>
                 <option value="ARCHIVED">Archivé</option>
               </select>
             </div>
             <div className="md:col-span-2">
               <label className={labelCls}>Description</label>
-              <textarea {...register("description")} rows={2} className="form-textarea resize-none" />
+              <textarea {...register("description")} disabled={!isAdmin} rows={2} className="form-textarea resize-none" />
             </div>
 
             <div>
               <label className={labelCls}>Date de début</label>
-              <input type="datetime-local" {...register("startDate")} className={inputCls} />
+              <input type="datetime-local" {...register("startDate")} disabled={!isAdmin} className={inputCls} />
             </div>
             <div>
               <label className={labelCls}>Date de fin</label>
-              <input type="datetime-local" {...register("endDate")} className={inputCls} />
+              <input type="datetime-local" {...register("endDate")} disabled={!isAdmin} className={inputCls} />
             </div>
 
             <div>
               <label className={labelCls}>Couleur Principale (Totem)</label>
               <div className="flex items-center gap-2.5">
-                <input type="color" {...register("colorPrimary")} className="h-10 w-10 rounded-xl cursor-pointer border border-zinc-200 p-0.5 bg-white" />
-                <input type="text" {...register("colorPrimary")} className={inputCls + " flex-1 font-mono"} />
+                <input type="color" {...register("colorPrimary")} disabled={!isAdmin} className="h-10 w-10 rounded-xl cursor-pointer border border-zinc-200 p-0.5 bg-white" />
+                <input type="text" {...register("colorPrimary")} disabled={!isAdmin} className={inputCls + " flex-1 font-mono"} />
               </div>
             </div>
             <div>
               <label className={labelCls}>Couleur Secondaire</label>
               <div className="flex items-center gap-2.5">
-                <input type="color" {...register("colorSecondary")} className="h-10 w-10 rounded-xl cursor-pointer border border-zinc-200 p-0.5 bg-white" />
-                <input type="text" {...register("colorSecondary")} className={inputCls + " flex-1 font-mono"} />
+                <input type="color" {...register("colorSecondary")} disabled={!isAdmin} className="h-10 w-10 rounded-xl cursor-pointer border border-zinc-200 p-0.5 bg-white" />
+                <input type="text" {...register("colorSecondary")} disabled={!isAdmin} className={inputCls + " flex-1 font-mono"} />
               </div>
             </div>
 
@@ -239,10 +245,14 @@ export default function EventsAdmin() {
               <label className={labelCls}>Logo Événement</label>
               <div className="flex flex-col gap-3">
                 {logoUrlValue && <img src={logoUrlValue} alt="Logo Preview" className="h-16 w-16 object-contain bg-white border border-zinc-200 rounded-xl shadow-sm" />}
-                <input type="file" id="logoUpload" onChange={(e) => handleFileUpload(e, 'logo')} className="hidden" accept="image/*" />
-                <label htmlFor="logoUpload" className="inline-flex w-fit items-center gap-2 cursor-pointer bg-white hover:bg-zinc-100 text-zinc-700 px-3 py-2 rounded-xl text-xs font-semibold border border-zinc-200 transition-colors">
-                  {uploadingLogo ? <Loader2 className="animate-spin" size={14} /> : <UploadCloud size={14} />} {uploadingLogo ? "Upload..." : "Changer le logo"}
-                </label>
+                {isAdmin && (
+                  <>
+                    <input type="file" id="logoUpload" onChange={(e) => handleFileUpload(e, 'logo')} className="hidden" accept="image/*" />
+                    <label htmlFor="logoUpload" className="inline-flex w-fit items-center gap-2 cursor-pointer bg-white hover:bg-zinc-100 text-zinc-700 px-3 py-2 rounded-xl text-xs font-semibold border border-zinc-200 transition-colors">
+                      {uploadingLogo ? <Loader2 className="animate-spin" size={14} /> : <UploadCloud size={14} />} {uploadingLogo ? "Upload..." : "Changer le logo"}
+                    </label>
+                  </>
+                )}
               </div>
             </div>
 
@@ -250,21 +260,25 @@ export default function EventsAdmin() {
               <label className={labelCls}>Bannière (Optionnel)</label>
               <div className="flex flex-col gap-3">
                 {bannerUrlValue && <img src={bannerUrlValue} alt="Banner Preview" className="h-16 w-full object-cover bg-white border border-zinc-200 rounded-xl shadow-sm" />}
-                <input type="file" id="bannerUpload" onChange={(e) => handleFileUpload(e, 'banner')} className="hidden" accept="image/*" />
-                <label htmlFor="bannerUpload" className="inline-flex w-fit items-center gap-2 cursor-pointer bg-white hover:bg-zinc-100 text-zinc-700 px-3 py-2 rounded-xl text-xs font-semibold border border-zinc-200 transition-colors">
-                  {uploadingBanner ? <Loader2 className="animate-spin" size={14} /> : <UploadCloud size={14} />} {uploadingBanner ? "Upload..." : "Changer la bannière"}
-                </label>
+                {isAdmin && (
+                  <>
+                    <input type="file" id="bannerUpload" onChange={(e) => handleFileUpload(e, 'banner')} className="hidden" accept="image/*" />
+                    <label htmlFor="bannerUpload" className="inline-flex w-fit items-center gap-2 cursor-pointer bg-white hover:bg-zinc-100 text-zinc-700 px-3 py-2 rounded-xl text-xs font-semibold border border-zinc-200 transition-colors">
+                      {uploadingBanner ? <Loader2 className="animate-spin" size={14} /> : <UploadCloud size={14} />} {uploadingBanner ? "Upload..." : "Changer la bannière"}
+                    </label>
+                  </>
+                )}
               </div>
             </div>
 
             <div className="bg-zinc-50/80 border border-zinc-200/80 p-4 rounded-2xl">
               <label className={labelCls}>Lien Programme (URL PDF)</label>
-              <input {...register("programUrl")} placeholder="https://.../programme.pdf" className={inputCls} />
+              <input {...register("programUrl")} disabled={!isAdmin} placeholder="https://.../programme.pdf" className={inputCls} />
             </div>
 
             <div className="bg-zinc-50/80 border border-zinc-200/80 p-4 rounded-2xl">
               <label className={labelCls}>Lien Revue Médicale (URL)</label>
-              <input {...register("revueUrl")} placeholder="https://.../revue" className={inputCls} />
+              <input {...register("revueUrl")} disabled={!isAdmin} placeholder="https://.../revue" className={inputCls} />
             </div>
 
             {isAdmin && (
@@ -292,10 +306,12 @@ export default function EventsAdmin() {
           </div>
 
           <div className="flex justify-end gap-3 pt-5 border-t border-zinc-100 mt-2">
-            <button type="button" onClick={closeForm} className="btn btn-ghost">Annuler</button>
-            <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="btn btn-primary">
-              {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="animate-spin" size={15} />} Enregistrer
-            </button>
+            <button type="button" onClick={closeForm} className="btn btn-ghost">{isAdmin ? "Annuler" : "Fermer"}</button>
+            {isAdmin && (
+              <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="btn btn-primary">
+                {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="animate-spin" size={15} />} Enregistrer
+              </button>
+            )}
           </div>
         </form>
       )}
@@ -355,8 +371,14 @@ export default function EventsAdmin() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                      <button onClick={() => openForm(item)} className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors rounded-xl"><Edit2 size={15} /></button>
-                      <button onClick={() => confirmDelete(item.id)} className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors rounded-xl"><Trash2 size={15} /></button>
+                      {isAdmin ? (
+                        <>
+                          <button onClick={() => openForm(item)} className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors rounded-xl" title="Modifier"><Edit2 size={15} /></button>
+                          <button onClick={() => confirmDelete(item.id)} className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors rounded-xl" title="Supprimer"><Trash2 size={15} /></button>
+                        </>
+                      ) : (
+                        <button onClick={() => openForm(item)} className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors rounded-xl" title="Consulter"><Eye size={15} /></button>
+                      )}
                     </div>
                   </td>
                 </tr>

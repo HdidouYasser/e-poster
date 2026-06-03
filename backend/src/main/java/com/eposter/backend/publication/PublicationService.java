@@ -139,6 +139,9 @@ public class PublicationService {
     }
 
     public Publication create(Publication payload) {
+        if (isEventManager()) {
+            throw new IllegalArgumentException("Access Denied: Event Managers are not allowed to create publications");
+        }
         Instant now = Instant.now();
         payload.setId(null);
         payload.setDeletedAt(null);
@@ -171,6 +174,9 @@ public class PublicationService {
     }
 
     public Publication update(Long id, Publication payload) {
+        if (isEventManager()) {
+            throw new IllegalArgumentException("Access Denied: Event Managers are not allowed to edit publications");
+        }
         Publication existing = getById(id); // Performs existing ownership check
         if (payload.getEventId() != null && !payload.getEventId().isBlank()) {
             Long eventId = Long.parseLong(payload.getEventId());
@@ -214,6 +220,7 @@ public class PublicationService {
         auditService.log("PUBLICATION", saved.getId(), "UPDATE", saved.getTitle());
         return saved;
     }
+
     
     private void processRelations(Publication publication) {
         // If authors free-text field is filled, extract and save new authors
@@ -318,6 +325,9 @@ public class PublicationService {
     }
 
     public void delete(Long id) {
+        if (isEventManager()) {
+            throw new IllegalArgumentException("Access Denied: Event Managers are not allowed to delete publications");
+        }
         Publication existing = getById(id);
         repository.delete(existing);
         auditService.log("PUBLICATION", id, "DELETE", existing.getTitle());

@@ -79,6 +79,9 @@ public class EventService {
     }
 
     public Event create(Event payload, String managerEmail) {
+        if (isEventManager()) {
+            throw new IllegalArgumentException("Access Denied: Event Managers are not allowed to create events");
+        }
         Instant now = Instant.now();
         payload.setId(null);
         payload.setDeletedAt(null);
@@ -95,6 +98,9 @@ public class EventService {
     }
 
     public Event update(Long id, Event payload, String managerEmail) {
+        if (isEventManager()) {
+            throw new IllegalArgumentException("Access Denied: Event Managers are not allowed to edit events");
+        }
         Event existing = getById(id); // Already performs ownership check
         existing.setTitle(payload.getTitle());
         existing.setDescription(payload.getDescription());
@@ -126,8 +132,12 @@ public class EventService {
     }
 
     public void delete(Long id) {
+        if (isEventManager()) {
+            throw new IllegalArgumentException("Access Denied: Event Managers are not allowed to delete events");
+        }
         Event existing = getById(id); // Performs ownership check
         repository.delete(existing);
         auditService.log("EVENT", id, "DELETE", existing.getTitle());
     }
+
 }
