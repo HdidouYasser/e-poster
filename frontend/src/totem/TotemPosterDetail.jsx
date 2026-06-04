@@ -19,6 +19,8 @@ export default function TotemPosterDetail() {
   const q = params.get("q") || "";
   const category = params.get("category") || "";
   const eventId = params.get("eventId") || "";
+  const session = params.get("session") || "";
+  const room = params.get("room") || "";
 
   const [zoom, setZoom] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -55,8 +57,10 @@ export default function TotemPosterDetail() {
     }
     if (eventId) base += `&eventId=${encodeURIComponent(eventId)}`;
     if (category) base += `&category=${encodeURIComponent(category)}`;
+    if (session) base += `&session=${encodeURIComponent(session)}`;
+    if (room) base += `&room=${encodeURIComponent(room)}`;
     return base;
-  }, [q, page, eventId, category]);
+  }, [q, page, eventId, category, session, room]);
 
   const pubsQuery = useQuery({
     queryKey: ["totem-pubs-nav", endpoint],
@@ -115,6 +119,8 @@ export default function TotemPosterDetail() {
     if (q) params += `&q=${encodeURIComponent(q)}`;
     if (category) params += `&category=${encodeURIComponent(category)}`;
     if (eventId) params += `&eventId=${encodeURIComponent(eventId)}`;
+    if (session) params += `&session=${encodeURIComponent(session)}`;
+    if (room) params += `&room=${encodeURIComponent(room)}`;
     return params;
   };
 
@@ -187,28 +193,27 @@ export default function TotemPosterDetail() {
           </button>
         </div>
       </header>
-
       {/* ── Navigation Stepper ── */}
       <div className="max-w-7xl mx-auto px-6 pt-6 w-full">
         <div className="flex items-center justify-center bg-white/60 backdrop-blur-sm border border-zinc-200/60 rounded-2xl py-3 px-6 shadow-sm w-fit mx-auto gap-4 md:gap-8 text-[10px] md:text-xs font-bold uppercase tracking-wider text-zinc-400 theme-transition">
           <Link to="/" className="flex items-center gap-2 text-zinc-550 hover:text-zinc-900 transition-colors">
             <span className="w-5 h-5 rounded-full bg-zinc-100 flex items-center justify-center text-[10px]">1</span>
-            <span>Portail</span>
+            <span className="hidden sm:inline">Portail</span>
           </Link>
           <span className="text-zinc-300">/</span>
           <Link to={`/totem?screen=${screen}`} className="flex items-center gap-2 text-zinc-550 hover:text-zinc-900 transition-colors">
             <span className="w-5 h-5 rounded-full bg-zinc-100 flex items-center justify-center text-[10px]">2</span>
-            <span>Sélection Congrès</span>
+            <span className="hidden sm:inline">Sélection Congrès</span>
           </Link>
           <span className="text-zinc-300">/</span>
           <Link to={`/totem/publications${buildSearchParams()}`} className="flex items-center gap-2 text-zinc-550 hover:text-zinc-900 transition-colors">
             <span className="w-5 h-5 rounded-full bg-zinc-100 flex items-center justify-center text-[10px]">3</span>
-            <span>E-Posters</span>
+            <span className="hidden sm:inline">E-Posters</span>
           </Link>
           <span className="text-zinc-300">/</span>
           <div className="flex items-center gap-2 text-blue-600">
             <span className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-[10px]">4</span>
-            <span>Lecture Poster</span>
+            <span className="hidden sm:inline">Lecture Poster</span>
           </div>
         </div>
       </div>
@@ -230,7 +235,7 @@ export default function TotemPosterDetail() {
           <div className="flex flex-col lg:flex-row w-full h-full">
             
             {/* Dark Media Canvas Viewport */}
-            <div className="flex-1 bg-zinc-100/50 flex items-center justify-center p-6 sm:p-10 overflow-auto relative shadow-inner">
+            <div className="flex-1 bg-zinc-100/50 relative overflow-hidden shadow-inner vh-media-viewport">
               {/* Left Side Navigation Button */}
               {prevPub && (
                 <button
@@ -253,41 +258,43 @@ export default function TotemPosterDetail() {
                 </button>
               )}
 
-              {isVideo ? (
-                <div className="w-full h-full max-w-5xl aspect-video rounded-2xl overflow-hidden border border-zinc-200 bg-black shadow-2xl">
-                  <video 
-                    src={activeMediaUrl} 
-                    controls 
-                    autoPlay 
-                    className="w-full h-full object-contain" 
-                  />
-                </div>
-              ) : isPdf ? (
-                <div className="w-full h-full rounded-2xl overflow-hidden border border-zinc-200 bg-white shadow-2xl relative">
-                  {/* Clean iframe to serve same-origin proxied PDF */}
-                  <iframe 
-                    src={activeMediaUrl} 
-                    className="w-full h-full bg-white border-none" 
-                    title="PDF Poster Viewer" 
-                  />
-                </div>
-              ) : activeMediaUrl ? (
-                <div className="max-w-full max-h-full overflow-auto flex items-center justify-center">
+              {/* Absolutely-positioned media area — sits between the two nav arrows */}
+              <div className="absolute inset-0 flex items-center justify-center px-16 py-6 overflow-auto">
+                {isVideo ? (
+                  <div className="w-full h-full max-w-5xl flex-shrink-0 aspect-video rounded-2xl overflow-hidden border border-zinc-200 bg-black shadow-2xl">
+                    <video
+                      src={activeMediaUrl}
+                      controls
+                      autoPlay
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                ) : isPdf ? (
+                  <div className="w-full h-full rounded-2xl overflow-hidden border border-zinc-200 bg-white shadow-2xl relative">
+                    {/* Clean iframe to serve same-origin proxied PDF */}
+                    <iframe
+                      src={activeMediaUrl}
+                      className="w-full h-full bg-white border-none"
+                      title="PDF Poster Viewer"
+                    />
+                  </div>
+                ) : activeMediaUrl ? (
+                  /* Image: constrained to canvas size at zoom=1; CSS transform scales visually when zoomed */
                   <img
                     src={activeMediaUrl}
                     alt={pubQuery.data.title}
-                    className="max-w-none origin-center transition-transform duration-200 ease-out rounded-xl border border-zinc-200 bg-white shadow-2xl"
+                    className="max-w-full max-h-full object-contain origin-center transition-transform duration-200 ease-out rounded-xl border border-zinc-200 bg-white shadow-2xl"
                     style={{ transform: `scale(${zoom})` }}
                     draggable={false}
                   />
-                </div>
-              ) : (
-                <div className="flex flex-col items-center text-zinc-400 max-w-sm text-center">
-                  <FileImage size={64} className="mb-4 text-zinc-300 animate-pulse" />
-                  <h3 className="text-lg font-bold text-zinc-900 mb-2">Aucun visuel associé</h3>
-                  <p className="text-xs text-zinc-550">Le support visuel de cet e-poster n'a pas été téléversé pour le moment.</p>
-                </div>
-              )}
+                ) : (
+                  <div className="flex flex-col items-center text-zinc-400 max-w-sm text-center">
+                    <FileImage size={64} className="mb-4 text-zinc-300 animate-pulse" />
+                    <h3 className="text-lg font-bold text-zinc-900 mb-2">Aucun visuel associé</h3>
+                    <p className="text-xs text-zinc-550">Le support visuel de cet e-poster n'a pas été téléversé pour le moment.</p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Premium details sidebar panel */}
@@ -295,11 +302,16 @@ export default function TotemPosterDetail() {
               
               {/* Header details block */}
               <div className="p-8 border-b border-zinc-200/80 bg-zinc-50/50 theme-transition">
-                {pubQuery.data.category && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-theme-primary/10 text-theme-primary-light border border-theme-primary/20 rounded-lg text-[9px] font-extrabold uppercase tracking-widest mb-4 theme-transition">
-                    <Tag size={10} /> {pubQuery.data.category}
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  {pubQuery.data.category ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-theme-primary/10 text-theme-primary-light border border-theme-primary/20 rounded-lg text-[9px] font-extrabold uppercase tracking-widest theme-transition">
+                      <Tag size={10} /> {pubQuery.data.category}
+                    </span>
+                  ) : <span />}
+                  <span className="text-[10px] font-mono font-extrabold text-zinc-400 bg-zinc-100 px-2.5 py-1 rounded-lg border border-zinc-200/40">
+                    Communication N° {pubQuery.data.id}
                   </span>
-                )}
+                </div>
                 
                 <h2 className="text-xl font-extrabold text-zinc-950 mb-3 tracking-tight leading-snug font-display">
                   {pubQuery.data.title}

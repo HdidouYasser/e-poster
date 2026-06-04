@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 import {
   LogOut, Calendar, FileText, Users, Tags, UploadCloud,
-  Activity, Monitor, Presentation, BarChart3, Download, UserCog, UserCircle2
+  Activity, Monitor, Presentation, BarChart3, Download, UserCog, UserCircle2,
+  Menu, X
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -30,6 +32,8 @@ export default function AdminLayout() {
   const location  = useLocation();
   const isManager = role === "ROLE_EVENT_MANAGER";
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const visibleNavItems = isManager
     ? navItems.filter((n) => !n.adminOnly)
     : navItems.filter((n) => !n.managerOnly);
@@ -46,24 +50,45 @@ export default function AdminLayout() {
     : (username || "AD").substring(0, 2).toUpperCase();
 
   return (
-    <div className="flex h-screen bg-zinc-50 text-zinc-900 font-sans overflow-hidden">
+    <div className="flex h-screen bg-zinc-50 text-zinc-900 font-sans overflow-hidden relative">
+
+      {/* Backdrop overlay for mobile sidebar */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/45 z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
 
       {/* ── Sidebar ── */}
-      <aside className="w-64 border-r border-zinc-200/60 bg-white flex flex-col shrink-0">
+      <aside className={clsx(
+        "w-64 border-r border-zinc-200/60 bg-white flex flex-col shrink-0 transition-transform duration-300 ease-in-out z-50",
+        "fixed lg:static top-0 bottom-0 left-0",
+        isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      )}>
 
-        {/* Logo */}
-        <div className="flex items-center gap-3 px-5 py-5 border-b border-zinc-100">
-          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${isManager ? "bg-blue-600" : "bg-zinc-900"}`}>
-            <Presentation size={18} className="text-white" />
+        {/* Logo with Close button on mobile */}
+        <div className="flex items-center justify-between px-5 py-5 border-b border-zinc-100">
+          <div className="flex items-center gap-3">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${isManager ? "bg-blue-600" : "bg-zinc-900"}`}>
+              <Presentation size={18} className="text-white" />
+            </div>
+            <div>
+              <h1 className="text-sm font-bold text-zinc-900 leading-none tracking-tight font-display">
+                E-Poster
+              </h1>
+              <p className="text-[10px] text-zinc-400 font-semibold mt-0.5 uppercase tracking-widest">
+                {isManager ? "Espace Responsable" : "Administration"}
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-sm font-bold text-zinc-900 leading-none tracking-tight font-display">
-              E-Poster
-            </h1>
-            <p className="text-[10px] text-zinc-400 font-semibold mt-0.5 uppercase tracking-widest">
-              {isManager ? "Espace Responsable" : "Administration"}
-            </p>
-          </div>
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="p-1 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg lg:hidden"
+            aria-label="Fermer le menu"
+          >
+            <X size={18} />
+          </button>
         </div>
 
         {/* Nav */}
@@ -74,6 +99,7 @@ export default function AdminLayout() {
               <Link
                 key={path}
                 to={path}
+                onClick={() => setIsSidebarOpen(false)}
                 className={clsx("nav-link", isActive && "nav-link-active")}
               >
                 <Icon size={16} className={clsx("shrink-0 transition-all", isActive ? "text-white" : "text-zinc-400")} />
@@ -97,6 +123,7 @@ export default function AdminLayout() {
           {isManager ? (
             <Link
               to="/admin/profile"
+              onClick={() => setIsSidebarOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 bg-zinc-50 hover:bg-zinc-100 rounded-xl border border-zinc-100 transition-colors group"
             >
               {/* Avatar */}
@@ -141,11 +168,20 @@ export default function AdminLayout() {
 
         {/* Topbar */}
         <header className="h-14 border-b border-zinc-200/60 bg-white flex items-center justify-between px-7 shrink-0">
-          <div>
-            <span className="text-sm font-bold text-zinc-900" style={{ fontFamily: "'Outfit', sans-serif" }}>
-              {activeNav?.label ?? "Tableau de bord"}
-            </span>
-            <span className="text-xs text-zinc-400 font-medium ml-3">· Plateforme E-Poster</span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-1.5 -ml-1 text-zinc-500 hover:bg-zinc-100 rounded-lg lg:hidden"
+              aria-label="Ouvrir le menu"
+            >
+              <Menu size={20} />
+            </button>
+            <div>
+              <span className="text-sm font-bold text-zinc-900" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                {activeNav?.label ?? "Tableau de bord"}
+              </span>
+              <span className="text-xs text-zinc-400 font-medium ml-3 hidden sm:inline">· Plateforme E-Poster</span>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">

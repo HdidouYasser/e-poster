@@ -1083,26 +1083,137 @@
 
 .vh-see-all:hover { background: #eff6ff; }
 
-/* Grid */
-.vh-events-grid {
-  display: grid;
-  gap: 24px;
+/* Horizontal Events Scroll Slider */
+.vh-events-slider-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
 }
 
-.vh-grid-1 { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
-.vh-grid-2 { grid-template-columns: repeat(2, 1fr); }
-.vh-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.vh-events-scroll-container {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  width: 100%;
+  padding: 16px 4px 28px; /* Padding bottom for card hover shadows */
+  scrollbar-width: none; /* Firefox */
+  -webkit-overflow-scrolling: touch;
+}
+
+.vh-events-scroll-container::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Edge */
+}
+
+.vh-events-scroll-container .vh-event-card {
+  /* Show exactly 3 cards filling the full container width */
+  flex: 0 0 calc((100% - 48px) / 3);
+  min-width: 280px;  /* minimum when screen is narrow, triggers scroll */
+  max-width: 460px;  /* cap on very wide screens */
+}
+
+.vh-scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f172a;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vh-scroll-btn:hover {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  transform: translateY(-50%) scale(1.06);
+}
+
+.vh-scroll-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.vh-scroll-prev {
+  left: -25px;
+}
+
+.vh-scroll-next {
+  right: -25px;
+}
+
+/* Arrow Slide Animations on Hover */
+.vh-arrow-icon-left, .vh-arrow-icon-right {
+  transition: transform 0.2s ease;
+}
+
+.vh-scroll-prev:hover .vh-arrow-icon-left {
+  animation: vh-arrow-bounce-left 0.8s infinite ease-in-out;
+}
+
+.vh-scroll-next:hover .vh-arrow-icon-right {
+  animation: vh-arrow-bounce-right 0.8s infinite ease-in-out;
+}
+
+@keyframes vh-arrow-bounce-left {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-4px); }
+}
+
+@keyframes vh-arrow-bounce-right {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
+
+/* Hide navigation arrows on devices with touch gestures where swiping is natural */
+@media (hover: none) {
+  .vh-scroll-btn {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1280px) {
+  .vh-scroll-prev {
+    left: 8px;
+  }
+  .vh-scroll-next {
+    right: 8px;
+  }
+}
 
 @media (max-width: 900px) {
-  .vh-grid-3 { grid-template-columns: repeat(2, 1fr); }
+  /* On tablet show 2 cards */
+  .vh-events-scroll-container .vh-event-card {
+    flex: 0 0 calc((100% - 24px) / 2);
+    min-width: 260px;
+  }
 }
 
 @media (max-width: 600px) {
-  .vh-grid-2, .vh-grid-3 { grid-template-columns: 1fr; }
+  .vh-events-scroll-container {
+    gap: 16px;
+    padding-bottom: 20px;
+  }
+  /* On phone show 1 card at a time */
+  .vh-events-scroll-container .vh-event-card {
+    flex: 0 0 calc(100% - 32px);
+    min-width: 260px;
+  }
   .vh-hero { padding: 48px 20px 40px; }
   .vh-stats { flex-wrap: wrap; gap: 12px; padding: 16px 20px; }
   .vh-stat-divider { display: none; }
 }
+
 
 /* ── EVENT CARD ── */
 .vh-event-card {
@@ -1124,7 +1235,9 @@
 }
 
 .vh-card-banner {
-  height: 160px;
+  /* Landscape banner: width is ~2.3x the height (16:7 ratio) */
+  aspect-ratio: 16 / 7;
+  width: 100%;
   position: relative;
   overflow: hidden;
   background: #f1f5f9;
@@ -1341,6 +1454,69 @@
 .vh-empty svg { color: #cbd5e1; margin-bottom: 16px; }
 .vh-empty h3 { font-size: 16px; font-weight: 700; color: #0f172a; margin: 0 0 8px; }
 .vh-empty p { font-size: 13px; color: #64748b; margin: 0; }
+
+/* ── PRESENTATION / CARACTÉRISTIQUES ── */
+.vh-presentation-section {
+  padding: 64px 24px;
+  background: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f1f5f9;
+  width: 100%;
+}
+
+.vh-presentation-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.vh-presentation-grid {
+  display: grid;
+  grid-template-cols: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  margin-top: 40px;
+}
+
+.vh-presentation-card {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 24px;
+  transition: all 0.25s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.vh-presentation-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(37,99,235,0.06);
+  border-color: #bfdbfe;
+}
+
+.vh-presentation-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.vh-presentation-card h3 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 10px;
+}
+
+.vh-presentation-card p {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+}
 
 /* ── HOW IT WORKS ── */
 .vh-how-section {
@@ -1687,4 +1863,61 @@ select option {
   background-color: #ffffff !important;
   color: #1f2937 !important;
 }
+
+/* Responsive Table container fallback for all tables */
+div:has(> table) {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Header mobile layout overrides */
+@media (max-width: 640px) {
+  .vh-header-inner {
+    padding: 0 16px;
+    gap: 12px;
+  }
+  .vh-logo-sub {
+    display: none !important;
+  }
+  .vh-nav {
+    gap: 4px;
+  }
+  .vh-nav-link {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .vh-btn-primary, .vh-btn-ghost {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
+/* Search bar button responsive optimization */
+@media (max-width: 480px) {
+  .vh-search-box {
+    padding: 4px;
+  }
+  .vh-search-btn {
+    padding: 10px;
+  }
+  .vh-search-btn-text {
+    display: none !important;
+  }
+  .vh-search-input {
+    padding-left: 36px;
+    font-size: 13px;
+  }
+  .vh-search-icon {
+    left: 12px;
+  }
+}
+
+/* Totem Poster detail mobile viewport height limit so it doesn't collapse */
+@media (max-width: 1024px) {
+  .vh-media-viewport {
+    min-height: 450px;
+    height: 60vh;
+  }
+}
+
 

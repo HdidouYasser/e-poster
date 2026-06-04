@@ -4,7 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -15,11 +17,42 @@ public class UserController {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserController(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserController(UserRepository userRepository, RoleRepository roleRepository,
+                          PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
+
+    // ─── Profile (self) ────────────────────────────────────────────────────────
+
+    /** Returns the profile of the currently authenticated user. */
+    @GetMapping("/me")
+    public User getMe(Principal principal) {
+        return userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new IllegalArgumentException("Utilisateur introuvable"));
+    }
+
+    /**
+     * Updates the profile of the currently authenticated user.
+     * Accepts: firstName, lastName, avatarUrl, password (optional).
+     */
+    @PutMapping("/me")
+    public User updateMe(Principal principal, @RequestBody ProfileUpdateRequest body) {
+        User user = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new IllegalArgumentException("Utilisateur introuvable"));
+
+        if (body.firstName() != null) user.setFirstName(body.firstName());
+        if (body.lastName()  != null) user.setLastName(body.lastName());
+        if (body.avatarUrl() != null) user.setAvatarUrl(body.avatarUrl());
+        if (body.password()  != null && !body.password().isBlank()) {
+            user.setPasswordHash(passwordEncoder.encode(body.password()));
+        }
+        user.setUpdatedAt(java.time.Instant.now());
+        return userRepository.save(user);
+    }
+
+    // ─── Admin: managers CRUD ──────────────────────────────────────────────────
 
     @GetMapping("/managers")
     public List<User> listManagers() {
@@ -84,4 +117,18 @@ public class UserController {
                 .orElseThrow(() -> new IllegalArgumentException("Responsable introuvable"));
         userRepository.delete(existing);
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleBadRequest(IllegalArgumentException ex) {
+        return Map.of("message", ex.getMessage());
+    }
+
+    /** DTO for profile self-update */
+    public record ProfileUpdateRequest(
+            String firstName,
+            String lastName,
+            String avatarUrl,
+            String password
+    ) {}
 }

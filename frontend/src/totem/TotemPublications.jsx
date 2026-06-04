@@ -169,15 +169,17 @@ export default function TotemPublications() {
             className="peer w-full bg-white border border-zinc-200 focus:border-blue-600 focus:ring-1 focus:ring-blue-500/20 text-zinc-900 placeholder-zinc-400 pl-11 pr-12 py-3 rounded-2xl text-sm outline-none transition-all shadow-sm hover:shadow-md"
             value={q}
             onChange={(e) => { setQ(e.target.value); setPage(0); }}
-            onFocus={() => setShowKeyboard(true)}
+            onFocus={() => { if (screen !== "visitor") setShowKeyboard(true); }}
             placeholder="Rechercher par titre, auteur, mot-clé..."
           />
-          <button 
-            onClick={() => setShowKeyboard(!showKeyboard)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-all rounded-lg"
-          >
-            {showKeyboard ? <X size={18} /> : <KeyboardIcon size={18} />}
-          </button>
+          {screen !== "visitor" && (
+            <button 
+              onClick={() => setShowKeyboard(!showKeyboard)}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-all rounded-lg"
+            >
+              {showKeyboard ? <X size={18} /> : <KeyboardIcon size={18} />}
+            </button>
+          )}
 
           {showKeyboard && (
             <div className="totem-keyboard-wrap">
@@ -224,22 +226,22 @@ export default function TotemPublications() {
         <div className="flex items-center justify-center bg-white/60 backdrop-blur-sm border border-zinc-200/60 rounded-2xl py-3 px-6 shadow-sm w-fit mx-auto gap-4 md:gap-8 text-[10px] md:text-xs font-bold uppercase tracking-wider text-zinc-400 theme-transition">
           <Link to="/" className="flex items-center gap-2 text-zinc-550 hover:text-zinc-900 transition-colors">
             <span className="w-5 h-5 rounded-full bg-zinc-100 flex items-center justify-center text-[10px]">1</span>
-            <span>Portail</span>
+            <span className="hidden sm:inline">Portail</span>
           </Link>
           <span className="text-zinc-300">/</span>
           <Link to={`/totem?screen=${screen}`} className="flex items-center gap-2 text-zinc-550 hover:text-zinc-900 transition-colors">
             <span className="w-5 h-5 rounded-full bg-zinc-100 flex items-center justify-center text-[10px]">2</span>
-            <span>Sélection Congrès</span>
+            <span className="hidden sm:inline">Sélection Congrès</span>
           </Link>
           <span className="text-zinc-300">/</span>
           <div className="flex items-center gap-2 text-blue-600">
             <span className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-[10px]">3</span>
-            <span>E-Posters</span>
+            <span className="hidden sm:inline">E-Posters</span>
           </div>
           <span className="text-zinc-300">/</span>
           <div className="flex items-center gap-2 opacity-50">
             <span className="w-5 h-5 rounded-full bg-zinc-150 flex items-center justify-center text-[10px] text-zinc-500">4</span>
-            <span>Lecture Poster</span>
+            <span className="hidden sm:inline">Lecture Poster</span>
           </div>
         </div>
       </div>
@@ -312,7 +314,16 @@ export default function TotemPublications() {
             <div
               key={p.id}
               onClick={() => {
-                const path = `/totem/publications/${p.id}?screen=${screen}`;
+                const searchParamStr = [
+                  `screen=${screen}`,
+                  `page=${page}`,
+                  eventId    ? `eventId=${encodeURIComponent(eventId)}`     : '',
+                  q          ? `q=${encodeURIComponent(q)}`                 : '',
+                  category   ? `category=${encodeURIComponent(category)}`   : '',
+                  session    ? `session=${encodeURIComponent(session)}`     : '',
+                  room       ? `room=${encodeURIComponent(room)}`           : '',
+                ].filter(Boolean).join('&');
+                const path = `/totem/publications/${p.id}?${searchParamStr}`;
                 sync.send({ type: "NAVIGATE", screen, path });
                 navigate(path);
               }}
@@ -345,12 +356,17 @@ export default function TotemPublications() {
               {/* Card metadata details */}
               <div className="p-5 flex-1 flex flex-col justify-between">
                 <div>
-                  {/* Category badge */}
-                  {p.category && (
-                    <span className="inline-flex items-center gap-1 text-[9px] font-extrabold text-theme-primary uppercase tracking-wider mb-2 theme-transition">
-                      <Tag size={10} /> {p.category}
+                  {/* Category & ID badge */}
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    {p.category ? (
+                      <span className="inline-flex items-center gap-1 text-[9px] font-extrabold text-theme-primary uppercase tracking-wider theme-transition">
+                        <Tag size={10} /> {p.category}
+                      </span>
+                    ) : <span />}
+                    <span className="text-[9px] font-mono font-extrabold text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-lg border border-zinc-200/40">
+                      N° {p.id}
                     </span>
-                  )}
+                  </div>
                   
                   {/* Title */}
                   <h3 className="text-sm font-bold line-clamp-2 leading-snug mb-1 text-zinc-900 group-hover:text-theme-primary transition-colors duration-300 font-display theme-transition">

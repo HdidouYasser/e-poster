@@ -118,22 +118,22 @@ export default function TotemHome() {
         <div className="flex items-center justify-center bg-white/60 backdrop-blur-sm border border-zinc-200/60 rounded-2xl py-3 px-6 shadow-sm w-fit mx-auto gap-4 md:gap-8 text-[10px] md:text-xs font-bold uppercase tracking-wider text-zinc-400 theme-transition">
           <Link to="/" className="flex items-center gap-2 text-zinc-550 hover:text-zinc-900 transition-colors">
             <span className="w-5 h-5 rounded-full bg-zinc-100 flex items-center justify-center text-[10px]">1</span>
-            <span>Portail</span>
+            <span className="hidden sm:inline">Portail</span>
           </Link>
           <span className="text-zinc-300">/</span>
           <div className="flex items-center gap-2 text-blue-600">
             <span className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-[10px]">2</span>
-            <span>Sélection Congrès</span>
+            <span className="hidden sm:inline">Sélection Congrès</span>
           </div>
           <span className="text-zinc-300">/</span>
           <div className="flex items-center gap-2 opacity-50">
             <span className="w-5 h-5 rounded-full bg-zinc-150 flex items-center justify-center text-[10px] text-zinc-500">3</span>
-            <span>E-Posters</span>
+            <span className="hidden sm:inline">E-Posters</span>
           </div>
           <span className="text-zinc-300">/</span>
           <div className="flex items-center gap-2 opacity-50">
             <span className="w-5 h-5 rounded-full bg-zinc-150 flex items-center justify-center text-[10px] text-zinc-500">4</span>
-            <span>Lecture Poster</span>
+            <span className="hidden sm:inline">Lecture Poster</span>
           </div>
         </div>
       </div>

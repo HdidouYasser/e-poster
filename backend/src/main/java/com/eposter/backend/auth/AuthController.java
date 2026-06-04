@@ -31,6 +31,15 @@ public class AuthController {
         return authService.register(request);
     }
 
+    /**
+     * Google OAuth2 login — accepts the Google ID token from the frontend
+     * (obtained via @react-oauth/google), verifies it, and returns an application JWT.
+     */
+    @PostMapping("/google")
+    public AuthDtos.LoginResponse loginWithGoogle(@Valid @RequestBody AuthDtos.GoogleLoginRequest request) {
+        return authService.loginWithGoogle(request.credential());
+    }
+
     @GetMapping("/me")
     public String me() {
         return "authenticated";
@@ -42,4 +51,3 @@ public class AuthController {
         return java.util.Map.of("message", ex.getMessage());
     }
 }
-

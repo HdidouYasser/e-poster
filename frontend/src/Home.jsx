@@ -1,12 +1,13 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "./stores/authStore";
 import { publicApi, getMediaUrl } from "./api";
 import {
   Presentation, Search, Calendar, ArrowRight,
-  Lock, LayoutDashboard, MapPin, Users, Stethoscope,
-  ChevronRight, Globe, Award, BookOpen
+  Lock, LayoutDashboard, MapPin, Users,
+  ChevronRight, ChevronLeft, Globe, Award, BookOpen,
+  Sparkles, Monitor, Layers, QrCode
 } from "lucide-react";
 
 export default function Home() {
@@ -14,6 +15,28 @@ export default function Home() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const username = useAuthStore((s) => s.username);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const scrollContainerRef = useRef(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setShowLeftArrow(scrollLeft > 10);
+      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  const scroll = (direction) => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 400; // scroll by roughly one card width
+      scrollContainerRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth"
+      });
+    }
+  };
 
   const { data: eventsData, isLoading } = useQuery({
     queryKey: ["home-events"],
@@ -25,6 +48,24 @@ export default function Home() {
     () => allEvents.filter((e) => e.status?.toUpperCase() === "ACTIVE"),
     [allEvents]
   );
+
+  useEffect(() => {
+    const checkScrollable = () => {
+      if (scrollContainerRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+        setShowLeftArrow(scrollLeft > 10);
+        setShowRightArrow(scrollWidth > clientWidth + 10 && scrollLeft < scrollWidth - clientWidth - 10);
+      }
+    };
+
+    const timer = setTimeout(checkScrollable, 200);
+    window.addEventListener("resize", checkScrollable);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", checkScrollable);
+    };
+  }, [activeEvents]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -60,7 +101,7 @@ export default function Home() {
         <div className="vh-header-inner">
           <div className="vh-logo">
             <div className="vh-logo-icon">
-              <Stethoscope size={20} />
+              <Presentation size={20} />
             </div>
             <div>
               <span className="vh-logo-name">E-Poster</span>
@@ -93,16 +134,16 @@ export default function Home() {
       <section className="vh-hero">
         <div className="vh-hero-badge">
           <Globe size={12} />
-          Espace de consultation des communications médicales
+          Espace de consultation des communications scientifiques
         </div>
 
         <h1 className="vh-hero-title">
           Explorez les communications<br />
-          <span className="vh-hero-accent">scientifiques médicales</span>
+          <span className="vh-hero-accent">scientifiques & académiques</span>
         </h1>
 
         <p className="vh-hero-desc">
-          Accédez aux e-posters des congrès médicaux, consultez les abstracts
+          Accédez aux e-posters des congrès, consultez les abstracts
           et scannez les QR codes pour retrouver les publications sur votre mobile.
         </p>
 
@@ -118,13 +159,13 @@ export default function Home() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             <button type="submit" className="vh-search-btn">
-              Rechercher
+              <span className="vh-search-btn-text">Rechercher</span>
               <ArrowRight size={14} />
             </button>
           </div>
           <div className="vh-search-tags">
             <span className="vh-tags-label">Tendances :</span>
-            {["Cardiologie", "Oncologie", "Neurologie", "AVC", "Infarctus"].map((tag) => (
+            {["Médecine", "Infectiologie", "Sciences", "Technologie", "Recherche"].map((tag) => (
               <button
                 key={tag}
                 type="button"
@@ -165,7 +206,7 @@ export default function Home() {
           <div>
             <h2 className="vh-section-title">
               <Award size={20} />
-              Congrès Médicaux en cours
+              Congrès en cours
             </h2>
             <p className="vh-section-sub">
               Sélectionnez un congrès pour parcourir ses communications scientifiques
@@ -188,18 +229,105 @@ export default function Home() {
             <p>Revenez prochainement ou contactez l'administrateur.</p>
           </div>
         ) : (
-          <div className={`vh-events-grid ${activeEvents.length === 1 ? "vh-grid-1" : activeEvents.length === 2 ? "vh-grid-2" : "vh-grid-3"}`}>
-            {activeEvents.map((event) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                formatDate={formatDate}
-                formatDateShort={formatDateShort}
-                onClick={() => navigate(`/totem/publications?eventId=${event.id}&screen=visitor`)}
-              />
-            ))}
+          <div className="vh-events-slider-wrapper">
+            {showLeftArrow && (
+              <button
+                type="button"
+                className="vh-scroll-btn vh-scroll-prev"
+                onClick={() => scroll("left")}
+                aria-label="Défiler à gauche"
+              >
+                <ChevronLeft size={24} className="vh-arrow-icon-left" />
+              </button>
+            )}
+
+            <div
+              ref={scrollContainerRef}
+              onScroll={handleScroll}
+              className="vh-events-scroll-container"
+            >
+              {activeEvents.map((event) => (
+                <EventCard
+                   key={event.id}
+                   event={event}
+                   formatDate={formatDate}
+                   formatDateShort={formatDateShort}
+                   onClick={() => navigate(`/totem/publications?eventId=${event.id}&screen=visitor`)}
+                />
+              ))}
+            </div>
+
+            {showRightArrow && (
+              <button
+                type="button"
+                className="vh-scroll-btn vh-scroll-next"
+                onClick={() => scroll("right")}
+                aria-label="Défiler à droite"
+              >
+                <ChevronRight size={24} className="vh-arrow-icon-right" />
+              </button>
+            )}
           </div>
         )}
+      </section>
+
+      {/* ── PRESENTATION / CARACTÉRISTIQUES ── */}
+      <section className="vh-presentation-section">
+        <div className="vh-presentation-inner">
+          <div className="vh-section-header centered">
+            <div>
+              <h2 className="vh-section-title centered">
+                <Sparkles size={20} />
+                Une Plateforme 100% Dynamique
+              </h2>
+              <p className="vh-section-sub centered">
+                Conçue selon le cahier des charges pour s'adapter à tous vos congrès et événements
+              </p>
+            </div>
+          </div>
+
+          <div className="vh-presentation-grid">
+            <div className="vh-presentation-card">
+              <div className="vh-presentation-icon-wrap">
+                <Sparkles size={22} />
+              </div>
+              <h3>Gestion Centralisée & Dynamique</h3>
+              <p>
+                Terminé le code figé ou les injections manuelles. Les événements, les publications (e-posters) et les thématiques sont administrables instantanément depuis le back-office.
+              </p>
+            </div>
+
+            <div className="vh-presentation-card">
+              <div className="vh-presentation-icon-wrap">
+                <Monitor size={22} />
+              </div>
+              <h3>Optimisé pour Totem Tactile</h3>
+              <p>
+                Interface de consultation fluide avec de grands boutons tactiles, recherche instantanée (titre, auteur, département), filtres avancés et clavier virtuel intégré.
+              </p>
+            </div>
+
+            <div className="vh-presentation-card">
+              <div className="vh-presentation-icon-wrap">
+                <Layers size={22} />
+              </div>
+              <h3>Mode Multi-Écrans</h3>
+              <p>
+                Associez dynamiquement vos publications et médias à différents écrans de diffusion (Écran 1, Écran 2, etc.) avec transition en temps réel et mode diaporama.
+              </p>
+            </div>
+
+            <div className="vh-presentation-card">
+              <div className="vh-presentation-icon-wrap">
+                <QrCode size={22} />
+              </div>
+              <h3>Accès Mobile par QR Code</h3>
+              <p>
+                Chaque publication dispose de son QR Code unique généré automatiquement, permettant aux visiteurs de télécharger le e-poster ou le programme sur leur mobile.
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* ── HOW IT WORKS ── */}
@@ -219,7 +347,7 @@ export default function Home() {
             <div className="vh-step">
               <div className="vh-step-num">1</div>
               <h3>Choisissez un congrès</h3>
-              <p>Sélectionnez l'événement médical qui vous intéresse parmi les congrès actifs.</p>
+              <p>Sélectionnez l'événement qui vous intéresse parmi les congrès actifs.</p>
             </div>
             <div className="vh-step-arrow"><ChevronRight size={20} /></div>
             <div className="vh-step">
@@ -242,7 +370,7 @@ export default function Home() {
         <div className="vh-footer-inner">
           <div className="vh-footer-brand">
             <div className="vh-logo-icon sm">
-              <Stethoscope size={14} />
+              <Presentation size={14} />
             </div>
             <div>
               <span className="vh-footer-name">Plateforme E-Poster</span>
