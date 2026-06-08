@@ -1,17 +1,73 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { publicApi, getMediaUrl } from "../api";
+import { publicApi, getMediaUrl, getPosterThumbnail } from "../api";
 import { useIdleTimer } from "../hooks/useIdleTimer";
 import { createTotemSync } from "./totemSync";
-import { ArrowLeft, ZoomIn, ZoomOut, Maximize, Minimize, RefreshCcw, FileImage, Tag, MapPin, Clock, ChevronLeft, ChevronRight, Video, FileText } from "lucide-react";
+import {
+  ArrowLeft, ZoomIn, ZoomOut, Maximize, Minimize, RefreshCcw,
+  FileImage, Tag, MapPin, Clock, ChevronLeft, ChevronRight,
+  Video, FileText, Info
+} from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
 import { useDynamicTheme } from "../hooks/useDynamicTheme";
 
 const sync = createTotemSync();
 
+// ── Poster navigation preview tooltip ──
+function NavPreviewBtn({ pub, direction, onClick, eventId, buildSearchParams }) {
+  const [hovered, setHovered] = useState(false);
+  const thumbUrl = pub?.posterUrl ? getPosterThumbnail(pub.posterUrl) : null;
+
+  return (
+    <div className="relative">
+      <button
+        onClick={onClick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        className={`absolute ${direction === 'left' ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 hover:bg-white border border-zinc-200 text-zinc-800 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all hover:scale-105`}
+        title={direction === 'left' ? 'Poster Précédent' : 'Poster Suivant'}
+      >
+        {direction === 'left' ? <ChevronLeft size={24} /> : <ChevronRight size={24} />}
+      </button>
+
+      {/* Hover tooltip preview */}
+      {hovered && pub && (
+        <div
+          className={`absolute z-20 top-1/2 -translate-y-1/2 ${direction === 'left' ? 'left-20' : 'right-20'} 
+            w-56 bg-white border border-zinc-200 rounded-2xl shadow-xl p-3 pointer-events-none`}
+          style={{ animation: 'fadeIn 0.15s ease' }}
+        >
+          {thumbUrl ? (
+            <img
+              src={thumbUrl}
+              alt={pub.title}
+              className="w-full aspect-[3/4] object-cover rounded-xl border border-zinc-100 mb-2.5"
+            />
+          ) : (
+            <div className="w-full aspect-[3/4] rounded-xl border border-zinc-100 mb-2.5 bg-zinc-100 flex items-center justify-center">
+              <FileImage size={28} className="text-zinc-300" />
+            </div>
+          )}
+          <p className="text-xs font-bold text-zinc-900 line-clamp-2 leading-snug">{pub.title}</p>
+          {pub.authors && (
+            <p className="text-[10px] text-zinc-400 font-semibold mt-1 truncate">{pub.authors}</p>
+          )}
+          <div className="flex items-center gap-1 mt-2">
+            <Info size={10} className="text-zinc-300" />
+            <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider">
+              {direction === 'left' ? '← Précédent' : 'Suivant →'}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function TotemPosterDetail() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams();
   const [params] = useSearchParams();
   const screen = params.get("screen") || "1";
@@ -42,7 +98,6 @@ export default function TotemPosterDetail() {
     [eventQuery.data, activeEventQuery.data]
   );
 
-  // Apply dynamic color theme of the selected event
   useDynamicTheme(selectedEvent?.colorPrimary, selectedEvent?.logoUrl);
 
   const pubQuery = useQuery({
@@ -71,18 +126,16 @@ export default function TotemPosterDetail() {
   const mediaList = useMemo(() => pubQuery.data?.mediaList || [], [pubQuery.data]);
   const [activeMedia, setActiveMedia] = useState(null);
 
-  // Reset active media when changing publication
   useEffect(() => {
     setActiveMedia(null);
+    setZoom(1);
   }, [id]);
 
   const { nextPub, prevPub, currentIndex } = useMemo(() => {
     const items = pubsQuery.data?.items || [];
     const currentIndex = items.findIndex(p => Number(p.id) === Number(id));
-    
     let prevPub = currentIndex > 0 ? items[currentIndex - 1] : null;
     let nextPub = currentIndex >= 0 && currentIndex < items.length - 1 ? items[currentIndex + 1] : null;
-    
     return { nextPub, prevPub, currentIndex };
   }, [pubsQuery.data, id]);
 
@@ -92,11 +145,23 @@ export default function TotemPosterDetail() {
     enabled: screen === "1" || screen === "2"
   });
 
+  // Broadcast navigation if this is the controller (visitor screen)
+  useEffect(() => {
+    if (screen === "visitor") {
+      sync.send({ type: "NAVIGATE", screen, path: location.pathname + location.search });
+    }
+  }, [location, screen]);
+
+  // Listen to navigation from other screens
   useEffect(() => {
     return sync.onMessage((msg) => {
       if (!msg || msg.type !== "NAVIGATE") return;
       if (String(msg.screen) === String(screen)) return;
-      navigate(msg.path);
+
+      // Rewrite screen parameter in path to match local screen
+      const url = new URL(msg.path, window.location.origin);
+      url.searchParams.set("screen", screen);
+      navigate(url.pathname + url.search);
     });
   }, [navigate, screen]);
 
@@ -109,22 +174,19 @@ export default function TotemPosterDetail() {
         await document.exitFullscreen();
         setIsFullscreen(false);
       }
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
   };
 
   const buildSearchParams = () => {
-    let params = `?screen=${screen}&page=${page}`;
-    if (q) params += `&q=${encodeURIComponent(q)}`;
-    if (category) params += `&category=${encodeURIComponent(category)}`;
-    if (eventId) params += `&eventId=${encodeURIComponent(eventId)}`;
-    if (session) params += `&session=${encodeURIComponent(session)}`;
-    if (room) params += `&room=${encodeURIComponent(room)}`;
-    return params;
+    let p = `?screen=${screen}&page=${page}`;
+    if (q) p += `&q=${encodeURIComponent(q)}`;
+    if (category) p += `&category=${encodeURIComponent(category)}`;
+    if (eventId) p += `&eventId=${encodeURIComponent(eventId)}`;
+    if (session) p += `&session=${encodeURIComponent(session)}`;
+    if (room) p += `&room=${encodeURIComponent(room)}`;
+    return p;
   };
 
-  // Determine media type for rendering
   const activeMediaUrl = useMemo(() => {
     return getMediaUrl(activeMedia?.filePath || posterUrl);
   }, [activeMedia, posterUrl]);
@@ -135,14 +197,12 @@ export default function TotemPosterDetail() {
     return false;
   }, [activeMedia, posterUrl]);
 
-  const isVideo = useMemo(() => {
-    return activeMedia?.fileType === "VIDEO";
-  }, [activeMedia]);
+  const isVideo = useMemo(() => activeMedia?.fileType === "VIDEO", [activeMedia]);
 
   return (
     <div className="min-h-screen flex flex-col bg-zinc-50 text-zinc-900 font-sans transition-colors duration-500 selection:bg-theme-secondary/20 selection:text-zinc-900 bg-dot-grid theme-transition relative overflow-hidden">
 
-      {/* Header Toolbar */}
+      {/* ── Header Toolbar ── */}
       <header className="flex items-center justify-between px-6 py-4 bg-white/80 backdrop-blur-md border-b border-zinc-200/60 z-10 shrink-0 shadow-sm theme-transition">
         <Link
           to={`/totem/publications${buildSearchParams()}`}
@@ -150,39 +210,40 @@ export default function TotemPosterDetail() {
         >
           <ArrowLeft size={15} /> Retour aux communications
         </Link>
-        
+
         <div className="flex items-center gap-3">
-          {/* Zoom controls (hidden for video/pdf, active for image) */}
+          {/* Zoom controls — image only */}
           {!isPdf && !isVideo && (
             <div className="flex bg-zinc-100/80 p-1 rounded-xl border border-zinc-200/60 items-center">
-              <button 
-                onClick={() => setZoom((z) => Math.max(0.6, Number((z - 0.1).toFixed(2))))} 
+              <button
+                onClick={() => setZoom((z) => Math.max(0.6, Number((z - 0.1).toFixed(2))))}
                 className="p-2 hover:bg-zinc-200/50 rounded-lg text-zinc-500 hover:text-zinc-900 transition-all active:scale-90"
+                title="Dé-zoomer"
               >
                 <ZoomOut size={14} />
               </button>
               <div className="flex items-center justify-center w-14 font-mono text-[11px] font-bold text-zinc-600">
                 {Math.round(zoom * 100)}%
               </div>
-              <button 
-                onClick={() => setZoom((z) => Math.min(3, Number((z - -0.1).toFixed(2))))} 
+              <button
+                onClick={() => setZoom((z) => Math.min(3, Number((z + 0.1).toFixed(2))))}
                 className="p-2 hover:bg-zinc-200/50 rounded-lg text-zinc-500 hover:text-zinc-900 transition-all active:scale-90"
+                title="Zoomer"
               >
                 <ZoomIn size={14} />
               </button>
             </div>
           )}
-          
+
           {!isPdf && !isVideo && (
-            <button 
-              onClick={() => setZoom(1)} 
+            <button
+              onClick={() => setZoom(1)}
               className="p-2.5 bg-white hover:bg-zinc-50 border border-zinc-200 rounded-xl transition-all text-zinc-500 hover:text-zinc-900 active:scale-95 shadow-sm"
               title="Réinitialiser zoom"
             >
               <RefreshCcw size={14} />
             </button>
           )}
-
           <button
             onClick={requestFullscreen}
             style={{ backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' }}
@@ -193,7 +254,8 @@ export default function TotemPosterDetail() {
           </button>
         </div>
       </header>
-      {/* ── Navigation Stepper ── */}
+
+      {/* ── Navigation Stepper Breadcrumb ── */}
       <div className="max-w-7xl mx-auto px-6 pt-6 w-full">
         <div className="flex items-center justify-center bg-white/60 backdrop-blur-sm border border-zinc-200/60 rounded-2xl py-3 px-6 shadow-sm w-fit mx-auto gap-4 md:gap-8 text-[10px] md:text-xs font-bold uppercase tracking-wider text-zinc-400 theme-transition">
           <Link to="/" className="flex items-center gap-2 text-zinc-550 hover:text-zinc-900 transition-colors">
@@ -211,19 +273,33 @@ export default function TotemPosterDetail() {
             <span className="hidden sm:inline">E-Posters</span>
           </Link>
           <span className="text-zinc-300">/</span>
-          <div className="flex items-center gap-2 text-blue-600">
-            <span className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-[10px]">4</span>
+          <div className="flex items-center gap-2" style={{ color: 'var(--theme-primary)' }}>
+            <span
+              className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-extrabold"
+              style={{ backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' }}
+            >4</span>
             <span className="hidden sm:inline">Lecture Poster</span>
           </div>
         </div>
       </div>
 
-      {/* Main Content Layout */}
+      {/* ── Main Content ── */}
       <main className="flex-1 flex overflow-hidden relative">
         {pubQuery.isLoading ? (
-          <div className="flex-1 flex flex-col items-center justify-center bg-zinc-50">
-            <div className="w-10 h-10 border-4 border-zinc-200 border-t-theme-secondary rounded-full animate-spin mb-4" />
-            <div className="text-sm text-zinc-400 font-semibold tracking-wide">Chargement du document...</div>
+          /* ── Skeleton loader instead of plain spinner ── */
+          <div className="flex-1 flex flex-col lg:flex-row w-full h-full animate-pulse">
+            {/* Media canvas skeleton */}
+            <div className="flex-1 bg-zinc-100 flex items-center justify-center vh-media-viewport">
+              <div className="w-2/3 aspect-[3/4] bg-zinc-200 rounded-2xl" />
+            </div>
+            {/* Sidebar skeleton */}
+            <div className="w-full lg:w-[400px] bg-white border-l border-zinc-200 flex flex-col gap-6 p-8">
+              <div className="skeleton-text h-5 w-1/3 shimmer-pulse" />
+              <div className="skeleton-text h-7 w-4/5 shimmer-pulse" style={{ animationDelay: '0.1s' }} />
+              <div className="skeleton-text h-4 w-3/5 shimmer-pulse" style={{ animationDelay: '0.2s' }} />
+              <div className="skeleton-text h-4 w-full shimmer-pulse" style={{ animationDelay: '0.3s' }} />
+              <div className="skeleton-text h-4 w-5/6 shimmer-pulse" style={{ animationDelay: '0.4s' }} />
+            </div>
           </div>
         ) : !pubQuery.data ? (
           <div className="flex-1 flex flex-col items-center justify-center bg-white/20 m-8 rounded-3xl border border-zinc-200 shadow-2xl">
@@ -233,53 +309,40 @@ export default function TotemPosterDetail() {
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row w-full h-full">
-            
-            {/* Dark Media Canvas Viewport */}
+
+            {/* ── Dark Media Canvas ── */}
             <div className="flex-1 bg-zinc-100/50 relative overflow-hidden shadow-inner vh-media-viewport">
-              {/* Left Side Navigation Button */}
+              {/* Left nav arrow with preview tooltip */}
               {prevPub && (
-                <button
+                <NavPreviewBtn
+                  pub={prevPub}
+                  direction="left"
                   onClick={() => navigate(`/totem/publications/${prevPub.id}${buildSearchParams()}`)}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 hover:bg-white border border-zinc-200 text-zinc-800 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all hover:scale-105"
-                  title="Poster Précédent"
-                >
-                  <ChevronLeft size={24} />
-                </button>
+                  buildSearchParams={buildSearchParams}
+                />
               )}
 
-              {/* Right Side Navigation Button */}
+              {/* Right nav arrow with preview tooltip */}
               {nextPub && (
-                <button
+                <NavPreviewBtn
+                  pub={nextPub}
+                  direction="right"
                   onClick={() => navigate(`/totem/publications/${nextPub.id}${buildSearchParams()}`)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 hover:bg-white border border-zinc-200 text-zinc-800 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all hover:scale-105"
-                  title="Poster Suivant"
-                >
-                  <ChevronRight size={24} />
-                </button>
+                  buildSearchParams={buildSearchParams}
+                />
               )}
 
-              {/* Absolutely-positioned media area — sits between the two nav arrows */}
+              {/* Media display */}
               <div className="absolute inset-0 flex items-center justify-center px-16 py-6 overflow-auto">
                 {isVideo ? (
                   <div className="w-full h-full max-w-5xl flex-shrink-0 aspect-video rounded-2xl overflow-hidden border border-zinc-200 bg-black shadow-2xl">
-                    <video
-                      src={activeMediaUrl}
-                      controls
-                      autoPlay
-                      className="w-full h-full object-contain"
-                    />
+                    <video src={activeMediaUrl} controls autoPlay className="w-full h-full object-contain" />
                   </div>
                 ) : isPdf ? (
                   <div className="w-full h-full rounded-2xl overflow-hidden border border-zinc-200 bg-white shadow-2xl relative">
-                    {/* Clean iframe to serve same-origin proxied PDF */}
-                    <iframe
-                      src={activeMediaUrl}
-                      className="w-full h-full bg-white border-none"
-                      title="PDF Poster Viewer"
-                    />
+                    <iframe src={activeMediaUrl} className="w-full h-full bg-white border-none" title="PDF Poster Viewer" />
                   </div>
                 ) : activeMediaUrl ? (
-                  /* Image: constrained to canvas size at zoom=1; CSS transform scales visually when zoomed */
                   <img
                     src={activeMediaUrl}
                     alt={pubQuery.data.title}
@@ -291,15 +354,15 @@ export default function TotemPosterDetail() {
                   <div className="flex flex-col items-center text-zinc-400 max-w-sm text-center">
                     <FileImage size={64} className="mb-4 text-zinc-300 animate-pulse" />
                     <h3 className="text-lg font-bold text-zinc-900 mb-2">Aucun visuel associé</h3>
-                    <p className="text-xs text-zinc-550">Le support visuel de cet e-poster n'a pas été téléversé pour le moment.</p>
+                    <p className="text-xs text-zinc-500">Le support visuel de cet e-poster n'a pas encore été téléversé.</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Premium details sidebar panel */}
+            {/* ── Premium Details Sidebar ── */}
             <div className="w-full lg:w-[400px] bg-white border-t lg:border-t-0 lg:border-l border-zinc-200 flex flex-col shrink-0 overflow-y-auto shadow-lg">
-              
+
               {/* Header details block */}
               <div className="p-8 border-b border-zinc-200/80 bg-zinc-50/50 theme-transition">
                 <div className="flex items-center justify-between gap-3 mb-4">
@@ -312,16 +375,17 @@ export default function TotemPosterDetail() {
                     Communication N° {pubQuery.data.id}
                   </span>
                 </div>
-                
+
                 <h2 className="text-xl font-extrabold text-zinc-950 mb-3 tracking-tight leading-snug font-display">
                   {pubQuery.data.title}
                 </h2>
-                
+
                 <p className="text-sm font-semibold text-zinc-500 mb-5">
                   {pubQuery.data.authors || "Auteur principal"}
                 </p>
 
-                <div className="flex flex-wrap gap-2.5">
+                {/* Session / Room badges */}
+                <div className="flex flex-wrap gap-2.5 mb-5">
                   {pubQuery.data.session && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-zinc-650 rounded-xl text-xs font-semibold border border-zinc-200/60 shadow-sm">
                       <Clock size={12} className="text-theme-secondary animate-pulse" /> {pubQuery.data.session}
@@ -332,10 +396,10 @@ export default function TotemPosterDetail() {
                       <MapPin size={12} className="text-theme-secondary" /> {pubQuery.data.room}
                     </span>
                   )}
-                </div>
               </div>
+            </div>
 
-              {/* Abstract section */}
+            {/* Abstract section */}
               {(pubQuery.data.abstractText || pubQuery.data.description) && (
                 <div className="p-8 border-b border-zinc-200/80 bg-white theme-transition">
                   <h4 className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest mb-4 font-display">Résumé Scientifique</h4>
@@ -347,18 +411,18 @@ export default function TotemPosterDetail() {
                 </div>
               )}
 
-              {/* Associated Media switcher tab list */}
+              {/* Associated Media switcher */}
               <div className="p-8 border-b border-zinc-200/80 bg-zinc-50/50 flex-1 theme-transition">
                 <h4 className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest mb-4 font-display">Pièces Jointes & Médias</h4>
-                
+
                 <div className="space-y-3">
                   {/* Default main poster */}
                   {posterUrl && (
                     <button
                       onClick={() => setActiveMedia(null)}
                       className={`w-full flex items-center gap-3.5 p-3 rounded-2xl border text-left transition-all shadow-sm ${
-                        !activeMedia 
-                          ? 'bg-white border-theme-primary/40 shadow-md shadow-theme-primary/5 font-bold text-zinc-900' 
+                        !activeMedia
+                          ? 'bg-white border-theme-primary/40 shadow-md font-bold text-zinc-900'
                           : 'bg-white/50 border-zinc-200/60 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700'
                       }`}
                     >
@@ -372,7 +436,7 @@ export default function TotemPosterDetail() {
                     </button>
                   )}
 
-                  {/* Associated documents/videos */}
+                  {/* Additional media */}
                   {mediaList.map((media, idx) => {
                     const isActive = activeMedia?.id === media.id;
                     const isMediaVideo = media.fileType === "VIDEO";
@@ -381,16 +445,16 @@ export default function TotemPosterDetail() {
                         key={media.id || idx}
                         onClick={() => setActiveMedia(media)}
                         className={`w-full flex items-center gap-3.5 p-3 rounded-2xl border text-left transition-all shadow-sm ${
-                          isActive 
-                            ? 'bg-white border-theme-primary/40 shadow-md shadow-theme-primary/5 font-bold text-zinc-900' 
+                          isActive
+                            ? 'bg-white border-theme-primary/40 shadow-md font-bold text-zinc-900'
                             : 'bg-white/50 border-zinc-200/60 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700'
                         }`}
                       >
                         {media.thumbnailPath ? (
-                          <img 
-                            src={getMediaUrl(media.thumbnailPath)} 
-                            alt="thumb" 
-                            className="w-10 h-10 rounded-xl object-cover border border-zinc-200 shrink-0" 
+                          <img
+                            src={getMediaUrl(media.thumbnailPath)}
+                            alt="thumb"
+                            className="w-10 h-10 rounded-xl object-cover border border-zinc-200 shrink-0"
                           />
                         ) : (
                           <div className={`p-2.5 rounded-xl shrink-0 ${isActive ? 'bg-theme-primary/10 text-theme-primary' : 'bg-zinc-100 text-zinc-400'}`}>
@@ -420,8 +484,9 @@ export default function TotemPosterDetail() {
                   </div>
                 </div>
               )}
-              
-              {/* Bottom footer pagination */}
+
+
+              {/* ── Bottom footer pagination ── */}
               <div className="mt-auto bg-zinc-50/50 p-5 border-t border-zinc-200 theme-transition">
                 <div className="flex justify-between items-center gap-3">
                   <button

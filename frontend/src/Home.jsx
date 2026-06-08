@@ -7,7 +7,9 @@ import {
   Presentation, Search, Calendar, ArrowRight,
   Lock, LayoutDashboard, MapPin, Users,
   ChevronRight, ChevronLeft, Globe, Award, BookOpen,
-  Sparkles, Monitor, Layers, QrCode
+  Sparkles, Monitor, Layers, QrCode, Heart, Brain,
+  Scissors, Stethoscope, Baby, HelpCircle, ChevronDown,
+  ChevronUp, Activity
 } from "lucide-react";
 
 export default function Home() {
@@ -15,6 +17,35 @@ export default function Home() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const username = useAuthStore((s) => s.username);
   const [searchQuery, setSearchQuery] = useState("");
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
+
+  const categoriesList = [
+    { name: "Cardiologie", icon: Heart, count: "12 posters" },
+    { name: "Neurologie", icon: Brain, count: "8 posters" },
+    { name: "Chirurgie", icon: Scissors, count: "15 posters" },
+    { name: "Pédiatrie", icon: Baby, count: "6 posters" },
+    { name: "Infectiologie", icon: Activity, count: "9 posters" },
+    { name: "Général", icon: Stethoscope, count: "24 posters" }
+  ];
+
+  const faqs = [
+    {
+      question: "Qu'est-ce qu'un E-Poster ?",
+      answer: "Un E-Poster (ou poster électronique) est une version numérique d'un poster scientifique traditionnel. Il permet une consultation interactive sur écran vertical tactile avec zoom fluide, accès aux figures et consultation de documents et vidéos associés."
+    },
+    {
+      question: "Comment consulter un poster sur mon mobile ?",
+      answer: "Chaque poster affiche un QR Code unique sur son profil de détail. Ouvrez l'appareil photo ou le lecteur QR Code de votre smartphone, scannez le code et le poster s'ouvrira directement dans le navigateur de votre mobile."
+    },
+    {
+      question: "Comment fonctionne le mode multi-écrans ?",
+      answer: "La plateforme gère plusieurs totems physiques de manière coordonnée. Le gestionnaire d'événement peut affecter les thèmes à des bornes spécifiques et synchroniser la navigation en temps réel."
+    },
+    {
+      question: "Je suis auteur, comment ajouter mon poster ?",
+      answer: "Les téléversements et configurations de fichiers se font via l'espace d'administration sécurisé. Si vous disposez d'un compte manager ou administrateur, cliquez sur 'Admin' en haut de la page pour vous connecter."
+    }
+  ];
 
   const scrollContainerRef = useRef(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -330,6 +361,40 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── CATEGORIES THÉMATIQUES ── */}
+      <section className="max-w-[1200px] mx-auto px-6 pb-20 w-full">
+        <div className="vh-section-header centered">
+          <div>
+            <h2 className="vh-section-title centered">
+              <Activity size={20} />
+              Recherche par Spécialité
+            </h2>
+            <p className="vh-section-sub centered">
+              Explorez directement les communications scientifiques selon leur domaine thérapeutique
+            </p>
+          </div>
+        </div>
+
+        <div className="sci-categories-grid">
+          {categoriesList.map((cat, i) => {
+            const IconComponent = cat.icon;
+            return (
+              <div 
+                key={i} 
+                className="sci-category-card"
+                onClick={() => navigate(`/totem/publications?category=${encodeURIComponent(cat.name)}&screen=visitor`)}
+              >
+                <div className="sci-category-icon">
+                  <IconComponent size={22} />
+                </div>
+                <h3 className="text-sm font-extrabold text-zinc-900 mb-1">{cat.name}</h3>
+                <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">{cat.count}</span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       {/* ── HOW IT WORKS ── */}
       <section className="vh-how-section">
         <div className="vh-how-inner">
@@ -362,6 +427,39 @@ export default function Home() {
               <p>Emportez le poster sur votre mobile en scannant le QR Code affiché.</p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── FAQ SECTION ── */}
+      <section className="max-w-[1200px] mx-auto px-6 pb-20 w-full">
+        <div className="vh-section-header centered">
+          <div>
+            <h2 className="vh-section-title centered">
+              <HelpCircle size={20} />
+              Questions Fréquentes
+            </h2>
+            <p className="vh-section-sub centered">Tout savoir sur la plateforme E-Poster et son utilisation</p>
+          </div>
+        </div>
+
+        <div className="faq-container">
+          {faqs.map((faq, i) => (
+            <div key={i} className="faq-item">
+              <button 
+                type="button"
+                className="faq-header"
+                onClick={() => setOpenFaqIndex(openFaqIndex === i ? null : i)}
+              >
+                <span>{faq.question}</span>
+                {openFaqIndex === i ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </button>
+              {openFaqIndex === i && (
+                <div className="faq-content animate-fade-in">
+                  <p>{faq.answer}</p>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </section>
 

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useRef } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { publicApi, getMediaUrl, getPosterThumbnail } from "../api";
 import { useIdleTimer } from "../hooks/useIdleTimer";
@@ -13,6 +13,7 @@ const sync = createTotemSync();
 
 export default function TotemPublications() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [params, setParams] = useSearchParams();
   const screen = params.get("screen") || "1";
   const eventId = params.get("eventId") || "";
@@ -26,6 +27,8 @@ export default function TotemPublications() {
   const [showKeyboard, setShowKeyboard] = useState(false);
   const keyboardRef = useRef(null);
 
+  const [sort, setSort] = useState("id,asc");
+
   // Sync virtual keyboard state when physical input changes
   useEffect(() => {
     if (keyboardRef.current) {
@@ -34,9 +37,9 @@ export default function TotemPublications() {
   }, [q]);
   
   const endpoint = useMemo(() => {
-    let base = `/publications?page=${page}&size=${size}`;
+    let base = `/publications?page=${page}&size=${size}&sort=${sort}`;
     if (q.trim()) {
-      base = `/publications/search?q=${encodeURIComponent(q)}&page=${page}&size=${size}`;
+      base = `/publications/search?q=${encodeURIComponent(q)}&page=${page}&size=${size}&sort=${sort}`;
     }
     
     if (eventId) base += `&eventId=${encodeURIComponent(eventId)}`;
@@ -44,10 +47,10 @@ export default function TotemPublications() {
     if (session) base += `&session=${encodeURIComponent(session)}`;
     if (room) base += `&room=${encodeURIComponent(room)}`;
     return base;
-  }, [q, page, size, eventId, category, session, room]);
+  }, [q, page, size, eventId, category, session, room, sort]);
 
   const pubsQuery = useQuery({
-    queryKey: ["totem-pubs", page, size, q, eventId, category, session, room],
+    queryKey: ["totem-pubs", page, size, q, eventId, category, session, room, sort],
     queryFn: async () => (await publicApi.get(endpoint)).data
   });
 
@@ -121,11 +124,23 @@ export default function TotemPublications() {
     enabled: screen === "1" || screen === "2"
   });
 
+  // Broadcast navigation if this is the controller (visitor screen)
+  useEffect(() => {
+    if (screen === "visitor") {
+      sync.send({ type: "NAVIGATE", screen, path: location.pathname + location.search });
+    }
+  }, [location, screen]);
+
+  // Listen to navigation from other screens (visitor)
   useEffect(() => {
     return sync.onMessage((msg) => {
       if (!msg || msg.type !== "NAVIGATE") return;
       if (String(msg.screen) === String(screen)) return;
-      navigate(msg.path);
+
+      // Rewrite screen parameter in path to match local screen
+      const url = new URL(msg.path, window.location.origin);
+      url.searchParams.set("screen", screen);
+      navigate(url.pathname + url.search);
     });
   }, [navigate, screen]);
 
@@ -146,6 +161,7 @@ export default function TotemPublications() {
           >
             <Home size={16} /> Congrès
           </Link>
+
           
           {selectedEvent?.logoUrl && (
             <img 
@@ -169,17 +185,15 @@ export default function TotemPublications() {
             className="peer w-full bg-white border border-zinc-200 focus:border-blue-600 focus:ring-1 focus:ring-blue-500/20 text-zinc-900 placeholder-zinc-400 pl-11 pr-12 py-3 rounded-2xl text-sm outline-none transition-all shadow-sm hover:shadow-md"
             value={q}
             onChange={(e) => { setQ(e.target.value); setPage(0); }}
-            onFocus={() => { if (screen !== "visitor") setShowKeyboard(true); }}
+            onFocus={() => setShowKeyboard(true)}
             placeholder="Rechercher par titre, auteur, mot-clé..."
           />
-          {screen !== "visitor" && (
-            <button 
-              onClick={() => setShowKeyboard(!showKeyboard)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-all rounded-lg"
-            >
-              {showKeyboard ? <X size={18} /> : <KeyboardIcon size={18} />}
-            </button>
-          )}
+          <button 
+            onClick={() => setShowKeyboard(!showKeyboard)}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-all rounded-lg"
+          >
+            {showKeyboard ? <X size={18} /> : <KeyboardIcon size={18} />}
+          </button>
 
           {showKeyboard && (
             <div className="totem-keyboard-wrap">
@@ -271,6 +285,15 @@ export default function TotemPublications() {
         ) : <div className="flex-1"></div>}
         
         <div className="flex gap-3 w-full sm:w-auto justify-end shrink-0">
+          <select
+            value={sort}
+            onChange={(e) => { setSort(e.target.value); setPage(0); }}
+            className="bg-white border border-zinc-200 text-zinc-700 text-xs font-bold rounded-xl px-3 py-2 outline-none hover:bg-zinc-50 transition-colors focus:border-theme-primary shadow-sm theme-transition"
+          >
+            <option value="id,asc">Trier par N° (Croissant)</option>
+            <option value="title,asc">Trier par Titre (A-Z)</option>
+            <option value="createdAt,desc">Trier par Nouveauté</option>
+          </select>
           {availableSessions.length > 0 && (
             <select
               value={session}
@@ -297,10 +320,26 @@ export default function TotemPublications() {
       {/* Main Grid View */}
       <main className="flex-1 p-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {pubsQuery.isLoading ? (
-          <div className="col-span-full flex flex-col items-center justify-center p-24 animate-fade-in">
-            <div className="w-10 h-10 border-4 border-zinc-200 border-t-theme-primary rounded-full animate-spin mb-4" />
-            <p className="text-sm text-zinc-550 font-semibold tracking-wide">Recherche des communications...</p>
-          </div>
+          <>
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <div key={idx} className="skeleton-card shimmer-pulse">
+                <div className="skeleton-thumb" />
+                <div className="p-5 flex-1 flex flex-col gap-2.5">
+                  <div className="flex justify-between items-center gap-4">
+                    <div className="h-3.5 w-16 skeleton-text" />
+                    <div className="h-3.5 w-8 skeleton-text" />
+                  </div>
+                  <div className="h-4 w-full skeleton-text mt-1" />
+                  <div className="h-4 w-3/4 skeleton-text" />
+                  <div className="h-3 w-24 skeleton-text mt-1" />
+                  <div className="mt-4 pt-3 border-t border-zinc-100 flex gap-2">
+                    <div className="h-5 w-14 skeleton-text" />
+                    <div className="h-5 w-14 skeleton-text" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </>
         ) : data.items?.length === 0 ? (
           <div className="col-span-full text-center p-20 bg-white/60 backdrop-blur-md border border-zinc-200/60 rounded-3xl shadow-sm max-w-lg mx-auto w-full animate-fade-in my-12">
             <Search size={48} className="mx-auto text-zinc-305 mb-4 animate-pulse" />
@@ -324,13 +363,14 @@ export default function TotemPublications() {
                   room       ? `room=${encodeURIComponent(room)}`           : '',
                 ].filter(Boolean).join('&');
                 const path = `/totem/publications/${p.id}?${searchParamStr}`;
-                sync.send({ type: "NAVIGATE", screen, path });
                 navigate(path);
               }}
               className="text-left bg-white/80 backdrop-blur-sm border border-zinc-200/60 rounded-3xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 animate-fade-in group cursor-pointer theme-transition hover:border-theme-primary/20"
             >
               {/* Card Thumbnail Canvas */}
               <div className="w-full aspect-[3/4] bg-zinc-50 relative border-b border-zinc-100 overflow-hidden flex items-center justify-center">
+
+
                 {p.posterUrl ? (
                   <img 
                     src={getPosterThumbnail(p.posterUrl)} 
@@ -422,6 +462,8 @@ export default function TotemPublications() {
           </button>
         </div>
       </footer>
+
+
     </div>
   );
 }

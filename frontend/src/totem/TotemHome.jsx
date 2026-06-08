@@ -1,10 +1,13 @@
-import { useMemo, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useMemo, useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { publicApi, getMediaUrl } from "../api";
 import { Presentation, ArrowRight, ArrowLeft, Calendar, Monitor, BookOpen, HelpCircle } from "lucide-react";
 import { useIdleTimer } from "../hooks/useIdleTimer";
 import { useDynamicTheme } from "../hooks/useDynamicTheme";
+import { createTotemSync } from "./totemSync";
+
+const sync = createTotemSync();
 
 export default function TotemHome() {
   const navigate = useNavigate();
@@ -33,6 +36,28 @@ export default function TotemHome() {
     queryFn: async () => (await publicApi.get(`/screens?eventId=${themeEvent.id}`)).data,
     enabled: !!themeEvent?.id
   });
+
+  const location = useLocation();
+
+  // Broadcast navigation if this is the controller (visitor screen)
+  useEffect(() => {
+    if (screen === "visitor") {
+      sync.send({ type: "NAVIGATE", screen, path: location.pathname + location.search });
+    }
+  }, [location, screen]);
+
+  // Listen to navigation from other screens (visitor)
+  useEffect(() => {
+    return sync.onMessage((msg) => {
+      if (!msg || msg.type !== "NAVIGATE") return;
+      if (String(msg.screen) === String(screen)) return;
+
+      // Rewrite screen parameter in path to match local screen
+      const url = new URL(msg.path, window.location.origin);
+      url.searchParams.set("screen", screen);
+      navigate(url.pathname + url.search);
+    });
+  }, [navigate, screen]);
 
   useIdleTimer({
     timeoutMs: 60_000,
@@ -174,6 +199,31 @@ export default function TotemHome() {
               </p>
             </div>
 
+            {/* Tutorial/Guide */}
+            <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 animate-fade-in">
+              <div className="flex items-center gap-4 bg-white/60 backdrop-blur-sm border border-zinc-200/50 p-5 rounded-2xl">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-base shrink-0">1</div>
+                <div>
+                  <h4 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">Sélectionnez le Congrès</h4>
+                  <p className="text-[10px] text-zinc-500 font-medium">Touchez un congrès ci-dessous pour voir ses publications.</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 bg-white/60 backdrop-blur-sm border border-zinc-200/50 p-5 rounded-2xl">
+                <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-base shrink-0">2</div>
+                <div>
+                  <h4 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">Trouvez un Poster</h4>
+                  <p className="text-[10px] text-zinc-500 font-medium">Recherchez par titre ou auteur avec le clavier virtuel tactile.</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 bg-white/60 backdrop-blur-sm border border-zinc-200/50 p-5 rounded-2xl">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-base shrink-0">3</div>
+                <div>
+                  <h4 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">Scannez & Emportez</h4>
+                  <p className="text-[10px] text-zinc-500 font-medium">Scannez le QR Code pour enregistrer le poster sur votre mobile.</p>
+                </div>
+              </div>
+            </div>
+
             {/* Dynamic Grid of Active Events */}
             <div className={`grid gap-8 w-full justify-center ${activeEvents.length === 1 ? 'max-w-xl grid-cols-1' : activeEvents.length === 2 ? 'max-w-4xl grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
               {activeEvents.map((event) => {
@@ -184,9 +234,9 @@ export default function TotemHome() {
                     onMouseEnter={() => setHoveredEvent(event)}
                     onMouseLeave={() => setHoveredEvent(null)}
                     onClick={() => navigate(`/totem/publications?eventId=${event.id}&screen=${selectedScreen}`)}
-                    className={`relative rounded-3xl overflow-hidden border transition-all duration-500 cursor-pointer flex flex-col group theme-transition ${
+                    className={`relative rounded-3xl overflow-hidden border transition-all duration-500 cursor-pointer flex flex-col group theme-transition theme-glow-card ${
                       isCurrentTheme 
-                        ? 'border-theme-primary/30 shadow-[0_20px_50px_-15px_rgba(var(--theme-primary-rgb),0.12)] scale-[1.02] bg-white/90' 
+                        ? 'scale-[1.02] bg-white/90 shadow-lg' 
                         : 'border-zinc-200/60 bg-white/40 hover:bg-white/60 hover:border-zinc-300 shadow-sm'
                     }`}
                   >
