@@ -25,7 +25,8 @@ function NavPreviewBtn({ pub, direction, onClick, eventId, buildSearchParams }) 
         onClick={onClick}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className={`absolute ${direction === 'left' ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 hover:bg-white border border-zinc-200 text-zinc-800 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all hover:scale-105`}
+        className={`absolute ${direction === 'left' ? 'left-5' : 'right-5'} top-1/2 -translate-y-1/2 z-10 w-14 h-14 bg-white hover:bg-zinc-900 hover:text-white border border-zinc-200 text-zinc-800 rounded-full flex items-center justify-center active:scale-95 transition-all`}
+        style={{ boxShadow: 'var(--totem-shadow-elevated)' }}
         title={direction === 'left' ? 'Poster Précédent' : 'Poster Suivant'}
       >
         {direction === 'left' ? <ChevronLeft size={24} /> : <ChevronRight size={24} />}
@@ -34,28 +35,28 @@ function NavPreviewBtn({ pub, direction, onClick, eventId, buildSearchParams }) 
       {/* Hover tooltip preview */}
       {hovered && pub && (
         <div
-          className={`absolute z-20 top-1/2 -translate-y-1/2 ${direction === 'left' ? 'left-20' : 'right-20'} 
-            w-56 bg-white border border-zinc-200 rounded-2xl shadow-xl p-3 pointer-events-none`}
-          style={{ animation: 'fadeIn 0.15s ease' }}
+          className={`absolute z-20 top-1/2 -translate-y-1/2 ${direction === 'left' ? 'left-24' : 'right-24'} 
+            w-60 bg-white border border-zinc-200 rounded-2xl p-4 pointer-events-none`}
+          style={{ animation: 'fadeIn 0.15s ease', boxShadow: 'var(--totem-shadow-elevated)' }}
         >
           {thumbUrl ? (
             <img
               src={thumbUrl}
               alt={pub.title}
-              className="w-full aspect-[3/4] object-cover rounded-xl border border-zinc-100 mb-2.5"
+              className="w-full aspect-[3/4] object-cover rounded-xl border border-zinc-100 mb-3"
             />
           ) : (
-            <div className="w-full aspect-[3/4] rounded-xl border border-zinc-100 mb-2.5 bg-zinc-100 flex items-center justify-center">
+            <div className="w-full aspect-[3/4] rounded-xl border border-zinc-100 mb-3 bg-zinc-100 flex items-center justify-center">
               <FileImage size={28} className="text-zinc-300" />
             </div>
           )}
-          <p className="text-xs font-bold text-zinc-900 line-clamp-2 leading-snug">{pub.title}</p>
+          <p className="text-sm font-bold text-zinc-900 line-clamp-2 leading-snug">{pub.title}</p>
           {pub.authors && (
-            <p className="text-[10px] text-zinc-400 font-semibold mt-1 truncate">{pub.authors}</p>
+            <p className="text-xs text-zinc-400 font-semibold mt-1.5 truncate">{pub.authors}</p>
           )}
-          <div className="flex items-center gap-1 mt-2">
-            <Info size={10} className="text-zinc-300" />
-            <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider">
+          <div className="flex items-center gap-1.5 mt-2.5">
+            <Info size={11} className="text-zinc-300" />
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
               {direction === 'left' ? '← Précédent' : 'Suivant →'}
             </span>
           </div>
@@ -200,10 +201,10 @@ export default function TotemPosterDetail() {
   const isVideo = useMemo(() => activeMedia?.fileType === "VIDEO", [activeMedia]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-zinc-50 text-zinc-900 font-sans transition-colors duration-500 selection:bg-theme-secondary/20 selection:text-zinc-900 bg-dot-grid theme-transition relative overflow-hidden">
+    <div className="h-screen flex flex-col bg-zinc-50 text-zinc-900 font-sans transition-colors duration-500 selection:bg-theme-secondary/20 selection:text-zinc-900 theme-transition relative overflow-hidden">
 
       {/* ── Header Toolbar ── */}
-      <header className="flex items-center justify-between px-6 py-4 bg-white/80 backdrop-blur-md border-b border-zinc-200/60 z-10 shrink-0 shadow-sm theme-transition">
+      <header className="flex items-center justify-between px-8 py-4 bg-white border-b-[1.5px] border-zinc-200 z-10 shrink-0 theme-transition" style={{ boxShadow: 'var(--totem-shadow)' }}>
         <Link
           to={`/totem/publications${buildSearchParams()}`}
           className="totem-back-btn"
@@ -214,70 +215,64 @@ export default function TotemPosterDetail() {
         <div className="flex items-center gap-3">
           {/* Zoom controls — image only */}
           {!isPdf && !isVideo && (
-            <div className="flex bg-zinc-100/80 p-1 rounded-xl border border-zinc-200/60 items-center">
+            <div className="flex bg-zinc-100 p-1 rounded-xl border border-zinc-200 items-center gap-1">
               <button
                 onClick={() => setZoom((z) => Math.max(0.6, Number((z - 0.1).toFixed(2))))}
-                className="p-2 hover:bg-zinc-200/50 rounded-lg text-zinc-500 hover:text-zinc-900 transition-all active:scale-90"
+                className="p-2 hover:bg-white hover:text-zinc-900 rounded-lg text-zinc-500 transition-all active:scale-90"
                 title="Dé-zoomer"
               >
                 <ZoomOut size={14} />
               </button>
-              <div className="flex items-center justify-center w-14 font-mono text-[11px] font-bold text-zinc-600">
+              <div className="flex items-center justify-center w-12 font-mono text-[11px] font-bold text-zinc-600">
                 {Math.round(zoom * 100)}%
               </div>
               <button
                 onClick={() => setZoom((z) => Math.min(3, Number((z + 0.1).toFixed(2))))}
-                className="p-2 hover:bg-zinc-200/50 rounded-lg text-zinc-500 hover:text-zinc-900 transition-all active:scale-90"
+                className="p-2 hover:bg-white hover:text-zinc-900 rounded-lg text-zinc-500 transition-all active:scale-90"
                 title="Zoomer"
               >
                 <ZoomIn size={14} />
               </button>
+              <div className="w-px h-4 bg-zinc-200 mx-0.5" />
+              <button
+                onClick={() => setZoom(1)}
+                className="p-2 hover:bg-white hover:text-zinc-900 rounded-lg text-zinc-500 transition-all active:scale-90"
+                title="Réinitialiser zoom"
+              >
+                <RefreshCcw size={13} />
+              </button>
             </div>
-          )}
-
-          {!isPdf && !isVideo && (
-            <button
-              onClick={() => setZoom(1)}
-              className="p-2.5 bg-white hover:bg-zinc-50 border border-zinc-200 rounded-xl transition-all text-zinc-500 hover:text-zinc-900 active:scale-95 shadow-sm"
-              title="Réinitialiser zoom"
-            >
-              <RefreshCcw size={14} />
-            </button>
           )}
           <button
             onClick={requestFullscreen}
-            style={{ backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' }}
-            className="px-4 py-2.5 hover:opacity-90 hover:brightness-110 rounded-xl text-xs font-bold transition-all flex items-center gap-2 active:scale-95 shadow-md font-display theme-transition"
+            className="totem-cta-btn"
           >
-            {isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />}
-            {isFullscreen ? "Quitter" : "Plein Écran"}
+            {isFullscreen ? <Minimize size={13} /> : <Maximize size={13} />}
+            <span>{isFullscreen ? "Quitter" : "Plein Écran"}</span>
           </button>
         </div>
       </header>
 
       {/* ── Navigation Stepper Breadcrumb ── */}
-      <div className="max-w-7xl mx-auto px-6 pt-6 w-full">
-        <div className="flex items-center justify-center bg-white/60 backdrop-blur-sm border border-zinc-200/60 rounded-2xl py-3 px-6 shadow-sm w-fit mx-auto gap-4 md:gap-8 text-[10px] md:text-xs font-bold uppercase tracking-wider text-zinc-400 theme-transition">
-          <Link to="/" className="flex items-center gap-2 text-zinc-550 hover:text-zinc-900 transition-colors">
-            <span className="w-5 h-5 rounded-full bg-zinc-100 flex items-center justify-center text-[10px]">1</span>
+      <div className="max-w-7xl mx-auto px-8 pt-5 w-full">
+        <div className="totem-stepper">
+          <Link to="/" className="totem-stepper-step">
+            <span className="totem-stepper-num">1</span>
             <span className="hidden sm:inline">Portail</span>
           </Link>
-          <span className="text-zinc-300">/</span>
-          <Link to={`/totem?screen=${screen}`} className="flex items-center gap-2 text-zinc-550 hover:text-zinc-900 transition-colors">
-            <span className="w-5 h-5 rounded-full bg-zinc-100 flex items-center justify-center text-[10px]">2</span>
+          <span className="totem-stepper-divider">/</span>
+          <Link to={`/totem?screen=${screen}`} className="totem-stepper-step">
+            <span className="totem-stepper-num">2</span>
             <span className="hidden sm:inline">Sélection Congrès</span>
           </Link>
-          <span className="text-zinc-300">/</span>
-          <Link to={`/totem/publications${buildSearchParams()}`} className="flex items-center gap-2 text-zinc-550 hover:text-zinc-900 transition-colors">
-            <span className="w-5 h-5 rounded-full bg-zinc-100 flex items-center justify-center text-[10px]">3</span>
+          <span className="totem-stepper-divider">/</span>
+          <Link to={`/totem/publications${buildSearchParams()}`} className="totem-stepper-step">
+            <span className="totem-stepper-num">3</span>
             <span className="hidden sm:inline">E-Posters</span>
           </Link>
-          <span className="text-zinc-300">/</span>
-          <div className="flex items-center gap-2" style={{ color: 'var(--theme-primary)' }}>
-            <span
-              className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-extrabold"
-              style={{ backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' }}
-            >4</span>
+          <span className="totem-stepper-divider">/</span>
+          <div className="totem-stepper-step active">
+            <span className="totem-stepper-num">4</span>
             <span className="hidden sm:inline">Lecture Poster</span>
           </div>
         </div>
@@ -293,25 +288,25 @@ export default function TotemPosterDetail() {
               <div className="w-2/3 aspect-[3/4] bg-zinc-200 rounded-2xl" />
             </div>
             {/* Sidebar skeleton */}
-            <div className="w-full lg:w-[400px] bg-white border-l border-zinc-200 flex flex-col gap-6 p-8">
+            <div className="w-full lg:w-[420px] bg-white border-l border-zinc-200 flex flex-col gap-7 p-10">
               <div className="skeleton-text h-5 w-1/3 shimmer-pulse" />
               <div className="skeleton-text h-7 w-4/5 shimmer-pulse" style={{ animationDelay: '0.1s' }} />
-              <div className="skeleton-text h-4 w-3/5 shimmer-pulse" style={{ animationDelay: '0.2s' }} />
-              <div className="skeleton-text h-4 w-full shimmer-pulse" style={{ animationDelay: '0.3s' }} />
-              <div className="skeleton-text h-4 w-5/6 shimmer-pulse" style={{ animationDelay: '0.4s' }} />
+              <div className="skeleton-text h-5 w-3/5 shimmer-pulse" style={{ animationDelay: '0.2s' }} />
+              <div className="skeleton-text h-5 w-full shimmer-pulse" style={{ animationDelay: '0.3s' }} />
+              <div className="skeleton-text h-5 w-5/6 shimmer-pulse" style={{ animationDelay: '0.4s' }} />
             </div>
           </div>
         ) : !pubQuery.data ? (
-          <div className="flex-1 flex flex-col items-center justify-center bg-white/20 m-8 rounded-3xl border border-zinc-200 shadow-2xl">
-            <FileImage size={64} className="text-zinc-300 mb-4" />
-            <div className="text-xl font-bold text-zinc-900 mb-2">Poster introuvable</div>
-            <div className="text-sm text-zinc-500">Ce document n'existe plus ou a été archivé.</div>
+          <div className="flex-1 flex flex-col items-center justify-center bg-white m-10 rounded-2xl border border-zinc-200" style={{ boxShadow: 'var(--totem-shadow-elevated)' }}>
+            <FileImage size={64} className="text-zinc-300 mb-5" />
+            <div className="text-2xl font-bold text-zinc-900 mb-3 font-display">Poster introuvable</div>
+            <div className="text-base text-zinc-500">Ce document n'existe plus ou a été archivé.</div>
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row w-full h-full">
 
-            {/* ── Dark Media Canvas ── */}
-            <div className="flex-1 bg-zinc-100/50 relative overflow-hidden shadow-inner vh-media-viewport">
+            {/* ── Media Canvas ── */}
+            <div className="flex-1 bg-zinc-100 relative overflow-hidden vh-media-viewport">
               {/* Left nav arrow with preview tooltip */}
               {prevPub && (
                 <NavPreviewBtn
@@ -333,50 +328,50 @@ export default function TotemPosterDetail() {
               )}
 
               {/* Media display */}
-              <div className="absolute inset-0 flex items-center justify-center px-16 py-6 overflow-auto">
+              <div className="absolute inset-0 flex items-center justify-center px-20 py-8 overflow-auto">
                 {isVideo ? (
-                  <div className="w-full h-full max-w-5xl flex-shrink-0 aspect-video rounded-2xl overflow-hidden border border-zinc-200 bg-black shadow-2xl">
+                  <div className="w-full h-full max-w-5xl flex-shrink-0 aspect-video rounded-2xl overflow-hidden border border-zinc-200 bg-black" style={{ boxShadow: 'var(--totem-shadow-elevated)' }}>
                     <video src={activeMediaUrl} controls autoPlay className="w-full h-full object-contain" />
                   </div>
                 ) : isPdf ? (
-                  <div className="w-full h-full rounded-2xl overflow-hidden border border-zinc-200 bg-white shadow-2xl relative">
+                  <div className="w-full h-full rounded-2xl overflow-hidden border border-zinc-200 bg-white relative" style={{ boxShadow: 'var(--totem-shadow-elevated)' }}>
                     <iframe src={activeMediaUrl} className="w-full h-full bg-white border-none" title="PDF Poster Viewer" />
                   </div>
                 ) : activeMediaUrl ? (
                   <img
                     src={activeMediaUrl}
                     alt={pubQuery.data.title}
-                    className="max-w-full max-h-full object-contain origin-center transition-transform duration-200 ease-out rounded-xl border border-zinc-200 bg-white shadow-2xl"
-                    style={{ transform: `scale(${zoom})` }}
+                    className="max-w-full max-h-full object-contain origin-center transition-transform duration-200 ease-out rounded-xl border border-zinc-200 bg-white"
+                    style={{ transform: `scale(${zoom})`, boxShadow: 'var(--totem-shadow-elevated)' }}
                     draggable={false}
                   />
                 ) : (
                   <div className="flex flex-col items-center text-zinc-400 max-w-sm text-center">
-                    <FileImage size={64} className="mb-4 text-zinc-300 animate-pulse" />
-                    <h3 className="text-lg font-bold text-zinc-900 mb-2">Aucun visuel associé</h3>
-                    <p className="text-xs text-zinc-500">Le support visuel de cet e-poster n'a pas encore été téléversé.</p>
+                    <FileImage size={64} className="mb-5 text-zinc-300" />
+                    <h3 className="text-xl font-bold text-zinc-900 mb-3 font-display">Aucun visuel associé</h3>
+                    <p className="text-sm text-zinc-500">Le support visuel de cet e-poster n'a pas encore été téléversé.</p>
                   </div>
                 )}
               </div>
             </div>
 
             {/* ── Premium Details Sidebar ── */}
-            <div className="w-full lg:w-[400px] bg-white border-t lg:border-t-0 lg:border-l border-zinc-200 flex flex-col shrink-0 overflow-y-auto shadow-lg">
+            <div className="w-full lg:w-[420px] bg-white border-t lg:border-t-0 lg:border-l-[1.5px] border-zinc-200 flex flex-col shrink-0 overflow-y-auto" style={{ boxShadow: '-2px 0 8px rgba(0,0,0,0.02)' }}>
 
               {/* Header details block */}
-              <div className="p-8 border-b border-zinc-200/80 bg-zinc-50/50 theme-transition">
+              <div className="p-8 border-b border-zinc-100 bg-zinc-50 theme-transition">
                 <div className="flex items-center justify-between gap-3 mb-4">
                   {pubQuery.data.category ? (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-theme-primary/10 text-theme-primary-light border border-theme-primary/20 rounded-lg text-[9px] font-extrabold uppercase tracking-widest theme-transition">
+                    <span className="totem-badge totem-badge-primary theme-transition">
                       <Tag size={10} /> {pubQuery.data.category}
                     </span>
                   ) : <span />}
-                  <span className="text-[10px] font-mono font-extrabold text-zinc-400 bg-zinc-100 px-2.5 py-1 rounded-lg border border-zinc-200/40">
+                  <span className="text-[10px] font-mono font-extrabold text-zinc-400 bg-zinc-100 px-2.5 py-1 rounded-lg border border-zinc-200">
                     Communication N° {pubQuery.data.id}
                   </span>
                 </div>
 
-                <h2 className="text-xl font-extrabold text-zinc-950 mb-3 tracking-tight leading-snug font-display">
+                <h2 className="text-xl font-extrabold text-zinc-900 mb-3 tracking-tight leading-snug font-display">
                   {pubQuery.data.title}
                 </h2>
 
@@ -385,15 +380,15 @@ export default function TotemPosterDetail() {
                 </p>
 
                 {/* Session / Room badges */}
-                <div className="flex flex-wrap gap-2.5 mb-5">
+                <div className="flex flex-wrap gap-2 mb-4">
                   {pubQuery.data.session && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-zinc-650 rounded-xl text-xs font-semibold border border-zinc-200/60 shadow-sm">
-                      <Clock size={12} className="text-theme-secondary animate-pulse" /> {pubQuery.data.session}
+                    <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white text-zinc-600 rounded-xl text-xs font-semibold border border-zinc-200" style={{ boxShadow: 'var(--totem-shadow)' }}>
+                      <Clock size={13} className="text-theme-secondary" /> {pubQuery.data.session}
                     </span>
                   )}
                   {pubQuery.data.room && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-zinc-650 rounded-xl text-xs font-semibold border border-zinc-200/60 shadow-sm">
-                      <MapPin size={12} className="text-theme-secondary" /> {pubQuery.data.room}
+                    <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white text-zinc-600 rounded-xl text-xs font-semibold border border-zinc-200" style={{ boxShadow: 'var(--totem-shadow)' }}>
+                      <MapPin size={13} className="text-theme-secondary" /> {pubQuery.data.room}
                     </span>
                   )}
               </div>
@@ -401,10 +396,10 @@ export default function TotemPosterDetail() {
 
             {/* Abstract section */}
               {(pubQuery.data.abstractText || pubQuery.data.description) && (
-                <div className="p-8 border-b border-zinc-200/80 bg-white theme-transition">
-                  <h4 className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest mb-4 font-display">Résumé Scientifique</h4>
+                <div className="p-8 border-b border-zinc-100 bg-white theme-transition">
+                  <h4 className="totem-section-label">Résumé Scientifique</h4>
                   <div className="max-h-[220px] overflow-y-auto pr-2 scrollbar-thin">
-                    <p className="text-xs text-zinc-600 leading-relaxed whitespace-pre-wrap font-medium">
+                    <p className="text-sm text-zinc-600 leading-relaxed whitespace-pre-wrap font-medium">
                       {pubQuery.data.abstractText || pubQuery.data.description}
                     </p>
                   </div>
@@ -412,26 +407,27 @@ export default function TotemPosterDetail() {
               )}
 
               {/* Associated Media switcher */}
-              <div className="p-8 border-b border-zinc-200/80 bg-zinc-50/50 flex-1 theme-transition">
-                <h4 className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest mb-4 font-display">Pièces Jointes & Médias</h4>
+              <div className="p-8 border-b border-zinc-100 bg-zinc-50 flex-1 theme-transition">
+                <h4 className="totem-section-label">Pièces Jointes & Médias</h4>
 
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {/* Default main poster */}
                   {posterUrl && (
                     <button
                       onClick={() => setActiveMedia(null)}
-                      className={`w-full flex items-center gap-3.5 p-3 rounded-2xl border text-left transition-all shadow-sm ${
+                      className={`w-full flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all ${
                         !activeMedia
-                          ? 'bg-white border-theme-primary/40 shadow-md font-bold text-zinc-900'
-                          : 'bg-white/50 border-zinc-200/60 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700'
+                          ? 'bg-white border-theme-primary/40 font-bold text-zinc-900'
+                          : 'bg-white border-zinc-200 text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700'
                       }`}
+                      style={{ boxShadow: !activeMedia ? 'var(--totem-shadow)' : 'none' }}
                     >
                       <div className={`p-2.5 rounded-xl ${!activeMedia ? 'bg-theme-primary/10 text-theme-primary' : 'bg-zinc-100 text-zinc-400'}`}>
                         <FileText size={16} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold truncate">Poster Principal</p>
-                        <p className="text-[9px] text-zinc-400 mt-0.5 uppercase tracking-wider font-extrabold">PDF / IMAGE</p>
+                        <p className="text-[10px] text-zinc-400 mt-0.5 uppercase tracking-wider font-extrabold">PDF / IMAGE</p>
                       </div>
                     </button>
                   )}
@@ -444,17 +440,18 @@ export default function TotemPosterDetail() {
                       <button
                         key={media.id || idx}
                         onClick={() => setActiveMedia(media)}
-                        className={`w-full flex items-center gap-3.5 p-3 rounded-2xl border text-left transition-all shadow-sm ${
+                        className={`w-full flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all ${
                           isActive
-                            ? 'bg-white border-theme-primary/40 shadow-md font-bold text-zinc-900'
-                            : 'bg-white/50 border-zinc-200/60 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700'
+                            ? 'bg-white border-theme-primary/40 font-bold text-zinc-900'
+                            : 'bg-white border-zinc-200 text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700'
                         }`}
+                        style={{ boxShadow: isActive ? 'var(--totem-shadow)' : 'none' }}
                       >
                         {media.thumbnailPath ? (
                           <img
                             src={getMediaUrl(media.thumbnailPath)}
                             alt="thumb"
-                            className="w-10 h-10 rounded-xl object-cover border border-zinc-200 shrink-0"
+                            className="w-11 h-11 rounded-xl object-cover border border-zinc-200 shrink-0"
                           />
                         ) : (
                           <div className={`p-2.5 rounded-xl shrink-0 ${isActive ? 'bg-theme-primary/10 text-theme-primary' : 'bg-zinc-100 text-zinc-400'}`}>
@@ -463,7 +460,7 @@ export default function TotemPosterDetail() {
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-semibold truncate">{media.fileName || `Média Associé ${idx + 1}`}</p>
-                          <p className="text-[9px] text-zinc-400 mt-0.5 uppercase tracking-wider font-extrabold">{media.fileType}</p>
+                          <p className="text-[10px] text-zinc-400 mt-0.5 uppercase tracking-wider font-extrabold">{media.fileType}</p>
                         </div>
                       </button>
                     );
@@ -473,28 +470,30 @@ export default function TotemPosterDetail() {
 
               {/* Mobile consultation QR */}
               {posterUrl && (
-                <div className="p-8 flex items-center gap-4 bg-zinc-50/50 border-b border-zinc-200/80 theme-transition">
-                  <div className="p-2.5 bg-white rounded-2xl shadow-md border border-zinc-200 shrink-0">
-                    <QRCodeCanvas value={getMediaUrl(posterUrl)} size={80} level="M" fgColor="#18181b" />
-                  </div>
-                  <div>
-                    <h4 className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest mb-1 font-display">Accès Mobile</h4>
-                    <p className="text-xs text-zinc-800 font-semibold mb-1">Consulter sur mobile</p>
-                    <p className="text-[9px] text-zinc-500 leading-relaxed font-medium">Scannez ce QR Code pour emporter cet e-poster et le lire sur votre smartphone.</p>
+                <div className="p-7 border-b border-zinc-100 bg-zinc-50 theme-transition">
+                  <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-zinc-200" style={{ boxShadow: 'var(--totem-shadow)' }}>
+                    <div className="p-1.5 bg-zinc-50 rounded-xl border border-zinc-100 shrink-0">
+                      <QRCodeCanvas value={getMediaUrl(posterUrl)} size={72} level="M" fgColor="#18181b" />
+                    </div>
+                    <div>
+                      <h4 className="totem-section-label mb-0.5">Accès Mobile</h4>
+                      <p className="text-xs font-bold text-zinc-900 mb-0.5">Consulter sur mobile</p>
+                      <p className="text-[10px] text-zinc-500 leading-relaxed font-medium">Scannez pour emporter cet e-poster et le lire sur votre smartphone.</p>
+                    </div>
                   </div>
                 </div>
               )}
 
 
               {/* ── Bottom footer pagination ── */}
-              <div className="mt-auto bg-zinc-50/50 p-5 border-t border-zinc-200 theme-transition">
+              <div className="mt-auto bg-white p-5 border-t-[1.5px] border-zinc-200 theme-transition">
                 <div className="flex justify-between items-center gap-3">
                   <button
                     disabled={!prevPub}
                     onClick={() => prevPub && navigate(`/totem/publications/${prevPub.id}${buildSearchParams()}`)}
                     className="totem-page-btn flex-1 justify-center"
                   >
-                    <ChevronLeft size={16} /> Précédent
+                    <ChevronLeft size={15} /> Précédent
                   </button>
                   <span className="totem-page-info">
                     {currentIndex >= 0 ? `${currentIndex + 1} / ${pubsQuery.data?.totalElements || "?"}` : ""}
@@ -504,7 +503,7 @@ export default function TotemPosterDetail() {
                     onClick={() => nextPub && navigate(`/totem/publications/${nextPub.id}${buildSearchParams()}`)}
                     className="totem-page-btn flex-1 justify-center"
                   >
-                    Suivant <ChevronRight size={16} />
+                    Suivant <ChevronRight size={15} />
                   </button>
                 </div>
               </div>

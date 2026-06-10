@@ -66,6 +66,22 @@
   --shadow-xl:  0 20px 25px -5px rgba(0,0,0,.08), 0 8px 10px -6px rgba(0,0,0,.04);
   --shadow-2xl: 0 25px 50px -12px rgba(0,0,0,.12);
 
+  /* Totem-specific design tokens (projection-optimized, flat premium) */
+  --totem-radius: 18px;
+  --totem-radius-sm: 12px;
+  --totem-radius-xs: 8px;
+  --totem-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --totem-shadow-hover: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --totem-shadow-elevated: 0 8px 24px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.04);
+  --totem-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02);
+  --totem-shadow-card-hover: 0 12px 32px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+  --totem-transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  --totem-border: 1.5px solid #e4e4e7;
+  --totem-border-hover: 1.5px solid #d4d4d8;
+  --totem-surface: #ffffff;
+  --totem-surface-raised: #fafafa;
+  --totem-surface-overlay: rgba(255,255,255,0.96);
+
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
@@ -475,14 +491,17 @@
    THEME (Totem dynamic)
 ──────────────────────────────────────────── */
 .theme-transition {
-  transition: background-color 0.5s ease, border-color 0.5s ease, color 0.5s ease;
+  transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease;
 }
 
 .text-theme-primary   { color: var(--theme-primary); }
 .text-theme-secondary { color: var(--theme-secondary); }
+.text-theme-primary-light { color: var(--theme-primary); opacity: 0.85; }
 .bg-theme-primary     { background-color: var(--theme-primary); }
 .bg-theme-secondary   { background-color: var(--theme-secondary); }
+.bg-theme-bg-light    { background-color: var(--theme-bg-light); }
 .border-theme-primary { border-color: var(--theme-primary); }
+.border-theme-secondary { border-color: var(--theme-secondary); }
 
 /* ────────────────────────────────────────────
    DROPDOWN / POPOVER
@@ -1261,13 +1280,13 @@
   align-items: center;
   justify-content: center;
   color: #cbd5e1;
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  background: #eef2f6;
 }
 
 .vh-card-banner-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.15) 100%);
+  background: rgba(0,0,0,0.04);
 }
 
 .vh-card-status {
@@ -1675,28 +1694,27 @@
 .totem-float-nav.right { right: 20px; }
 
 .totem-float-btn {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  border: 2px solid rgba(255,255,255,0.9);
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(12px);
-  color: #0f172a;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  border: 1.5px solid #e4e4e7;
+  background: #ffffff;
+  color: #3f3f46;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  transition: var(--totem-transition);
+  box-shadow: var(--totem-shadow-elevated);
   text-decoration: none;
 }
 
 .totem-float-btn:hover {
-  background: #0f172a;
+  background: #18181b;
   color: #fff;
-  border-color: #0f172a;
-  transform: scale(1.08);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  border-color: #18181b;
+  transform: scale(1.06);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.14);
 }
 
 .totem-float-btn:disabled {
@@ -1713,9 +1731,8 @@
   align-items: center;
   gap: 10px;
   padding: 12px 24px;
-  background: rgba(255,255,255,0.9);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid #e2e8f0;
+  background: #ffffff;
+  border-bottom: 1.5px solid #e4e4e7;
   position: sticky;
   top: 0;
   z-index: 30;
@@ -1725,23 +1742,27 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 18px;
+  padding: 10px 20px;
   background: #fff;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid #e4e4e7;
   border-radius: 12px;
   font-size: 13px;
   font-weight: 700;
-  color: #0f172a;
+  color: #3f3f46;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: var(--totem-transition);
   font-family: 'Outfit', sans-serif;
+  box-shadow: var(--totem-shadow);
+  letter-spacing: 0.01em;
 }
 
 .totem-back-btn:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+  background: #fafafa;
+  border-color: #d4d4d8;
+  color: #18181b;
   transform: translateX(-2px);
+  box-shadow: var(--totem-shadow-hover);
 }
 
 .totem-back-btn:active { transform: scale(0.97); }
@@ -1757,37 +1778,177 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
+  padding: 11px 22px;
   border-radius: 12px;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.15s;
-  border: 1.5px solid #e2e8f0;
+  transition: var(--totem-transition);
+  border: 1.5px solid #e4e4e7;
   background: #fff;
-  color: #0f172a;
+  color: #3f3f46;
   font-family: 'Outfit', sans-serif;
+  box-shadow: var(--totem-shadow);
+  letter-spacing: 0.01em;
 }
 
 .totem-page-btn:hover:not(:disabled) {
-  background: #0f172a;
+  background: #18181b;
   color: #fff;
-  border-color: #0f172a;
+  border-color: #18181b;
+  box-shadow: var(--totem-shadow-hover);
 }
 
 .totem-page-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
 .totem-page-btn:active:not(:disabled) { transform: scale(0.97); }
 
 .totem-page-info {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  color: #64748b;
-  letter-spacing: 0.05em;
+  color: #71717a;
+  letter-spacing: 0.04em;
   white-space: nowrap;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── Totem Stepper / Breadcrumb ── */
+.totem-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1.5px solid #e4e4e7;
+  border-radius: 14px;
+  padding: 10px 24px;
+  width: fit-content;
+  margin: 0 auto;
+  gap: 16px;
+  box-shadow: var(--totem-shadow);
+}
+
+.totem-stepper-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #a1a1aa;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.totem-stepper-step:hover { color: #3f3f46; }
+
+.totem-stepper-step.active {
+  color: var(--theme-primary);
+}
+
+.totem-stepper-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  background: #f4f4f5;
+  color: #a1a1aa;
+  flex-shrink: 0;
+}
+
+.totem-stepper-step.active .totem-stepper-num {
+  background: var(--theme-primary);
+  color: var(--theme-foreground);
+}
+
+.totem-stepper-divider {
+  color: #d4d4d8;
+  font-size: 12px;
+  user-select: none;
+}
+
+/* ── Totem Card (flat premium interactive card) ── */
+.totem-card {
+  background: #ffffff;
+  border: 1.5px solid #e4e4e7;
+  border-radius: 18px;
+  overflow: hidden;
+  transition: var(--totem-transition);
+  box-shadow: var(--totem-shadow-card);
+}
+
+.totem-card:hover {
+  border-color: #d4d4d8;
+  box-shadow: var(--totem-shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+.totem-card:active { transform: translateY(0) scale(0.995); }
+
+/* ── Totem Badge (category/status) ── */
+.totem-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.totem-badge-primary {
+  background: color-mix(in srgb, var(--theme-primary) 8%, white);
+  color: var(--theme-primary);
+  border: 1px solid color-mix(in srgb, var(--theme-primary) 15%, white);
+}
+
+.totem-badge-neutral {
+  background: #f4f4f5;
+  color: #71717a;
+  border: 1px solid #e4e4e7;
+}
+
+/* ── Totem CTA Button (primary action) ── */
+.totem-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--theme-primary);
+  color: var(--theme-foreground);
+  border: none;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  font-family: 'Outfit', sans-serif;
+  cursor: pointer;
+  transition: var(--totem-transition);
+  box-shadow: var(--totem-shadow);
+  letter-spacing: 0.01em;
+}
+
+.totem-cta-btn:hover { opacity: 0.9; box-shadow: var(--totem-shadow-hover); }
+.totem-cta-btn:active { transform: scale(0.97); }
+
+/* ── Totem Section Label ── */
+.totem-section-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #a1a1aa;
+  font-family: 'Outfit', sans-serif;
+  margin-bottom: 12px;
 }
 
 /* ── Keyboard fix: virtual keyboard container on light bg ── */
@@ -1797,12 +1958,12 @@
   left: 0;
   right: 0;
   background: #fff;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid #e4e4e7;
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  box-shadow: var(--totem-shadow-elevated);
   z-index: 100;
-  padding: 12px;
-  animation: fade-in-down 0.15s ease;
+  padding: 14px;
+  animation: fade-in-down 0.18s ease;
 }
 
 @keyframes fade-in-down {
@@ -1927,8 +2088,8 @@ div:has(> table) {
 /* Skeleton loader styles (flat premium pulse) */
 .skeleton-card {
   background: #ffffff;
-  border: 1px solid #e4e4e7;
-  border-radius: 24px;
+  border: 1.5px solid #e4e4e7;
+  border-radius: 18px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1941,9 +2102,104 @@ div:has(> table) {
 .skeleton-text {
   background: #f4f4f5;
   border-radius: 6px;
+  height: 14px;
 }
 .shimmer-pulse {
-  animation: pulse-soft 1.5s ease-in-out infinite;
+  animation: pulse-soft 1.8s ease-in-out infinite;
+}
+
+/* Totem Publication Card (grid item) */
+.totem-pub-card {
+  background: #ffffff;
+  border: 1.5px solid #e4e4e7;
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: var(--totem-transition);
+  box-shadow: var(--totem-shadow-card);
+}
+
+.totem-pub-card:hover {
+  border-color: #d4d4d8;
+  box-shadow: var(--totem-shadow-card-hover);
+  transform: translateY(-3px);
+}
+
+.totem-pub-card:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.totem-pub-card-thumb {
+  width: 100%;
+  aspect-ratio: 3/4;
+  background: #fafafa;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid #f4f4f5;
+}
+
+.totem-pub-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.totem-pub-card:hover .totem-pub-card-thumb img {
+  transform: scale(1.03);
+}
+
+.totem-pub-card-body {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Totem Event Card (home page) */
+.totem-event-card {
+  background: #ffffff;
+  border: 1.5px solid #e4e4e7;
+  border-radius: 18px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: var(--totem-transition);
+  box-shadow: var(--totem-shadow-card);
+  display: flex;
+  flex-direction: column;
+}
+
+.totem-event-card:hover {
+  border-color: #d4d4d8;
+  box-shadow: var(--totem-shadow-card-hover);
+  transform: translateY(-3px);
+}
+
+.totem-event-card:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.totem-event-card-banner {
+  width: 100%;
+  height: 112px;
+  position: relative;
+  overflow: hidden;
+  background: #f4f4f5;
+  border-bottom: 1px solid #f4f4f5;
+}
+
+.totem-event-card-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.totem-event-card:hover .totem-event-card-banner img {
+  transform: scale(1.03);
 }
 
 /* FAQ Accordion styles */
@@ -2077,9 +2333,9 @@ div:has(> table) {
 /* QR Code Reading Guidelines & Animation */
 .qr-scanner-frame {
   position: relative;
-  border: 3px solid var(--theme-secondary);
-  border-radius: 16px;
-  padding: 12px;
+  border: 2px solid var(--theme-secondary);
+  border-radius: 14px;
+  padding: 10px;
   background: #ffffff;
   display: inline-block;
   overflow: hidden;
@@ -2091,7 +2347,6 @@ div:has(> table) {
   height: 2px;
   background-color: var(--theme-secondary);
   animation: qr-scan 2s linear infinite;
-  box-shadow: 0 0 6px var(--theme-secondary);
 }
 @keyframes qr-scan {
   0% { top: 0%; }
@@ -2162,3 +2417,151 @@ div:has(> table) {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.5; }
 }
+
+/* Premium Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Segmented Control Styles (refined flat) */
+.segmented-control {
+  display: inline-flex;
+  background-color: #f4f4f5;
+  padding: 3px;
+  border-radius: 12px;
+  border: 1.5px solid #e4e4e7;
+  gap: 2px;
+}
+.segmented-item {
+  padding: 7px 16px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #71717a;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.01em;
+}
+.segmented-item:hover {
+  color: #18181b;
+  background: rgba(255,255,255,0.5);
+}
+.segmented-item.active {
+  background-color: #ffffff;
+  color: #18181b;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+}
+
+/* Totem Filter Chip (for category pills) */
+.totem-filter-chip {
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  font-family: 'Outfit', sans-serif;
+  color: #71717a;
+  background: #f4f4f5;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.totem-filter-chip:hover {
+  background: #e4e4e7;
+  color: #3f3f46;
+}
+
+.totem-filter-chip.active {
+  background: var(--theme-primary);
+  color: var(--theme-foreground);
+  border-color: transparent;
+  box-shadow: var(--totem-shadow);
+}
+
+/* Totem Select Dropdown */
+.totem-select {
+  background: #fff;
+  border: 1.5px solid #e4e4e7;
+  color: #3f3f46;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 8px 14px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: 'Inter', sans-serif;
+  box-shadow: var(--totem-shadow);
+}
+
+.totem-select:hover { border-color: #d4d4d8; }
+.totem-select:focus { border-color: var(--theme-primary); }
+
+/* Custom Virtual Keyboard Styles */
+.totem-keyboard-wrap {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background-color: #ffffff;
+  border: 1px solid #e4e4e7;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: var(--totem-shadow-elevated);
+  animation: keyboard-slide 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes keyboard-slide {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.hg-theme-default {
+  background-color: transparent !important;
+  padding: 0 !important;
+  font-family: inherit !important;
+}
+.hg-theme-default .hg-button {
+  height: 44px !important;
+  background: #f4f4f5 !important;
+  border: 1px solid #e4e4e7 !important;
+  border-bottom: 2px solid #d4d4d8 !important;
+  border-radius: 8px !important;
+  color: #18181b !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important;
+  transition: all 0.1s ease !important;
+}
+.hg-theme-default .hg-button:active {
+  background: #e4e4e7 !important;
+  transform: scale(0.97) !important;
+}
+.hg-theme-default .hg-button.hg-standardBtn {
+  text-transform: uppercase !important;
+}
+.hg-theme-default .hg-button.hg-functionBtn {
+  background: #e4e4e7 !important;
+  color: #27272a !important;
+  font-size: 12px !important;
+}
+
+

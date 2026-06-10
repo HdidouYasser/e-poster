@@ -77,12 +77,11 @@ export default function TotemHome() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-zinc-50 text-zinc-900 font-sans relative overflow-hidden selection:bg-theme-secondary/20 selection:text-zinc-900 bg-dot-grid theme-transition">
-
+    <div className="h-screen flex flex-col bg-zinc-50 text-zinc-900 font-sans relative overflow-hidden selection:bg-theme-secondary/20 selection:text-zinc-900 theme-transition">
 
       {/* Header */}
-      <header className="relative flex items-center justify-between px-8 py-5 bg-white/40 backdrop-blur-md border-b border-zinc-200/60 z-10 shadow-sm theme-transition">
-        <div className="flex items-center gap-4">
+      <header className="relative flex items-center justify-between px-8 py-3 bg-white border-b-[1.5px] border-zinc-200 z-10 shrink-0 theme-transition" style={{ boxShadow: 'var(--totem-shadow)' }}>
+        <div className="flex items-center gap-5">
           {/* Back to portal button (visitor mode) */}
           {screen === 'visitor' && (
             <Link to="/" className="totem-back-btn mr-2">
@@ -90,48 +89,50 @@ export default function TotemHome() {
             </Link>
           )}
           {themeEvent?.logoUrl ? (
-            <img src={getMediaUrl(themeEvent.logoUrl)} alt="Event Logo" className="h-12 object-contain bg-white p-1.5 rounded-xl border border-zinc-200 shadow-sm" />
+            <img src={getMediaUrl(themeEvent.logoUrl)} alt="Event Logo" className="h-11 object-contain bg-white p-1.5 rounded-xl border border-zinc-200" style={{ boxShadow: 'var(--totem-shadow)' }} />
           ) : (
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white border border-zinc-200 text-theme-secondary shadow-sm theme-transition">
-              <Presentation size={24} />
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-white border border-zinc-200 text-theme-secondary theme-transition" style={{ boxShadow: 'var(--totem-shadow)' }}>
+              <Presentation size={20} />
             </div>
           )}
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2 font-display">
+            <h1 className="text-lg font-extrabold tracking-tight text-zinc-900 flex items-center gap-2 font-display">
               Plateforme <span className="text-theme-secondary theme-transition">E-Poster</span>
             </h1>
-            <p className="text-xs text-zinc-500 font-medium">Borne tactile interactive</p>
+            <p className="text-[11px] text-zinc-400 font-semibold tracking-wide">Borne tactile interactive</p>
           </div>
         </div>
 
         {(screen === "1" || screen === "2") && (
           <div className="flex items-center gap-3">
             {screensQuery.data && screensQuery.data.length > 0 ? (
-              <div className="flex bg-zinc-100/80 p-1 rounded-xl border border-zinc-200/60 gap-1 theme-transition">
-                {screensQuery.data.map(s => (
-                  <button
-                    key={s.id}
-                    onClick={() => {
-                      setSelectedScreen(String(s.id));
-                      window.open(`${window.location.origin}/totem?screen=${s.id}`, `totem-screen-${s.id}`);
-                    }}
-                    style={selectedScreen === String(s.id) ? { backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' } : {}}
-                    className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all theme-transition ${selectedScreen === String(s.id) ? 'shadow-md' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200/40'}`}
-                  >
-                    <Monitor size={14} /> {s.name}
-                  </button>
-                ))}
+              <div className="segmented-control theme-transition">
+                {screensQuery.data.map(s => {
+                  const isActive = selectedScreen === String(s.id);
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => {
+                        setSelectedScreen(String(s.id));
+                        window.open(`${window.location.origin}/totem?screen=${s.id}`, `totem-screen-${s.id}`);
+                      }}
+                      className={`segmented-item ${isActive ? 'active' : ''}`}
+                    >
+                      Écran {s.name || s.id}
+                    </button>
+                  );
+                })}
               </div>
-            ) : (
+            ) : null}
+            {selectedScreen && (
               <button
                 onClick={() => {
-                  const newScreen = selectedScreen === '1' ? '2' : '1';
-                  setSelectedScreen(newScreen);
-                  window.open(`${window.location.origin}/totem?screen=${newScreen}`, `totem-screen-${newScreen}`);
+                  navigate(`/totem/slideshow?eventId=${themeEvent?.id || ""}&screen=${selectedScreen}`);
                 }}
-                className="px-4 py-2 bg-white hover:bg-zinc-50 text-zinc-600 border border-zinc-200 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-sm transition-all"
+                className="px-4 py-2.5 bg-white hover:bg-zinc-50 text-zinc-600 border border-zinc-200 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95"
+                style={{ boxShadow: 'var(--totem-shadow)' }}
               >
-                <Monitor size={14} /> Écran {selectedScreen === '1' ? '2' : '1'}
+                <Monitor size={14} /> Diaporama
               </button>
             )}
           </div>
@@ -139,47 +140,47 @@ export default function TotemHome() {
       </header>
       
       {/* ── Navigation Stepper ── */}
-      <div className="max-w-7xl mx-auto px-8 pt-8 w-full">
-        <div className="flex items-center justify-center bg-white/60 backdrop-blur-sm border border-zinc-200/60 rounded-2xl py-3 px-6 shadow-sm w-fit mx-auto gap-4 md:gap-8 text-[10px] md:text-xs font-bold uppercase tracking-wider text-zinc-400 theme-transition">
-          <Link to="/" className="flex items-center gap-2 text-zinc-550 hover:text-zinc-900 transition-colors">
-            <span className="w-5 h-5 rounded-full bg-zinc-100 flex items-center justify-center text-[10px]">1</span>
+      <div className="max-w-7xl mx-auto px-8 pt-4 w-full shrink-0">
+        <div className="totem-stepper">
+          <Link to="/" className="totem-stepper-step">
+            <span className="totem-stepper-num">1</span>
             <span className="hidden sm:inline">Portail</span>
           </Link>
-          <span className="text-zinc-300">/</span>
-          <div className="flex items-center gap-2 text-blue-600">
-            <span className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-[10px]">2</span>
+          <span className="totem-stepper-divider">/</span>
+          <div className="totem-stepper-step active">
+            <span className="totem-stepper-num">2</span>
             <span className="hidden sm:inline">Sélection Congrès</span>
           </div>
-          <span className="text-zinc-300">/</span>
-          <div className="flex items-center gap-2 opacity-50">
-            <span className="w-5 h-5 rounded-full bg-zinc-150 flex items-center justify-center text-[10px] text-zinc-500">3</span>
+          <span className="totem-stepper-divider">/</span>
+          <div className="totem-stepper-step">
+            <span className="totem-stepper-num">3</span>
             <span className="hidden sm:inline">E-Posters</span>
           </div>
-          <span className="text-zinc-300">/</span>
-          <div className="flex items-center gap-2 opacity-50">
-            <span className="w-5 h-5 rounded-full bg-zinc-150 flex items-center justify-center text-[10px] text-zinc-500">4</span>
+          <span className="totem-stepper-divider">/</span>
+          <div className="totem-stepper-step">
+            <span className="totem-stepper-num">4</span>
             <span className="hidden sm:inline">Lecture Poster</span>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center p-6 sm:p-8 z-10 max-w-7xl mx-auto w-full">
+      <main className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 z-10 max-w-7xl mx-auto w-full">
         {eventsQuery.isLoading ? (
-          <div className="flex flex-col items-center justify-center space-y-4 animate-fade-in py-20">
-            <div className="w-12 h-12 border-4 border-zinc-200 border-t-blue-600 rounded-full animate-spin" />
-            <p className="text-sm text-zinc-600 font-semibold tracking-wide">Chargement des congrès...</p>
+          <div className="flex flex-col items-center justify-center space-y-4 animate-fade-in py-12">
+            <div className="w-10 h-10 border-[3px] border-zinc-200 rounded-full animate-spin" style={{ borderTopColor: 'var(--theme-primary)' }} />
+            <p className="text-xs text-zinc-500 font-bold tracking-wide">Chargement des congrès...</p>
           </div>
         ) : activeEvents.length === 0 ? (
-          <div className="max-w-md w-full text-center p-12 bg-white border border-zinc-200/80 rounded-3xl shadow-lg animate-fade-in">
-            <Calendar size={64} className="mx-auto text-zinc-300 mb-6" />
-            <h2 className="text-2xl font-bold text-zinc-900 mb-3 font-display">Aucun événement actif</h2>
-            <p className="text-sm text-zinc-600 mb-8 leading-relaxed">
+          <div className="max-w-md w-full text-center p-10 bg-white border border-zinc-200 rounded-2xl animate-fade-in" style={{ boxShadow: 'var(--totem-shadow-elevated)' }}>
+            <Calendar size={44} className="mx-auto text-zinc-300 mb-5" />
+            <h2 className="text-lg font-bold text-zinc-900 mb-3 font-display">Aucun événement actif</h2>
+            <p className="text-sm text-zinc-500 mb-7 leading-relaxed font-medium">
               Aucun événement n'est actuellement configuré en statut actif pour cette borne tactile.
             </p>
             <Link 
               to="/login"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white border border-blue-600 rounded-2xl text-sm font-semibold transition-all hover:scale-105 shadow-md active:scale-95"
+              className="totem-cta-btn"
             >
               Accéder à l'Administration
             </Link>
@@ -187,45 +188,37 @@ export default function TotemHome() {
         ) : (
           <div className="w-full flex flex-col items-center">
             {/* Catchy intro */}
-            <div className="text-center mb-12 animate-fade-in">
-              <span className="px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase bg-theme-secondary/15 text-theme-secondary border border-theme-secondary/20 mb-4 inline-block theme-transition">
+            <div className="text-center mb-6 animate-fade-in">
+              <span className="totem-badge totem-badge-primary mb-3 inline-block theme-transition">
                 Sessions Actives
               </span>
-              <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-zinc-900 mb-4 font-display">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-zinc-900 mb-2 font-display">
                 Sélectionnez un événement
               </h2>
-              <p className="text-sm sm:text-base text-zinc-500 max-w-lg mx-auto font-medium">
-                Touchez un événement ci-dessous pour explorer ses communications et posters scientifiques interactifs.
+              <p className="text-sm sm:text-base text-zinc-500 max-w-xl mx-auto font-medium leading-relaxed">
+                Touchez un événement ci-dessous pour explorer ses communications et posters scientifiques.
               </p>
             </div>
 
             {/* Tutorial/Guide */}
-            <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 animate-fade-in">
-              <div className="flex items-center gap-4 bg-white/60 backdrop-blur-sm border border-zinc-200/50 p-5 rounded-2xl">
-                <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-base shrink-0">1</div>
-                <div>
-                  <h4 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">Sélectionnez le Congrès</h4>
-                  <p className="text-[10px] text-zinc-500 font-medium">Touchez un congrès ci-dessous pour voir ses publications.</p>
+            <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 animate-fade-in">
+              {[
+                { num: 1, title: "Sélectionnez", desc: "Touchez un congrès pour explorer ses posters." },
+                { num: 2, title: "Recherchez", desc: "Filtrez par titre, auteur ou thématique." },
+                { num: 3, title: "Scannez", desc: "Scanner le QR code pour lire sur mobile." },
+              ].map(step => (
+                <div key={step.num} className="flex items-center gap-4 bg-white border border-zinc-200 p-5 rounded-2xl transition-all hover:border-zinc-300" style={{ boxShadow: 'var(--totem-shadow-card)' }}>
+                  <div className="w-10 h-10 rounded-xl bg-zinc-50 text-zinc-700 border border-zinc-200 flex items-center justify-center font-extrabold text-sm shrink-0 font-display">{step.num}</div>
+                  <div>
+                    <h4 className="text-[11px] font-extrabold text-zinc-900 uppercase tracking-widest font-display">{step.title}</h4>
+                    <p className="text-[11px] text-zinc-500 font-medium mt-1">{step.desc}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-4 bg-white/60 backdrop-blur-sm border border-zinc-200/50 p-5 rounded-2xl">
-                <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-base shrink-0">2</div>
-                <div>
-                  <h4 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">Trouvez un Poster</h4>
-                  <p className="text-[10px] text-zinc-500 font-medium">Recherchez par titre ou auteur avec le clavier virtuel tactile.</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 bg-white/60 backdrop-blur-sm border border-zinc-200/50 p-5 rounded-2xl">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-base shrink-0">3</div>
-                <div>
-                  <h4 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">Scannez & Emportez</h4>
-                  <p className="text-[10px] text-zinc-500 font-medium">Scannez le QR Code pour enregistrer le poster sur votre mobile.</p>
-                </div>
-              </div>
+              ))}
             </div>
 
             {/* Dynamic Grid of Active Events */}
-            <div className={`grid gap-8 w-full justify-center ${activeEvents.length === 1 ? 'max-w-xl grid-cols-1' : activeEvents.length === 2 ? 'max-w-4xl grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
+            <div className={`grid gap-5 w-full justify-center ${activeEvents.length === 1 ? 'max-w-xl grid-cols-1' : activeEvents.length === 2 ? 'max-w-4xl grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
               {activeEvents.map((event) => {
                 const isCurrentTheme = themeEvent?.id === event.id;
                 return (
@@ -234,37 +227,39 @@ export default function TotemHome() {
                     onMouseEnter={() => setHoveredEvent(event)}
                     onMouseLeave={() => setHoveredEvent(null)}
                     onClick={() => navigate(`/totem/publications?eventId=${event.id}&screen=${selectedScreen}`)}
-                    className={`relative rounded-3xl overflow-hidden border transition-all duration-500 cursor-pointer flex flex-col group theme-transition theme-glow-card ${
-                      isCurrentTheme 
-                        ? 'scale-[1.02] bg-white/90 shadow-lg' 
-                        : 'border-zinc-200/60 bg-white/40 hover:bg-white/60 hover:border-zinc-300 shadow-sm'
+                    className={`totem-event-card group theme-transition ${
+                      isCurrentTheme ? 'border-zinc-300' : ''
                     }`}
+                    style={{ 
+                      boxShadow: isCurrentTheme ? 'var(--totem-shadow-card-hover)' : 'var(--totem-shadow-card)',
+                      transform: isCurrentTheme ? 'translateY(-3px)' : undefined
+                    }}
                   >
                     {/* Event Banner background */}
-                    <div className="h-32 w-full bg-zinc-100 relative overflow-hidden border-b border-zinc-200/60 theme-transition">
+                    <div className="totem-event-card-banner theme-transition">
                       {event.bannerUrl ? (
                         <img 
                           src={getMediaUrl(event.bannerUrl)} 
                           alt="Banner" 
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80" 
+                          className="w-full h-full object-cover" 
                         />
                       ) : (
                         <div className="w-full h-full bg-zinc-100 flex items-center justify-center">
-                          <Presentation size={36} className="text-zinc-300" />
+                          <Presentation size={32} className="text-zinc-300" />
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-white/40" />
                       
                       {/* Logo positioned floating */}
-                      <div className="absolute bottom-4 left-6 flex items-end gap-3">
+                      <div className="absolute bottom-3 left-5 flex items-end gap-3">
                         {event.logoUrl ? (
                           <img 
                             src={getMediaUrl(event.logoUrl)} 
                             alt="Logo" 
-                            className="h-14 w-14 object-contain bg-white rounded-2xl p-1.5 shadow-md border border-zinc-200 shrink-0" 
+                            className="h-11 w-11 object-contain bg-white rounded-xl p-1.5 border border-zinc-200 shrink-0" 
+                            style={{ boxShadow: 'var(--totem-shadow)' }}
                           />
                         ) : (
-                          <div className="h-14 w-14 bg-zinc-50 rounded-2xl flex items-center justify-center shadow-md border border-zinc-200 text-zinc-500 font-bold text-sm shrink-0">
+                          <div className="h-11 w-11 bg-white rounded-xl flex items-center justify-center border border-zinc-200 text-zinc-500 font-bold text-xs shrink-0" style={{ boxShadow: 'var(--totem-shadow)' }}>
                             {event.title ? event.title.substring(0, 2).toUpperCase() : "EV"}
                           </div>
                         )}
@@ -272,12 +267,12 @@ export default function TotemHome() {
                     </div>
 
                     {/* Card Content */}
-                    <div className="p-6 flex-1 flex flex-col justify-between">
+                    <div className="p-5 flex-1 flex flex-col justify-between">
                       <div>
                         {/* Dates */}
                         {(event.startDate || event.endDate) && (
-                          <div className="flex items-center gap-1.5 text-zinc-400 mb-3 text-xs font-semibold">
-                            <Calendar size={12} className="text-theme-secondary theme-transition" />
+                          <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-zinc-100 text-zinc-600 rounded-lg text-[10px] font-bold uppercase tracking-wider mb-3 w-fit theme-transition">
+                            <Calendar size={11} className="text-zinc-500" />
                             <span>{formatDate(event.startDate)}</span>
                             {event.endDate && (
                               <>
@@ -289,64 +284,61 @@ export default function TotemHome() {
                         )}
 
                         {/* Title */}
-                        <h3 className="text-lg sm:text-xl font-bold text-zinc-900 mb-2 tracking-tight group-hover:text-theme-secondary transition-colors duration-300 font-display theme-transition">
+                        <h3 className="text-[15px] font-bold text-zinc-900 mb-2 tracking-tight group-hover:text-theme-secondary transition-colors duration-200 font-display theme-transition line-clamp-2">
                           {event.title}
                         </h3>
 
                         {/* Description */}
-                        <p className="text-xs text-zinc-550 mb-6 line-clamp-3 leading-relaxed">
+                        <p className="text-xs text-zinc-500 mb-4 line-clamp-2 leading-relaxed font-medium">
                           {event.description || "Aucune description fournie."}
                         </p>
                       </div>
 
                       {/* QR Access section */}
-                      <div className="space-y-3 pt-4 border-t border-zinc-200/60 theme-transition">
+                      <div className="space-y-3 pt-4 border-t border-zinc-100 theme-transition">
                         {(event.programUrl || event.revueUrl) ? (
                           <div className="grid grid-cols-2 gap-3">
                             {event.programUrl && (
                               <div 
                                 onClick={(e) => e.stopPropagation()} 
-                                className="flex items-center gap-2 bg-zinc-50/50 p-2 rounded-xl border border-zinc-200/60 theme-transition"
+                                className="flex items-center gap-3 bg-zinc-50 p-3 rounded-xl border border-zinc-200 theme-transition"
                               >
                                 <img 
                                   src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(event.programUrl)}`} 
                                   alt="QR Program" 
-                                  className="w-10 h-10 bg-white p-1 rounded-lg shrink-0 border border-zinc-200/50"
+                                  className="w-11 h-11 bg-white p-1 rounded-lg shrink-0 border border-zinc-200"
                                 />
                                 <div className="min-w-0">
-                                  <h4 className="text-[9px] font-extrabold text-theme-primary uppercase tracking-wider theme-transition">Programme</h4>
-                                  <p className="text-[8px] text-zinc-450 truncate">Scanner PDF</p>
+                                  <h4 className="text-[10px] font-extrabold text-theme-primary uppercase tracking-wider theme-transition">Programme</h4>
+                                  <p className="text-[10px] text-zinc-400 truncate mt-0.5 font-medium">Scanner PDF</p>
                                 </div>
                               </div>
                             )}
                             {event.revueUrl && (
                               <div 
                                 onClick={(e) => e.stopPropagation()} 
-                                className="flex items-center gap-2 bg-zinc-50/50 p-2 rounded-xl border border-zinc-200/60 theme-transition"
+                                className="flex items-center gap-3 bg-zinc-50 p-3 rounded-xl border border-zinc-200 theme-transition"
                               >
                                 <img 
                                   src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(event.revueUrl)}`} 
                                   alt="QR Revue" 
-                                  className="w-10 h-10 bg-white p-1 rounded-lg shrink-0 border border-zinc-200/50"
+                                  className="w-11 h-11 bg-white p-1 rounded-lg shrink-0 border border-zinc-200"
                                 />
                                 <div className="min-w-0">
-                                  <h4 className="text-[9px] font-extrabold text-theme-primary uppercase tracking-wider theme-transition">La Revue</h4>
-                                  <p className="text-[8px] text-zinc-450 truncate">Scanner Journal</p>
+                                  <h4 className="text-[10px] font-extrabold text-theme-primary uppercase tracking-wider theme-transition">La Revue</h4>
+                                  <p className="text-[10px] text-zinc-400 truncate mt-0.5 font-medium">Scanner Journal</p>
                                 </div>
                               </div>
                             )}
                           </div>
                         ) : (
-                          <div className="flex items-center gap-2 text-[10px] text-zinc-400 py-1.5 font-semibold italic justify-center bg-zinc-50/50 rounded-xl border border-zinc-200/45 theme-transition">
-                            <HelpCircle size={10} /> QR codes non disponibles
+                          <div className="flex items-center gap-2 text-xs text-zinc-400 py-2 font-semibold italic justify-center bg-zinc-50 rounded-xl border border-zinc-200 theme-transition">
+                            <HelpCircle size={12} /> QR codes non disponibles
                           </div>
                         )}
 
                         {/* CTA button */}
-                        <button
-                          style={{ backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' }}
-                          className="w-full mt-2 py-3 px-4 hover:opacity-90 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-md group-hover:scale-[1.02] theme-transition font-display"
-                        >
+                        <button className="totem-cta-btn w-full">
                           Accéder aux publications
                           <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                         </button>
@@ -361,7 +353,7 @@ export default function TotemHome() {
       </main>
 
       {/* Footer */}
-      <footer className="relative py-6 text-center text-xs text-zinc-450 border-t border-zinc-200/60 bg-white/30 z-10 shrink-0 theme-transition">
+      <footer className="relative py-3 text-center text-[11px] text-zinc-400 border-t-[1.5px] border-zinc-200 bg-white z-10 shrink-0 theme-transition font-medium">
         <p>&copy; 2026 AMPIIC. Plateforme Digitale Interactive. Tous droits réservés.</p>
       </footer>
     </div>

@@ -145,10 +145,10 @@ export default function TotemPublications() {
   }, [navigate, screen]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-theme-bg-light text-zinc-900 font-sans transition-colors duration-500 bg-dot-grid theme-transition relative overflow-hidden">
+    <div className="h-screen flex flex-col bg-theme-bg-light text-zinc-900 font-sans transition-colors duration-500 theme-transition relative overflow-hidden">
 
       {/* Header Panel */}
-      <header className="flex flex-col md:flex-row items-center justify-between px-8 py-5 bg-white/80 backdrop-blur-md border-b border-zinc-200/60 gap-4 sticky top-0 z-20 shadow-sm theme-transition">
+      <header className="flex flex-col md:flex-row items-center justify-between px-8 py-3 bg-white border-b-[1.5px] border-zinc-200 gap-3 sticky top-0 z-20 shrink-0 theme-transition" style={{ boxShadow: 'var(--totem-shadow)' }}>
         <div className="flex items-center gap-3 w-full md:w-auto">
           {screen === 'visitor' && (
             <Link to="/" className="totem-back-btn">
@@ -159,7 +159,7 @@ export default function TotemPublications() {
             to={`/totem?screen=${screen}`}
             className="totem-back-btn"
           >
-            <Home size={16} /> Congrès
+            <Home size={15} /> Congrès
           </Link>
 
           
@@ -167,22 +167,24 @@ export default function TotemPublications() {
             <img 
               src={getMediaUrl(selectedEvent.logoUrl)} 
               alt="Logo" 
-              className="h-10 max-w-[120px] object-contain hidden sm:block bg-zinc-50 p-1 rounded-lg border border-zinc-200 shadow-sm" 
+              className="h-10 max-w-[110px] object-contain hidden sm:block bg-white p-1.5 rounded-lg border border-zinc-200" 
+              style={{ boxShadow: 'var(--totem-shadow)' }}
             />
           )}
           <div className="hidden lg:block">
-            <h2 className="text-sm font-bold text-zinc-950 truncate max-w-[200px] font-display theme-transition">
+            <h2 className="text-sm font-bold text-zinc-900 truncate max-w-[220px] font-display theme-transition">
               {selectedEvent?.title || "Congrès E-Poster"}
             </h2>
-            <p className="text-[10px] text-zinc-500 font-medium">Recherche communications</p>
+            <p className="text-[11px] text-zinc-400 font-semibold mt-0.5">Recherche communications</p>
           </div>
         </div>
 
         {/* Styled search container */}
         <div className="relative flex-1 w-full md:max-w-xl">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 peer-focus:text-blue-600 transition-colors" size={18} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors" size={15} />
           <input
-            className="peer w-full bg-white border border-zinc-200 focus:border-blue-600 focus:ring-1 focus:ring-blue-500/20 text-zinc-900 placeholder-zinc-400 pl-11 pr-12 py-3 rounded-2xl text-sm outline-none transition-all shadow-sm hover:shadow-md"
+            className="w-full bg-white border-[1.5px] border-zinc-200 focus:border-zinc-900 text-zinc-900 placeholder-zinc-400 pl-11 pr-12 py-2.5 rounded-xl text-sm outline-none transition-all font-semibold"
+            style={{ boxShadow: 'var(--totem-shadow)' }}
             value={q}
             onChange={(e) => { setQ(e.target.value); setPage(0); }}
             onFocus={() => setShowKeyboard(true)}
@@ -190,9 +192,9 @@ export default function TotemPublications() {
           />
           <button 
             onClick={() => setShowKeyboard(!showKeyboard)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-all rounded-lg"
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-all rounded-lg"
           >
-            {showKeyboard ? <X size={18} /> : <KeyboardIcon size={18} />}
+            {showKeyboard ? <X size={16} /> : <KeyboardIcon size={16} />}
           </button>
 
           {showKeyboard && (
@@ -227,47 +229,45 @@ export default function TotemPublications() {
         {(screen === "1" || screen === "2") && (
           <button
             onClick={() => window.open(`${window.location.origin}/totem/publications?screen=${Number(screen) + 1}`, `totem-screen-${Number(screen) + 1}`)}
-            style={{ backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' }}
-            className="w-full md:w-auto px-5 py-2.5 hover:opacity-90 hover:brightness-110 rounded-xl text-sm font-bold shadow-sm transition-all flex items-center justify-center gap-2 shrink-0 active:scale-95 theme-transition font-display"
+            className="totem-cta-btn w-full md:w-auto shrink-0"
           >
-            <Monitor size={16} /> Écran {screen === '1' ? '2' : '1'}
+            <Monitor size={15} /> Écran {screen === '1' ? '2' : '1'}
           </button>
         )}
       </header>
 
       {/* ── Navigation Stepper ── */}
-      <div className="max-w-7xl mx-auto px-8 pt-8 w-full">
-        <div className="flex items-center justify-center bg-white/60 backdrop-blur-sm border border-zinc-200/60 rounded-2xl py-3 px-6 shadow-sm w-fit mx-auto gap-4 md:gap-8 text-[10px] md:text-xs font-bold uppercase tracking-wider text-zinc-400 theme-transition">
-          <Link to="/" className="flex items-center gap-2 text-zinc-550 hover:text-zinc-900 transition-colors">
-            <span className="w-5 h-5 rounded-full bg-zinc-100 flex items-center justify-center text-[10px]">1</span>
+      <div className="max-w-7xl mx-auto px-8 pt-4 w-full shrink-0">
+        <div className="totem-stepper">
+          <Link to="/" className="totem-stepper-step">
+            <span className="totem-stepper-num">1</span>
             <span className="hidden sm:inline">Portail</span>
           </Link>
-          <span className="text-zinc-300">/</span>
-          <Link to={`/totem?screen=${screen}`} className="flex items-center gap-2 text-zinc-550 hover:text-zinc-900 transition-colors">
-            <span className="w-5 h-5 rounded-full bg-zinc-100 flex items-center justify-center text-[10px]">2</span>
+          <span className="totem-stepper-divider">/</span>
+          <Link to={`/totem?screen=${screen}`} className="totem-stepper-step">
+            <span className="totem-stepper-num">2</span>
             <span className="hidden sm:inline">Sélection Congrès</span>
           </Link>
-          <span className="text-zinc-300">/</span>
-          <div className="flex items-center gap-2 text-blue-600">
-            <span className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-[10px]">3</span>
+          <span className="totem-stepper-divider">/</span>
+          <div className="totem-stepper-step active">
+            <span className="totem-stepper-num">3</span>
             <span className="hidden sm:inline">E-Posters</span>
           </div>
-          <span className="text-zinc-300">/</span>
-          <div className="flex items-center gap-2 opacity-50">
-            <span className="w-5 h-5 rounded-full bg-zinc-150 flex items-center justify-center text-[10px] text-zinc-500">4</span>
+          <span className="totem-stepper-divider">/</span>
+          <div className="totem-stepper-step">
+            <span className="totem-stepper-num">4</span>
             <span className="hidden sm:inline">Lecture Poster</span>
           </div>
         </div>
       </div>
 
       {/* Categories & Select Filter Toolbar */}
-      <div className="bg-white/50 backdrop-blur-sm border-b border-zinc-200/60 px-8 py-4 flex flex-col sm:flex-row gap-4 items-center justify-between z-10">
+      <div className="bg-white border-b-[1.5px] border-zinc-200 px-8 py-3 flex flex-col sm:flex-row gap-3 items-center justify-between z-10 mt-4 shrink-0" style={{ boxShadow: 'var(--totem-shadow)' }}>
         {eventCategories?.length > 0 ? (
-          <div className="flex-1 flex items-center gap-2 overflow-x-auto pb-1.5 max-w-full scrollbar-thin">
+          <div className="flex-1 flex items-center gap-2 overflow-x-auto pb-1 max-w-full scrollbar-none">
             <button
               onClick={() => { setCategory(""); setPage(0); }}
-              style={!category ? { backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' } : {}}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border shrink-0 theme-transition font-display ${!category ? 'border-transparent shadow-md' : 'bg-white text-zinc-600 border-zinc-200/80 hover:bg-zinc-50'}`}
+              className={`totem-filter-chip ${!category ? 'active' : ''}`}
             >
               Tous les thèmes
             </button>
@@ -275,8 +275,7 @@ export default function TotemPublications() {
               <button
                 key={c.id}
                 onClick={() => { setCategory(c.name); setPage(0); }}
-                style={category === c.name ? { backgroundColor: 'var(--theme-primary)', color: 'var(--theme-foreground)' } : {}}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border shrink-0 theme-transition font-display ${category === c.name ? 'border-transparent shadow-md' : 'bg-white text-zinc-600 border-zinc-200/80 hover:bg-zinc-50'}`}
+                className={`totem-filter-chip ${category === c.name ? 'active' : ''}`}
               >
                 {c.name}
               </button>
@@ -284,11 +283,11 @@ export default function TotemPublications() {
           </div>
         ) : <div className="flex-1"></div>}
         
-        <div className="flex gap-3 w-full sm:w-auto justify-end shrink-0">
+        <div className="flex gap-2 w-full sm:w-auto justify-end shrink-0">
           <select
             value={sort}
             onChange={(e) => { setSort(e.target.value); setPage(0); }}
-            className="bg-white border border-zinc-200 text-zinc-700 text-xs font-bold rounded-xl px-3 py-2 outline-none hover:bg-zinc-50 transition-colors focus:border-theme-primary shadow-sm theme-transition"
+            className="totem-select"
           >
             <option value="id,asc">Trier par N° (Croissant)</option>
             <option value="title,asc">Trier par Titre (A-Z)</option>
@@ -298,7 +297,7 @@ export default function TotemPublications() {
             <select
               value={session}
               onChange={(e) => { setSession(e.target.value); setPage(0); }}
-              className="bg-white border border-zinc-200 text-zinc-700 text-xs font-bold rounded-xl px-3 py-2 outline-none hover:bg-zinc-50 transition-colors focus:border-theme-primary shadow-sm theme-transition"
+              className="totem-select text-[11px]"
             >
               <option value="">Toutes les sessions</option>
               {availableSessions.map(s => <option key={s} value={s}>{s}</option>)}
@@ -308,7 +307,7 @@ export default function TotemPublications() {
             <select
               value={room}
               onChange={(e) => { setRoom(e.target.value); setPage(0); }}
-              className="bg-white border border-zinc-200 text-zinc-700 text-xs font-bold rounded-xl px-3 py-2 outline-none hover:bg-zinc-50 transition-colors focus:border-theme-primary shadow-sm theme-transition"
+              className="totem-select text-[11px]"
             >
               <option value="">Toutes les salles</option>
               {availableRooms.map(r => <option key={r} value={r}>{r}</option>)}
@@ -318,21 +317,22 @@ export default function TotemPublications() {
       </div>
 
       {/* Main Grid View */}
-      <main className="flex-1 p-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+      <main className="flex-1 min-h-0 overflow-y-auto p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
         {pubsQuery.isLoading ? (
           <>
             {Array.from({ length: 8 }).map((_, idx) => (
               <div key={idx} className="skeleton-card shimmer-pulse">
                 <div className="skeleton-thumb" />
-                <div className="p-5 flex-1 flex flex-col gap-2.5">
+                <div className="p-5 flex-1 flex flex-col gap-3">
                   <div className="flex justify-between items-center gap-4">
-                    <div className="h-3.5 w-16 skeleton-text" />
-                    <div className="h-3.5 w-8 skeleton-text" />
+                    <div className="h-3 w-14 skeleton-text" />
+                    <div className="h-3 w-8 skeleton-text" />
                   </div>
                   <div className="h-4 w-full skeleton-text mt-1" />
                   <div className="h-4 w-3/4 skeleton-text" />
-                  <div className="h-3 w-24 skeleton-text mt-1" />
-                  <div className="mt-4 pt-3 border-t border-zinc-100 flex gap-2">
+                  <div className="h-3 w-20 skeleton-text mt-1" />
+                  <div className="mt-3 pt-3 border-t border-zinc-100 flex gap-2">
                     <div className="h-5 w-14 skeleton-text" />
                     <div className="h-5 w-14 skeleton-text" />
                   </div>
@@ -341,10 +341,10 @@ export default function TotemPublications() {
             ))}
           </>
         ) : data.items?.length === 0 ? (
-          <div className="col-span-full text-center p-20 bg-white/60 backdrop-blur-md border border-zinc-200/60 rounded-3xl shadow-sm max-w-lg mx-auto w-full animate-fade-in my-12">
-            <Search size={48} className="mx-auto text-zinc-305 mb-4 animate-pulse" />
-            <h2 className="text-xl font-bold text-zinc-800 mb-2 font-display">Aucun e-poster trouvé</h2>
-            <p className="text-xs text-zinc-500 leading-relaxed">
+          <div className="col-span-full text-center p-16 bg-white border border-zinc-200 rounded-2xl max-w-lg mx-auto w-full animate-fade-in my-12" style={{ boxShadow: 'var(--totem-shadow-elevated)' }}>
+            <Search size={40} className="mx-auto text-zinc-300 mb-4" />
+            <h2 className="text-lg font-bold text-zinc-900 mb-2 font-display">Aucun e-poster trouvé</h2>
+            <p className="text-sm text-zinc-500 leading-relaxed font-medium">
               Nous n'avons trouvé aucun document correspondant à vos critères de recherche. Essayez de simplifier ou de modifier vos filtres.
             </p>
           </div>
@@ -365,28 +365,26 @@ export default function TotemPublications() {
                 const path = `/totem/publications/${p.id}?${searchParamStr}`;
                 navigate(path);
               }}
-              className="text-left bg-white/80 backdrop-blur-sm border border-zinc-200/60 rounded-3xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 animate-fade-in group cursor-pointer theme-transition hover:border-theme-primary/20"
+              className="totem-pub-card animate-fade-in group"
             >
               {/* Card Thumbnail Canvas */}
-              <div className="w-full aspect-[3/4] bg-zinc-50 relative border-b border-zinc-100 overflow-hidden flex items-center justify-center">
-
+              <div className="totem-pub-card-thumb">
 
                 {p.posterUrl ? (
                   <img 
                     src={getPosterThumbnail(p.posterUrl)} 
                     alt={p.title} 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
                   />
                 ) : (
                   <div className="w-full h-full bg-zinc-50 flex flex-col items-center justify-center gap-2">
-                    <ImageIcon size={32} className="text-zinc-300" />
-                    <span className="text-[10px] text-zinc-400 font-bold tracking-wider">Affiche non disponible</span>
+                    <ImageIcon size={28} className="text-zinc-300" />
+                    <span className="text-[10px] text-zinc-400 font-bold tracking-wider uppercase">Affiche non disponible</span>
                   </div>
                 )}
                 
                 {/* Visual Status Indicator */}
                 {p.status === 'PUBLISHED' && (
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-zinc-800 px-2.5 py-1 text-[10px] font-bold rounded-lg shadow-sm border border-zinc-200/50 flex items-center gap-1.5 theme-transition">
+                  <div className="absolute top-3 right-3 bg-white text-zinc-700 px-2.5 py-1 text-[10px] font-bold rounded-lg border border-zinc-200 flex items-center gap-1.5 theme-transition" style={{ boxShadow: 'var(--totem-shadow)' }}>
                     <span className="w-1.5 h-1.5 rounded-full bg-theme-secondary animate-pulse" />
                     Interactif
                   </div>
@@ -394,41 +392,41 @@ export default function TotemPublications() {
               </div>
 
               {/* Card metadata details */}
-              <div className="p-5 flex-1 flex flex-col justify-between">
+              <div className="totem-pub-card-body">
                 <div>
                   {/* Category & ID badge */}
                   <div className="flex items-center justify-between gap-2 mb-2">
                     {p.category ? (
-                      <span className="inline-flex items-center gap-1 text-[9px] font-extrabold text-theme-primary uppercase tracking-wider theme-transition">
-                        <Tag size={10} /> {p.category}
+                      <span className="totem-badge totem-badge-primary theme-transition">
+                        <Tag size={9} /> {p.category}
                       </span>
                     ) : <span />}
-                    <span className="text-[9px] font-mono font-extrabold text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-lg border border-zinc-200/40">
+                    <span className="text-[10px] font-mono font-extrabold text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-md border border-zinc-200">
                       N° {p.id}
                     </span>
                   </div>
                   
                   {/* Title */}
-                  <h3 className="text-sm font-bold line-clamp-2 leading-snug mb-1 text-zinc-900 group-hover:text-theme-primary transition-colors duration-300 font-display theme-transition">
+                  <h3 className="text-[11px] font-extrabold line-clamp-2 leading-snug mb-1 text-zinc-900 group-hover:text-theme-primary transition-colors duration-200 font-display theme-transition">
                     {p.title}
                   </h3>
 
                   {/* Authors */}
-                  <p className="text-xs text-zinc-500 line-clamp-1 mb-4 font-medium">
+                  <p className="text-[10px] text-zinc-400 line-clamp-1 mb-2 font-semibold">
                     {p.authors || "Auteurs non renseignés"}
                   </p>
                 </div>
 
                 {/* Date/Location Details */}
-                <div className="mt-auto pt-3 border-t border-zinc-100 flex flex-wrap gap-2">
+                <div className="mt-auto pt-2 border-t border-zinc-100 flex flex-wrap gap-1.5">
                   {p.session && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-zinc-50 text-zinc-650 rounded-lg text-[10px] font-semibold border border-zinc-200/60 theme-transition">
-                      <Clock size={10} className="text-theme-secondary" /> {p.session}
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-zinc-100 text-zinc-500 rounded-lg text-[9px] font-bold uppercase tracking-wider theme-transition">
+                      <Clock size={9} className="text-zinc-400" /> {p.session}
                     </span>
                   )}
                   {p.room && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-zinc-50 text-zinc-650 rounded-lg text-[10px] font-semibold border border-zinc-200/60 theme-transition">
-                      <MapPin size={10} className="text-theme-secondary" /> {p.room}
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-zinc-100 text-zinc-500 rounded-lg text-[9px] font-bold uppercase tracking-wider theme-transition">
+                      <MapPin size={9} className="text-zinc-400" /> {p.room}
                     </span>
                   )}
                 </div>
@@ -436,17 +434,18 @@ export default function TotemPublications() {
             </div>
           ))
         )}
+        </div>
       </main>
 
       {/* Pagination Footer */}
-      <footer className="border-t border-zinc-200 bg-white/80 backdrop-blur-md px-8 py-4 flex justify-between items-center sticky bottom-0 z-20 shadow-md theme-transition">
+      <footer className="border-t-[1.5px] border-zinc-200 bg-white px-8 py-3 flex justify-between items-center sticky bottom-0 z-20 shrink-0 theme-transition" style={{ boxShadow: '0 -2px 8px rgba(0,0,0,0.03)' }}>
         <div className="totem-page-nav">
           <button
             disabled={page <= 0}
             onClick={() => setPage((x) => x - 1)}
             className="totem-page-btn"
           >
-            <ChevronLeft size={16} /> Précédent
+            <ChevronLeft size={15} /> Précédent
           </button>
         </div>
         <span className="totem-page-info">
@@ -458,7 +457,7 @@ export default function TotemPublications() {
             onClick={() => setPage((x) => x + 1)}
             className="totem-page-btn"
           >
-            Suivant <ChevronRight size={16} />
+            Suivant <ChevronRight size={15} />
           </button>
         </div>
       </footer>
