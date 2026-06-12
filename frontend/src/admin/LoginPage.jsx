@@ -127,11 +127,16 @@ export default function LoginPage() {
         </div>
 
         {/* Footer note */}
-        <div className="mt-8 pt-5 border-t border-zinc-100 flex items-center justify-between">
-          <p className="text-[10px] text-zinc-400 font-medium">© 2026 AMPIIC · Plateforme E-Poster</p>
-          <Link to="/register" className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors">
-            S'inscrire →
-          </Link>
+        <div className="mt-8 pt-5 border-t border-zinc-100 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <Link to="/forgot-password" className="text-xs font-semibold text-zinc-500 hover:text-zinc-800 transition-colors">
+              Mot de passe oublié ?
+            </Link>
+            <Link to="/register" className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+              S'inscrire →
+            </Link>
+          </div>
+          <p className="text-[10px] text-zinc-400 font-medium text-center mt-1">© 2026 AMPIIC · Plateforme E-Poster</p>
         </div>
       </div>
     </div>

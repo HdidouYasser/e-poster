@@ -36,7 +36,7 @@ public class ScreenService {
 
     public List<Screen> list(Long eventId) {
         if (eventId != null) {
-            return repository.findByEvent_IdAndDeletedAtIsNull(eventId);
+            return repository.findByEvent_IdAndIsActiveTrueAndDeletedAtIsNull(eventId);
         }
         return repository.findByDeletedAtIsNull();
     }
@@ -69,6 +69,8 @@ public class ScreenService {
         existing.setName(payload.getName());
         existing.setLocation(payload.getLocation());
         existing.setMode(payload.getMode());
+        existing.setResolution(payload.getResolution());
+        existing.setIsActive(payload.getIsActive() != null ? payload.getIsActive() : true);
         if (payload.getEvent() != null && payload.getEvent().getId() != null) {
             existing.setEvent(resolveEvent(payload.getEvent().getId()));
         }

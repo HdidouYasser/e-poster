@@ -139,4 +139,15 @@ public class Publication {
     public void setCategoryIds(List<Long> categoryIds) { this.categoryIds = categoryIds; }
     public Integer getViewCount() { return viewCount == null ? 0 : viewCount; }
     public void setViewCount(Integer viewCount) { this.viewCount = viewCount; }
+
+    @Transient
+    private List<Author> authorsList;
+
+    public List<Author> getAuthorsList() {
+        return authorsList;
+    }
+
+    public void setAuthorsList(List<Author> authorsList) {
+        this.authorsList = authorsList;
+    }
 }

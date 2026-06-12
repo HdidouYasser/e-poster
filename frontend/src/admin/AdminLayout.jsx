@@ -129,7 +129,7 @@ export default function AdminLayout() {
               {/* Avatar */}
               <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 shadow-sm">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                  <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" referrerpolicy="no-referrer" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[11px] font-bold text-white uppercase bg-blue-600">
                     {initials}
@@ -147,7 +147,7 @@ export default function AdminLayout() {
               {/* Avatar */}
               <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 shadow-sm">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                  <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" referrerpolicy="no-referrer" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[11px] font-bold text-white uppercase bg-zinc-900">
                     {initials}

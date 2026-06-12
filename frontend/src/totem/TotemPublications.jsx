@@ -35,13 +35,13 @@ export default function TotemPublications() {
       keyboardRef.current.setInput(q);
     }
   }, [q]);
-  
+
   const endpoint = useMemo(() => {
     let base = `/publications?page=${page}&size=${size}&sort=${sort}`;
     if (q.trim()) {
       base = `/publications/search?q=${encodeURIComponent(q)}&page=${page}&size=${size}&sort=${sort}`;
     }
-    
+
     if (eventId) base += `&eventId=${encodeURIComponent(eventId)}`;
     if (category) base += `&category=${encodeURIComponent(category)}`;
     if (session) base += `&session=${encodeURIComponent(session)}`;
@@ -162,12 +162,12 @@ export default function TotemPublications() {
             <Home size={15} /> Congrès
           </Link>
 
-          
+
           {selectedEvent?.logoUrl && (
-            <img 
-              src={getMediaUrl(selectedEvent.logoUrl)} 
-              alt="Logo" 
-              className="h-10 max-w-[110px] object-contain hidden sm:block bg-white p-1.5 rounded-lg border border-zinc-200" 
+            <img
+              src={getMediaUrl(selectedEvent.logoUrl)}
+              alt="Logo"
+              className="h-10 max-w-[110px] object-contain hidden sm:block bg-white p-1.5 rounded-lg border border-zinc-200"
               style={{ boxShadow: 'var(--totem-shadow)' }}
             />
           )}
@@ -190,7 +190,7 @@ export default function TotemPublications() {
             onFocus={() => setShowKeyboard(true)}
             placeholder="Rechercher par titre, auteur, mot-clé..."
           />
-          <button 
+          <button
             onClick={() => setShowKeyboard(!showKeyboard)}
             className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-all rounded-lg"
           >
@@ -282,7 +282,7 @@ export default function TotemPublications() {
             ))}
           </div>
         ) : <div className="flex-1"></div>}
-        
+
         <div className="flex gap-2 w-full sm:w-auto justify-end shrink-0">
           <select
             value={sort}
@@ -319,121 +319,127 @@ export default function TotemPublications() {
       {/* Main Grid View */}
       <main className="flex-1 min-h-0 overflow-y-auto p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-        {pubsQuery.isLoading ? (
-          <>
-            {Array.from({ length: 8 }).map((_, idx) => (
-              <div key={idx} className="skeleton-card shimmer-pulse">
-                <div className="skeleton-thumb" />
-                <div className="p-5 flex-1 flex flex-col gap-3">
-                  <div className="flex justify-between items-center gap-4">
-                    <div className="h-3 w-14 skeleton-text" />
-                    <div className="h-3 w-8 skeleton-text" />
-                  </div>
-                  <div className="h-4 w-full skeleton-text mt-1" />
-                  <div className="h-4 w-3/4 skeleton-text" />
-                  <div className="h-3 w-20 skeleton-text mt-1" />
-                  <div className="mt-3 pt-3 border-t border-zinc-100 flex gap-2">
-                    <div className="h-5 w-14 skeleton-text" />
-                    <div className="h-5 w-14 skeleton-text" />
+          {pubsQuery.isLoading ? (
+            <>
+              {Array.from({ length: 8 }).map((_, idx) => (
+                <div key={idx} className="skeleton-card shimmer-pulse">
+                  <div className="skeleton-thumb" />
+                  <div className="p-5 flex-1 flex flex-col gap-3">
+                    <div className="flex justify-between items-center gap-4">
+                      <div className="h-3 w-14 skeleton-text" />
+                      <div className="h-3 w-8 skeleton-text" />
+                    </div>
+                    <div className="h-4 w-full skeleton-text mt-1" />
+                    <div className="h-4 w-3/4 skeleton-text" />
+                    <div className="h-3 w-20 skeleton-text mt-1" />
+                    <div className="mt-3 pt-3 border-t border-zinc-100 flex gap-2">
+                      <div className="h-5 w-14 skeleton-text" />
+                      <div className="h-5 w-14 skeleton-text" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </>
-        ) : data.items?.length === 0 ? (
-          <div className="col-span-full text-center p-16 bg-white border border-zinc-200 rounded-2xl max-w-lg mx-auto w-full animate-fade-in my-12" style={{ boxShadow: 'var(--totem-shadow-elevated)' }}>
-            <Search size={40} className="mx-auto text-zinc-300 mb-4" />
-            <h2 className="text-lg font-bold text-zinc-900 mb-2 font-display">Aucun e-poster trouvé</h2>
-            <p className="text-sm text-zinc-500 leading-relaxed font-medium">
-              Nous n'avons trouvé aucun document correspondant à vos critères de recherche. Essayez de simplifier ou de modifier vos filtres.
-            </p>
-          </div>
-        ) : (
-          data.items?.map((p) => (
-            <div
-              key={p.id}
-              onClick={() => {
-                const searchParamStr = [
-                  `screen=${screen}`,
-                  `page=${page}`,
-                  eventId    ? `eventId=${encodeURIComponent(eventId)}`     : '',
-                  q          ? `q=${encodeURIComponent(q)}`                 : '',
-                  category   ? `category=${encodeURIComponent(category)}`   : '',
-                  session    ? `session=${encodeURIComponent(session)}`     : '',
-                  room       ? `room=${encodeURIComponent(room)}`           : '',
-                ].filter(Boolean).join('&');
-                const path = `/totem/publications/${p.id}?${searchParamStr}`;
-                navigate(path);
-              }}
-              className="totem-pub-card animate-fade-in group"
-            >
-              {/* Card Thumbnail Canvas */}
-              <div className="totem-pub-card-thumb">
-
-                {p.posterUrl ? (
-                  <img 
-                    src={getPosterThumbnail(p.posterUrl)} 
-                    alt={p.title} 
-                  />
-                ) : (
-                  <div className="w-full h-full bg-zinc-50 flex flex-col items-center justify-center gap-2">
-                    <ImageIcon size={28} className="text-zinc-300" />
-                    <span className="text-[10px] text-zinc-400 font-bold tracking-wider uppercase">Affiche non disponible</span>
-                  </div>
-                )}
-                
-                {/* Visual Status Indicator */}
-                {p.status === 'PUBLISHED' && (
-                  <div className="absolute top-3 right-3 bg-white text-zinc-700 px-2.5 py-1 text-[10px] font-bold rounded-lg border border-zinc-200 flex items-center gap-1.5 theme-transition" style={{ boxShadow: 'var(--totem-shadow)' }}>
-                    <span className="w-1.5 h-1.5 rounded-full bg-theme-secondary animate-pulse" />
-                    Interactif
-                  </div>
-                )}
-              </div>
-
-              {/* Card metadata details */}
-              <div className="totem-pub-card-body">
-                <div>
-                  {/* Category & ID badge */}
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    {p.category ? (
-                      <span className="totem-badge totem-badge-primary theme-transition">
-                        <Tag size={9} /> {p.category}
-                      </span>
-                    ) : <span />}
-                    <span className="text-[10px] font-mono font-extrabold text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-md border border-zinc-200">
-                      N° {p.id}
-                    </span>
-                  </div>
-                  
-                  {/* Title */}
-                  <h3 className="text-[11px] font-extrabold line-clamp-2 leading-snug mb-1 text-zinc-900 group-hover:text-theme-primary transition-colors duration-200 font-display theme-transition">
-                    {p.title}
-                  </h3>
-
-                  {/* Authors */}
-                  <p className="text-[10px] text-zinc-400 line-clamp-1 mb-2 font-semibold">
-                    {p.authors || "Auteurs non renseignés"}
-                  </p>
-                </div>
-
-                {/* Date/Location Details */}
-                <div className="mt-auto pt-2 border-t border-zinc-100 flex flex-wrap gap-1.5">
-                  {p.session && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-zinc-100 text-zinc-500 rounded-lg text-[9px] font-bold uppercase tracking-wider theme-transition">
-                      <Clock size={9} className="text-zinc-400" /> {p.session}
-                    </span>
-                  )}
-                  {p.room && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-zinc-100 text-zinc-500 rounded-lg text-[9px] font-bold uppercase tracking-wider theme-transition">
-                      <MapPin size={9} className="text-zinc-400" /> {p.room}
-                    </span>
-                  )}
-                </div>
-              </div>
+              ))}
+            </>
+          ) : data.items?.length === 0 ? (
+            <div className="col-span-full text-center p-16 bg-white border border-zinc-200 rounded-2xl max-w-lg mx-auto w-full animate-fade-in my-12" style={{ boxShadow: 'var(--totem-shadow-elevated)' }}>
+              <Search size={40} className="mx-auto text-zinc-300 mb-4" />
+              <h2 className="text-lg font-bold text-zinc-900 mb-2 font-display">Aucun e-poster trouvé</h2>
+              <p className="text-sm text-zinc-500 leading-relaxed font-medium">
+                Nous n'avons trouvé aucun document correspondant à vos critères de recherche. Essayez de simplifier ou de modifier vos filtres.
+              </p>
             </div>
-          ))
-        )}
+          ) : (
+            data.items?.map((p) => (
+              <div
+                key={p.id}
+                onClick={() => {
+                  const searchParamStr = [
+                    `screen=${screen}`,
+                    `page=${page}`,
+                    eventId ? `eventId=${encodeURIComponent(eventId)}` : '',
+                    q ? `q=${encodeURIComponent(q)}` : '',
+                    category ? `category=${encodeURIComponent(category)}` : '',
+                    session ? `session=${encodeURIComponent(session)}` : '',
+                    room ? `room=${encodeURIComponent(room)}` : '',
+                  ].filter(Boolean).join('&');
+                  const path = `/totem/publications/${p.id}?${searchParamStr}`;
+                  navigate(path);
+                }}
+                className="totem-pub-card animate-fade-in group"
+              >
+                {/* Card Thumbnail Canvas */}
+                <div className="totem-pub-card-thumb">
+
+                  {p.posterUrl ? (
+                    <img
+                      src={getPosterThumbnail(p.posterUrl)}
+                      alt={p.title}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-zinc-50 flex flex-col items-center justify-center gap-2">
+                      <ImageIcon size={28} className="text-zinc-300" />
+                      <span className="text-[10px] text-zinc-400 font-bold tracking-wider uppercase">Affiche non disponible</span>
+                    </div>
+                  )}
+
+                  {/* Visual Status Indicator */}
+                  {p.status === 'PUBLISHED' && (
+                    <div className="absolute top-3 right-3 bg-white text-zinc-700 px-2.5 py-1 text-[10px] font-bold rounded-lg border border-zinc-200 flex items-center gap-1.5 theme-transition" style={{ boxShadow: 'var(--totem-shadow)' }}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-theme-secondary animate-pulse" />
+                      Interactif
+                    </div>
+                  )}
+                </div>
+
+                {/* Card metadata details */}
+                <div className="totem-pub-card-body">
+                  <div>
+                    {/* Category & ID badge */}
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      {p.category ? (
+                        <span className="totem-badge totem-badge-primary theme-transition">
+                          <Tag size={9} /> {p.category}
+                        </span>
+                      ) : <span />}
+                      <span className="text-[10px] font-mono font-extrabold text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-md border border-zinc-200">
+                        N° {p.id}
+                      </span>
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-[11px] font-extrabold line-clamp-2 leading-snug mb-1 text-zinc-900 group-hover:text-theme-primary transition-colors duration-200 font-display theme-transition">
+                      {p.title}
+                    </h3>
+
+                    {/* Authors */}
+                    <p className="text-[10px] text-zinc-400 line-clamp-1 mb-2 font-semibold">
+                      {p.authors || "Auteurs non renseignés"}
+                    </p>
+                  </div>
+
+                  {/* Date/Location Details */}
+                  <div className="mt-auto pt-2 border-t border-zinc-100 flex flex-wrap gap-1.5 items-center justify-between">
+                    <div className="flex flex-wrap gap-1.5">
+                      {p.session && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-zinc-100 text-zinc-500 rounded-lg text-[9px] font-bold uppercase tracking-wider theme-transition">
+                          <Clock size={9} className="text-zinc-400" /> {p.session}
+                        </span>
+                      )}
+                      {p.room && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-zinc-100 text-zinc-500 rounded-lg text-[9px] font-bold uppercase tracking-wider theme-transition">
+                          <MapPin size={9} className="text-zinc-400" /> {p.room}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[9px] font-bold text-zinc-400 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-theme-primary/60" />
+                      {p.viewCount || 0} vues
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </main>
 

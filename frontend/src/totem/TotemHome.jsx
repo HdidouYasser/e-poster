@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { publicApi, getMediaUrl } from "../api";
+import { publicApi, getMediaUrl, getPosterThumbnail } from "../api";
 import { Presentation, ArrowRight, ArrowLeft, Calendar, Monitor, BookOpen, HelpCircle } from "lucide-react";
 import { useIdleTimer } from "../hooks/useIdleTimer";
 import { useDynamicTheme } from "../hooks/useDynamicTheme";
@@ -35,6 +35,11 @@ export default function TotemHome() {
     queryKey: ["totem-screens", themeEvent?.id],
     queryFn: async () => (await publicApi.get(`/screens?eventId=${themeEvent.id}`)).data,
     enabled: !!themeEvent?.id
+  });
+
+  const statsQuery = useQuery({
+    queryKey: ["totem-stats"],
+    queryFn: async () => (await publicApi.get("/platform/statistics")).data
   });
 
   const location = useLocation();
@@ -138,7 +143,7 @@ export default function TotemHome() {
           </div>
         )}
       </header>
-      
+
       {/* ── Navigation Stepper ── */}
       <div className="max-w-7xl mx-auto px-8 pt-4 w-full shrink-0">
         <div className="totem-stepper">
@@ -178,7 +183,7 @@ export default function TotemHome() {
             <p className="text-sm text-zinc-500 mb-7 leading-relaxed font-medium">
               Aucun événement n'est actuellement configuré en statut actif pour cette borne tactile.
             </p>
-            <Link 
+            <Link
               to="/login"
               className="totem-cta-btn"
             >
@@ -227,10 +232,9 @@ export default function TotemHome() {
                     onMouseEnter={() => setHoveredEvent(event)}
                     onMouseLeave={() => setHoveredEvent(null)}
                     onClick={() => navigate(`/totem/publications?eventId=${event.id}&screen=${selectedScreen}`)}
-                    className={`totem-event-card group theme-transition ${
-                      isCurrentTheme ? 'border-zinc-300' : ''
-                    }`}
-                    style={{ 
+                    className={`totem-event-card group theme-transition ${isCurrentTheme ? 'border-zinc-300' : ''
+                      }`}
+                    style={{
                       boxShadow: isCurrentTheme ? 'var(--totem-shadow-card-hover)' : 'var(--totem-shadow-card)',
                       transform: isCurrentTheme ? 'translateY(-3px)' : undefined
                     }}
@@ -238,24 +242,24 @@ export default function TotemHome() {
                     {/* Event Banner background */}
                     <div className="totem-event-card-banner theme-transition">
                       {event.bannerUrl ? (
-                        <img 
-                          src={getMediaUrl(event.bannerUrl)} 
-                          alt="Banner" 
-                          className="w-full h-full object-cover" 
+                        <img
+                          src={getMediaUrl(event.bannerUrl)}
+                          alt="Banner"
+                          className="w-full h-full object-cover"
                         />
                       ) : (
                         <div className="w-full h-full bg-zinc-100 flex items-center justify-center">
                           <Presentation size={32} className="text-zinc-300" />
                         </div>
                       )}
-                      
+
                       {/* Logo positioned floating */}
                       <div className="absolute bottom-3 left-5 flex items-end gap-3">
                         {event.logoUrl ? (
-                          <img 
-                            src={getMediaUrl(event.logoUrl)} 
-                            alt="Logo" 
-                            className="h-11 w-11 object-contain bg-white rounded-xl p-1.5 border border-zinc-200 shrink-0" 
+                          <img
+                            src={getMediaUrl(event.logoUrl)}
+                            alt="Logo"
+                            className="h-11 w-11 object-contain bg-white rounded-xl p-1.5 border border-zinc-200 shrink-0"
                             style={{ boxShadow: 'var(--totem-shadow)' }}
                           />
                         ) : (
@@ -299,13 +303,13 @@ export default function TotemHome() {
                         {(event.programUrl || event.revueUrl) ? (
                           <div className="grid grid-cols-2 gap-3">
                             {event.programUrl && (
-                              <div 
-                                onClick={(e) => e.stopPropagation()} 
+                              <div
+                                onClick={(e) => e.stopPropagation()}
                                 className="flex items-center gap-3 bg-zinc-50 p-3 rounded-xl border border-zinc-200 theme-transition"
                               >
-                                <img 
-                                  src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(event.programUrl)}`} 
-                                  alt="QR Program" 
+                                <img
+                                  src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(event.programUrl)}`}
+                                  alt="QR Program"
                                   className="w-11 h-11 bg-white p-1 rounded-lg shrink-0 border border-zinc-200"
                                 />
                                 <div className="min-w-0">
@@ -315,13 +319,13 @@ export default function TotemHome() {
                               </div>
                             )}
                             {event.revueUrl && (
-                              <div 
-                                onClick={(e) => e.stopPropagation()} 
+                              <div
+                                onClick={(e) => e.stopPropagation()}
                                 className="flex items-center gap-3 bg-zinc-50 p-3 rounded-xl border border-zinc-200 theme-transition"
                               >
-                                <img 
-                                  src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(event.revueUrl)}`} 
-                                  alt="QR Revue" 
+                                <img
+                                  src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(event.revueUrl)}`}
+                                  alt="QR Revue"
                                   className="w-11 h-11 bg-white p-1 rounded-lg shrink-0 border border-zinc-200"
                                 />
                                 <div className="min-w-0">
@@ -348,6 +352,72 @@ export default function TotemHome() {
                 );
               })}
             </div>
+
+            {/* Posters Populaires (Top Publications) */}
+            {statsQuery.data?.topPublications?.length > 0 && (
+              <div className="w-full max-w-6xl mt-14 border-t border-zinc-200 pt-10 animate-fade-in">
+                <div className="text-center mb-8">
+                  <span className="totem-badge totem-badge-primary mb-2 inline-block theme-transition">
+                    Tendances
+                  </span>
+                  <h3 className="text-xl sm:text-2xl font-extrabold text-zinc-900 font-display">
+                    Communications les plus consultées
+                  </h3>
+                  <p className="text-xs text-zinc-500 font-medium mt-1">
+                    Découvrez les e-posters scientifiques suscitant le plus d'intérêt auprès des congressistes.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {statsQuery.data.topPublications.slice(0, 3).map((pub) => {
+                    const thumb = pub.posterUrl ? getPosterThumbnail(pub.posterUrl) : null;
+                    return (
+                      <div
+                        key={pub.id}
+                        onClick={() => navigate(`/totem/publications/${pub.id}?eventId=${pub.eventId || ""}&screen=${selectedScreen}`)}
+                        className="bg-white border border-zinc-200 hover:border-zinc-300 rounded-2xl p-4 flex gap-4 cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md group"
+                        style={{ boxShadow: 'var(--totem-shadow-card)' }}
+                      >
+                        <div className="w-16 h-20 bg-zinc-50 rounded-lg overflow-hidden border border-zinc-100 shrink-0 flex items-center justify-center relative">
+                          {thumb ? (
+                            <img src={thumb} alt={pub.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                          ) : (
+                            <Presentation size={20} className="text-zinc-300" />
+                          )}
+                          <span className="absolute bottom-1 right-1 bg-black/60 text-white text-[8px] font-bold px-1 py-0.5 rounded">
+                            N° {pub.id}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0 flex flex-col justify-between">
+                          <div>
+                            {pub.category && (
+                              <span className="text-[9px] font-extrabold text-theme-primary uppercase tracking-wider theme-transition mb-1 block">
+                                {pub.category}
+                              </span>
+                            )}
+                            <h4 className="text-xs font-bold text-zinc-900 line-clamp-2 leading-snug group-hover:text-theme-secondary transition-colors duration-150 font-display">
+                              {pub.title}
+                            </h4>
+                            <p className="text-[10px] text-zinc-400 mt-1 truncate font-semibold">
+                              {pub.authors || "Auteurs non renseignés"}
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between mt-2 pt-2 border-t border-zinc-50 text-[10px] text-zinc-400 font-bold">
+                            <span className="flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-theme-primary animate-pulse" />
+                              {pub.viewCount || 0} vues
+                            </span>
+                            <span className="text-theme-secondary theme-transition group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
+                              Consulter &rarr;
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>

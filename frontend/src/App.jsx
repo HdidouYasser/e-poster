@@ -21,6 +21,9 @@ import AuditAdmin from "./admin/AuditAdmin";
 import StatsAdmin from "./admin/StatsAdmin";
 import ExportAdmin from "./admin/ExportAdmin";
 import ProfilePage from "./admin/ProfilePage";
+import ForgotPasswordPage from "./admin/ForgotPasswordPage";
+import ResetPasswordPage from "./admin/ResetPasswordPage";
+
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
@@ -75,6 +78,9 @@ export default function App() {
         {/* Back-Office : Admin */}
         <Route path="/login" element={isAuthenticated ? <Navigate to="/admin/stats" replace /> : <LoginPage />} />
         <Route path="/register" element={isAuthenticated ? <Navigate to="/admin/stats" replace /> : <RegisterPage />} />
+        <Route path="/forgot-password" element={isAuthenticated ? <Navigate to="/admin/stats" replace /> : <ForgotPasswordPage />} />
+        <Route path="/reset-password" element={isAuthenticated ? <Navigate to="/admin/stats" replace /> : <ResetPasswordPage />} />
+
         
         <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/admin/stats" replace />} />

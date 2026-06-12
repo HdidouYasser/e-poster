@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
 import { useAuthStore } from "../stores/authStore";
 import { api } from "../api";
-import { Camera, User, Lock, Save, Loader2, Check, ShieldCheck, Mail } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Camera, User, Lock, Save, Loader2, Check, ShieldCheck, Mail, Calendar, FileText, Eye, Building, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
 import { Navigate } from "react-router-dom";
 
@@ -12,6 +13,16 @@ export default function ProfilePage() {
   if (!isManager) {
     return <Navigate to="/admin/stats" replace />;
   }
+
+  const eventsQuery = useQuery({
+    queryKey: ["manager-profile-events"],
+    queryFn: async () => (await api.get("/events?page=0&size=100")).data
+  });
+
+  const statsQuery = useQuery({
+    queryKey: ["manager-profile-stats"],
+    queryFn: async () => (await api.get("/dashboard/stats")).data
+  });
 
   const [firstName2, setFirstName2] = useState(firstName || "");
   const [lastName2,  setLastName2]  = useState(lastName  || "");
@@ -87,13 +98,13 @@ export default function ProfilePage() {
     }
     setSavingPass(true);
     try {
-      await updateProfile({ password: newPassword });
+      await updateProfile({ password: newPassword, oldPassword });
       toast.success("Mot de passe modifié avec succès !");
       setOldPassword("");
       setNewPassword("");
       setConfirmPass("");
-    } catch {
-      toast.error("Erreur lors du changement de mot de passe.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Erreur lors du changement de mot de passe.");
     } finally {
       setSavingPass(false);
     }
@@ -120,7 +131,7 @@ export default function ProfilePage() {
           <div className="relative shrink-0">
             <div className="w-24 h-24 rounded-2xl overflow-hidden bg-zinc-100 border-2 border-zinc-200 shadow-md">
               {avatar ? (
-                <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
+                <img src={avatar} alt="Avatar" className="w-full h-full object-cover" referrerpolicy="no-referrer" />
               ) : (
                 <div className={`w-full h-full flex items-center justify-center text-2xl font-bold text-white ${isManager ? "bg-blue-600" : "bg-zinc-900"}`}>
                   {initials}
@@ -156,6 +167,41 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* ── Statistiques de l'activité ── */}
+      {statsQuery.data && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-sm flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0">
+              <Calendar size={18} />
+            </div>
+            <div>
+              <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Congrès Gérés</p>
+              <h4 className="text-xl font-extrabold text-zinc-900 mt-0.5">{statsQuery.data.totalEvents || 0}</h4>
+            </div>
+          </div>
+
+          <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-sm flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center shrink-0">
+              <FileText size={18} />
+            </div>
+            <div>
+              <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">E-Posters</p>
+              <h4 className="text-xl font-extrabold text-zinc-900 mt-0.5">{statsQuery.data.totalPublications || 0}</h4>
+            </div>
+          </div>
+
+          <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-sm flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0">
+              <Eye size={18} />
+            </div>
+            <div>
+              <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Lectures Totales</p>
+              <h4 className="text-xl font-extrabold text-zinc-900 mt-0.5">{statsQuery.data.totalViews || 0}</h4>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Informations personnelles ── */}
       <div className="bg-white border border-zinc-200/80 rounded-3xl p-7 shadow-sm">
@@ -225,6 +271,17 @@ export default function ProfilePage() {
 
         <form onSubmit={handleChangePassword} className="space-y-4">
           <div>
+            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Mot de passe actuel</label>
+            <input
+              type="password"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              placeholder="••••••••"
+              className={inputCls}
+              required
+            />
+          </div>
+          <div>
             <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Nouveau mot de passe</label>
             <input
               type="password"
@@ -266,6 +323,65 @@ export default function ProfilePage() {
             </button>
           </div>
         </form>
+      </div>
+
+      {/* ── Liste des Congrès Assignés ── */}
+      <div className="bg-white border border-zinc-200/80 rounded-3xl p-7 shadow-sm">
+        <div className="flex items-center gap-2.5 mb-5">
+          <div className="w-8 h-8 bg-zinc-100 rounded-xl flex items-center justify-center">
+            <Building size={15} className="text-zinc-600" />
+          </div>
+          <h3 className="text-base font-bold text-zinc-900 font-display">Mes Congrès sous responsabilité</h3>
+        </div>
+
+        {eventsQuery.isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 size={20} className="animate-spin text-zinc-400" />
+          </div>
+        ) : !eventsQuery.data?.items || eventsQuery.data.items.length === 0 ? (
+          <div className="text-center py-8 bg-zinc-50 rounded-2xl border border-dashed border-zinc-200 text-zinc-400 text-xs font-semibold">
+            Aucun congrès ne vous est assigné actuellement.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {eventsQuery.data.items.map((event) => (
+              <div key={event.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-zinc-50/50 hover:bg-zinc-50 border border-zinc-200 rounded-2xl transition-all gap-4">
+                <div className="flex items-center gap-4">
+                  {event.logoUrl ? (
+                    <img src={api.defaults.baseURL.replace("/api", "") + event.logoUrl} alt="Logo" className="w-10 h-10 rounded-lg object-contain bg-white border border-zinc-100 p-1 shrink-0" />
+                  ) : (
+                    <div className="w-10 h-10 bg-white border border-zinc-100 rounded-lg flex items-center justify-center text-xs font-black text-zinc-400 shrink-0 uppercase">
+                      {event.title.substring(0, 2)}
+                    </div>
+                  )}
+                  <div>
+                    <h4 className="text-xs font-bold text-zinc-900 leading-snug">{event.title}</h4>
+                    <p className="text-[10px] text-zinc-400 font-semibold mt-0.5 flex items-center gap-1.5">
+                      <Calendar size={11} />
+                      {new Date(event.startDate).toLocaleDateString("fr-FR")} → {new Date(event.endDate).toLocaleDateString("fr-FR")}
+                      {event.location && (
+                        <>
+                          <span>·</span>
+                          <MapPin size={11} />
+                          {event.location}
+                        </>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border ${
+                    event.status?.toUpperCase() === "ACTIVE"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                      : "bg-zinc-100 text-zinc-500 border-zinc-200"
+                  }`}>
+                    {event.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
     </div>

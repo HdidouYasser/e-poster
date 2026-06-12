@@ -65,6 +65,12 @@ public class PublicationController {
         return service.getAndIncrementViewCount(id);
     }
 
+    @PostMapping("/{id}/view")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void incrementViewCount(@PathVariable Long id) {
+        service.incrementViewCount(id);
+    }
+
     @GetMapping("/search")
     public ApiPageResponse<Publication> search(
             @RequestParam(required = false) String q,

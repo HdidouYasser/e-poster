@@ -16,12 +16,14 @@ public class UserController {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     public UserController(UserRepository userRepository, RoleRepository roleRepository,
-                          PasswordEncoder passwordEncoder) {
+                          PasswordEncoder passwordEncoder, EmailService emailService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     // ─── Profile (self) ────────────────────────────────────────────────────────
@@ -46,7 +48,14 @@ public class UserController {
         if (body.lastName()  != null) user.setLastName(body.lastName());
         if (body.avatarUrl() != null) user.setAvatarUrl(body.avatarUrl());
         if (body.password()  != null && !body.password().isBlank()) {
+            if (body.oldPassword() == null || body.oldPassword().isBlank()) {
+                throw new IllegalArgumentException("Le mot de passe actuel est requis pour modifier votre mot de passe.");
+            }
+            if (!passwordEncoder.matches(body.oldPassword(), user.getPasswordHash())) {
+                throw new IllegalArgumentException("Le mot de passe actuel est incorrect.");
+            }
             user.setPasswordHash(passwordEncoder.encode(body.password()));
+            emailService.sendPasswordChangedNotificationEmail(user.getEmail());
         }
         user.setUpdatedAt(java.time.Instant.now());
         return userRepository.save(user);
@@ -129,6 +138,7 @@ public class UserController {
             String firstName,
             String lastName,
             String avatarUrl,
-            String password
+            String password,
+            String oldPassword
     ) {}
 }

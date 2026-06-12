@@ -82,6 +82,8 @@ public class ScreenController {
             @NotBlank String name,
             String location,
             @NotBlank String mode,
+            String resolution,
+            Boolean isActive,
             @NotNull Long eventId,
             List<ScreenSectionRequest> sections
     ) {
@@ -90,6 +92,8 @@ public class ScreenController {
             s.setName(name);
             s.setLocation(location);
             s.setMode(mode);
+            s.setResolution(resolution);
+            s.setIsActive(isActive != null ? isActive : true);
             com.eposter.backend.event.Event event = new com.eposter.backend.event.Event();
             event.setId(eventId);
             s.setEvent(event);

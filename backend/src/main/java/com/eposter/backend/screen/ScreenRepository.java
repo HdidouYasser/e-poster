@@ -7,6 +7,7 @@ import java.util.Optional;
 
 public interface ScreenRepository extends JpaRepository<Screen, Long> {
     List<Screen> findByEvent_IdAndDeletedAtIsNull(Long eventId);
+    List<Screen> findByEvent_IdAndIsActiveTrueAndDeletedAtIsNull(Long eventId);
 
     List<Screen> findByDeletedAtIsNull();
 

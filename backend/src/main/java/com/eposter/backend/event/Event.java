@@ -49,8 +49,13 @@ public class Event {
     @OneToMany(mappedBy = "event")
     @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Screen> screens = new ArrayList<>();
+    
+    @org.hibernate.annotations.Formula("(SELECT COUNT(*) FROM publications p WHERE p.event_ref_id = id AND p.deleted_at IS NULL)")
+    private Integer publicationCount;
+
     @jakarta.persistence.ManyToOne
     @jakarta.persistence.JoinColumn(name = "manager_id")
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private com.eposter.backend.auth.User manager;
 
     public Long getId() { return id; }
@@ -89,6 +94,7 @@ public class Event {
     @com.fasterxml.jackson.annotation.JsonIgnore
     public List<Screen> getScreens() { return screens; }
     public void setScreens(List<Screen> screens) { this.screens = screens; }
+    public Integer getPublicationCount() { return publicationCount != null ? publicationCount : 0; }
     public com.eposter.backend.auth.User getManager() { return manager; }
     public void setManager(com.eposter.backend.auth.User manager) { this.manager = manager; }
 }

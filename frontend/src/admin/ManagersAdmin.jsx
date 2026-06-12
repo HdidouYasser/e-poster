@@ -310,7 +310,7 @@ export default function ManagersAdmin() {
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl overflow-hidden bg-blue-600 flex items-center justify-center text-[11px] font-bold text-white uppercase shrink-0 shadow-sm">
                         {m.avatarUrl ? (
-                          <img src={m.avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                          <img src={m.avatarUrl} alt="avatar" className="w-full h-full object-cover" referrerpolicy="no-referrer" />
                         ) : (
                           getInitials(m)
                         )}

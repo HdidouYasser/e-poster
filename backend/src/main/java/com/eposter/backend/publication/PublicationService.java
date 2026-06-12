@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.eposter.backend.audit.AuditService;
 import com.eposter.backend.category.Category;
@@ -17,6 +18,7 @@ import com.eposter.backend.event.Event;
 import com.eposter.backend.event.EventRepository;
 
 @Service
+@Transactional
 public class PublicationService {
 
     private final PublicationRepository repository;
@@ -54,10 +56,14 @@ public class PublicationService {
         if (isEventManager()) {
             String email = getCurrentUserEmail();
             if (email != null) {
-                return repository.findByEvent_Manager_EmailAndDeletedAtIsNull(email, pageable);
+                Page<Publication> page = repository.findByEvent_Manager_EmailAndDeletedAtIsNull(email, pageable);
+                page.forEach(this::populateAuthorsList);
+                return page;
             }
         }
-        return repository.findByDeletedAtIsNull(pageable);
+        Page<Publication> page = repository.findByDeletedAtIsNull(pageable);
+        page.forEach(this::populateAuthorsList);
+        return page;
     }
 
     public Page<Publication> listByEventId(String eventId, Pageable pageable) {
@@ -66,10 +72,14 @@ public class PublicationService {
         if (isEventManager()) {
             String email = getCurrentUserEmail();
             if (email != null) {
-                return repository.findByEvent_Manager_EmailAndEvent_IdAndDeletedAtIsNull(email, id, pageable);
+                Page<Publication> page = repository.findByEvent_Manager_EmailAndEvent_IdAndDeletedAtIsNull(email, id, pageable);
+                page.forEach(this::populateAuthorsList);
+                return page;
             }
         }
-        return repository.findByEvent_IdAndDeletedAtIsNull(id, pageable);
+        Page<Publication> page = repository.findByEvent_IdAndDeletedAtIsNull(id, pageable);
+        page.forEach(this::populateAuthorsList);
+        return page;
     }
 
     public Page<Publication> search(String query, String eventId, String session, String category, String room, Pageable pageable) {
@@ -121,10 +131,14 @@ public class PublicationService {
         if (isEventManager()) {
             String email = getCurrentUserEmail();
             if (email != null) {
-                return repository.searchFullTextByManager(formattedQ, rawQ, eventIdLong, session, room, category, email, nativePageable);
+                Page<Publication> page = repository.searchFullTextByManager(formattedQ, rawQ, eventIdLong, session, room, category, email, nativePageable);
+                page.forEach(this::populateAuthorsList);
+                return page;
             }
         }
-        return repository.searchFullText(formattedQ, rawQ, eventIdLong, session, room, category, nativePageable);
+        Page<Publication> page = repository.searchFullText(formattedQ, rawQ, eventIdLong, session, room, category, nativePageable);
+        page.forEach(this::populateAuthorsList);
+        return page;
     }
 
     public Publication getById(Long id) {
@@ -135,7 +149,19 @@ public class PublicationService {
                 throw new IllegalArgumentException("Access Denied: You do not manage this publication's event");
             }
         }
+        populateAuthorsList(pub);
         return pub;
+    }
+
+    private void populateAuthorsList(Publication pub) {
+        if (pub == null) return;
+        if (pub.getPublicationAuthors() != null) {
+            List<Author> list = pub.getPublicationAuthors().stream()
+                    .map(PublicationAuthor::getAuthor)
+                    .filter(java.util.Objects::nonNull)
+                    .toList();
+            pub.setAuthorsList(list);
+        }
     }
 
     public Publication create(Publication payload) {
@@ -170,6 +196,7 @@ public class PublicationService {
         
         Publication saved = repository.save(payload);
         auditService.log("PUBLICATION", saved.getId(), "CREATE", saved.getTitle());
+        populateAuthorsList(saved);
         return saved;
     }
 
@@ -218,6 +245,7 @@ public class PublicationService {
         
         Publication saved = repository.save(existing);
         auditService.log("PUBLICATION", saved.getId(), "UPDATE", saved.getTitle());
+        populateAuthorsList(saved);
         return saved;
     }
 
@@ -368,6 +396,13 @@ public class PublicationService {
         Publication pub = getById(id);
         pub.setViewCount(pub.getViewCount() + 1);
         return repository.save(pub);
+    }
+
+    public void incrementViewCount(Long id) {
+        Publication pub = repository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new IllegalArgumentException("Publication not found"));
+        pub.setViewCount(pub.getViewCount() + 1);
+        repository.save(pub);
     }
 
     public long getTotalViews() {

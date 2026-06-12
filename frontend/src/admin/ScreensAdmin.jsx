@@ -11,6 +11,8 @@ const screenSchema = z.object({
   name: z.string().min(1, "Le nom est requis"),
   location: z.string().optional(),
   mode: z.string().min(1, "Le mode est requis"),
+  resolution: z.string().optional().nullable(),
+  isActive: z.boolean().optional(),
   eventId: z.number().min(1, "L'événement est requis"),
 });
 
@@ -67,15 +69,22 @@ export default function ScreensAdmin() {
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(screenSchema),
-    defaultValues: { name: "", location: "", mode: "INTERACTIVE", eventId: 0 }
+    defaultValues: { name: "", location: "", mode: "TOTEM", resolution: "", isActive: true, eventId: 0 }
   });
 
   const openForm = (screen = null) => {
     setEditingScreen(screen);
     if (screen) {
-      reset({ name: screen.name, location: screen.location || "", mode: screen.mode, eventId: screen.event?.id || 0 });
+      reset({
+        name: screen.name,
+        location: screen.location || "",
+        mode: screen.mode,
+        resolution: screen.resolution || "",
+        isActive: screen.isActive !== undefined ? screen.isActive : true,
+        eventId: screen.event?.id || 0
+      });
     } else {
-      reset({ name: "", location: "", mode: "INTERACTIVE", eventId: 0 });
+      reset({ name: "", location: "", mode: "TOTEM", resolution: "", isActive: true, eventId: 0 });
     }
     setIsFormOpen(true);
   };
@@ -136,6 +145,9 @@ export default function ScreensAdmin() {
             <div>
               <label className={labelCls}>Mode d'affichage</label>
               <select {...register("mode")} className="form-select">
+                <option value="TOTEM">Totem Interactif</option>
+                <option value="DISPLAY">Écran d'affichage (Display)</option>
+                <option value="VIDEO_WALL">Mur d'images (Video Wall)</option>
                 <option value="INTERACTIVE">Interactif (Recherche & Navigation)</option>
                 <option value="SLIDESHOW">Diaporama Automatique (Slideshow)</option>
               </select>
@@ -144,6 +156,22 @@ export default function ScreensAdmin() {
             <div>
               <label className={labelCls}>Emplacement <span className="normal-case font-normal text-zinc-400">(optionnel)</span></label>
               <input {...register("location")} placeholder="Ex: RDC, Salle 1..." className={inputCls} />
+            </div>
+
+            <div>
+              <label className={labelCls}>Résolution <span className="normal-case font-normal text-zinc-400">(ex: 1920x1080, optionnel)</span></label>
+              <input {...register("resolution")} placeholder="Ex: 1920x1080" className={inputCls} />
+            </div>
+
+            <div className="flex items-center pt-8">
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  {...register("isActive")}
+                  className="rounded border-zinc-300 text-zinc-950 focus:ring-zinc-950 h-4 w-4"
+                />
+                <span className="text-sm font-semibold text-zinc-700">Écran actif et visible</span>
+              </label>
             </div>
           </div>
 
@@ -163,15 +191,16 @@ export default function ScreensAdmin() {
             <tr>
               <th className="px-6 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-zinc-400">Nom & Emplacement</th>
               <th className="px-6 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-zinc-400">Événement</th>
-              <th className="px-6 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-zinc-400">Mode</th>
+              <th className="px-6 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-zinc-400">Mode & Résolution</th>
+              <th className="px-6 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-zinc-400">Statut</th>
               <th className="px-6 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-zinc-400 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-50">
             {isLoading ? (
-              <tr><td colSpan="4" className="px-6 py-10 text-center text-zinc-400 font-medium"><Loader2 className="animate-spin inline mr-2" size={16} />Chargement...</td></tr>
+              <tr><td colSpan="5" className="px-6 py-10 text-center text-zinc-400 font-medium"><Loader2 className="animate-spin inline mr-2" size={16} />Chargement...</td></tr>
             ) : screens?.length === 0 ? (
-              <tr><td colSpan="4" className="px-6 py-10 text-center text-zinc-400 font-medium">
+              <tr><td colSpan="5" className="px-6 py-10 text-center text-zinc-400 font-medium">
                 <Monitor className="mx-auto mb-2 text-zinc-300" size={24} />
                 Aucun écran configuré
               </td></tr>
@@ -185,11 +214,26 @@ export default function ScreensAdmin() {
                   <td className="px-6 py-4 text-zinc-600 font-medium">{screen.event?.title || "Non assigné"}</td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold border ${
-                      screen.mode === 'SLIDESHOW'
+                      screen.mode === 'SLIDESHOW' || screen.mode === 'DISPLAY'
                         ? 'bg-zinc-100 text-zinc-600 border-zinc-200'
                         : 'bg-zinc-900 text-white border-zinc-900'
                     }`}>
-                      {screen.mode === 'SLIDESHOW' ? 'Diaporama' : 'Interactif'}
+                      {screen.mode === 'SLIDESHOW' ? 'Diaporama' : 
+                       screen.mode === 'DISPLAY' ? 'Affichage' : 
+                       screen.mode === 'VIDEO_WALL' ? 'Mur d\'images' :
+                       screen.mode === 'TOTEM' ? 'Totem' : 'Interactif'}
+                    </span>
+                    {screen.resolution && (
+                      <div className="text-xs text-zinc-400 mt-1 font-mono">{screen.resolution}</div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${
+                      screen.isActive
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : 'bg-rose-50 text-rose-700 border-rose-200'
+                    }`}>
+                      {screen.isActive ? 'Actif' : 'Inactif'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">

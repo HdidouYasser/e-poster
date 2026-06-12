@@ -279,11 +279,11 @@ export default function Home() {
             >
               {activeEvents.map((event) => (
                 <EventCard
-                   key={event.id}
-                   event={event}
-                   formatDate={formatDate}
-                   formatDateShort={formatDateShort}
-                   onClick={() => navigate(`/totem/publications?eventId=${event.id}&screen=visitor`)}
+                  key={event.id}
+                  event={event}
+                  formatDate={formatDate}
+                  formatDateShort={formatDateShort}
+                  onClick={() => navigate(`/totem/publications?eventId=${event.id}&screen=visitor`)}
                 />
               ))}
             </div>
@@ -379,8 +379,8 @@ export default function Home() {
           {categoriesList.map((cat, i) => {
             const IconComponent = cat.icon;
             return (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className="sci-category-card"
                 onClick={() => navigate(`/totem/publications?category=${encodeURIComponent(cat.name)}&screen=visitor`)}
               >
@@ -445,7 +445,7 @@ export default function Home() {
         <div className="faq-container">
           {faqs.map((faq, i) => (
             <div key={i} className="faq-item">
-              <button 
+              <button
                 type="button"
                 className="faq-header"
                 onClick={() => setOpenFaqIndex(openFaqIndex === i ? null : i)}
