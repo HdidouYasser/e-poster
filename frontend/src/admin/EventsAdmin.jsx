@@ -34,6 +34,8 @@ export default function EventsAdmin() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [uploadingProgram, setUploadingProgram] = useState(false);
+  const [uploadingRevue, setUploadingRevue] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["events", page, q],
@@ -135,18 +137,20 @@ export default function EventsAdmin() {
   const handleFileUpload = async (e, type) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    type === 'logo' ? setUploadingLogo(true) : setUploadingBanner(true);
+    const stateMap = { logo: setUploadingLogo, banner: setUploadingBanner, program: setUploadingProgram, revue: setUploadingRevue };
+    const fieldMap = { logo: "logoUrl", banner: "bannerUrl", program: "programUrl", revue: "revueUrl" };
+    stateMap[type]?.(true);
     const formData = new FormData();
     formData.append("file", file);
     try {
       const res = await api.post("/files", formData, { headers: { "Content-Type": "multipart/form-data" } });
-      const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : "http://localhost:8080";
-      setValue(type === 'logo' ? "logoUrl" : "bannerUrl", baseUrl + res.data.url);
-      toast.success("Image téléversée avec succès");
+      const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : window.location.origin;
+      setValue(fieldMap[type], baseUrl + res.data.url);
+      toast.success("Fichier téléversé avec succès");
     } catch {
-      toast.error("Erreur lors de l'upload de l'image");
+      toast.error("Erreur lors de l'upload du fichier");
     } finally {
-      type === 'logo' ? setUploadingLogo(false) : setUploadingBanner(false);
+      stateMap[type]?.(false);
     }
   };
 
@@ -261,13 +265,25 @@ export default function EventsAdmin() {
             </div>
 
             <div className="bg-zinc-50/80 border border-zinc-200/80 p-4 rounded-2xl">
-              <label className={labelCls}>Lien Programme (URL PDF)</label>
-              <input {...register("programUrl")} disabled={!isAdmin} placeholder="https://.../programme.pdf" className={inputCls} />
+              <label className={labelCls}>Programme (PDF)</label>
+              <div className="flex items-center gap-3">
+                <input type="file" id="programUpload" onChange={(e) => handleFileUpload(e, 'program')} className="hidden" accept="application/pdf" />
+                <label htmlFor="programUpload" className="inline-flex w-fit items-center gap-2 cursor-pointer bg-white hover:bg-zinc-100 text-zinc-700 px-3 py-2 rounded-xl text-xs font-semibold border border-zinc-200 transition-colors">
+                  {uploadingProgram ? <Loader2 className="animate-spin" size={14} /> : <UploadCloud size={14} />} {uploadingProgram ? "Upload..." : "Uploader le programme"}
+                </label>
+                {watch("programUrl") && <span className="text-[10px] text-emerald-600 font-medium">✓ PDF lié</span>}
+              </div>
             </div>
 
             <div className="bg-zinc-50/80 border border-zinc-200/80 p-4 rounded-2xl">
-              <label className={labelCls}>Lien Revue Médicale (URL)</label>
-              <input {...register("revueUrl")} disabled={!isAdmin} placeholder="https://.../revue" className={inputCls} />
+              <label className={labelCls}>Revue Médicale (PDF)</label>
+              <div className="flex items-center gap-3">
+                <input type="file" id="revueUpload" onChange={(e) => handleFileUpload(e, 'revue')} className="hidden" accept="application/pdf" />
+                <label htmlFor="revueUpload" className="inline-flex w-fit items-center gap-2 cursor-pointer bg-white hover:bg-zinc-100 text-zinc-700 px-3 py-2 rounded-xl text-xs font-semibold border border-zinc-200 transition-colors">
+                  {uploadingRevue ? <Loader2 className="animate-spin" size={14} /> : <UploadCloud size={14} />} {uploadingRevue ? "Upload..." : "Uploader la revue"}
+                </label>
+                {watch("revueUrl") && <span className="text-[10px] text-emerald-600 font-medium">✓ PDF lié</span>}
+              </div>
             </div>
 
             {isAdmin && (
@@ -333,11 +349,22 @@ export default function EventsAdmin() {
                   {isAdmin && (
                     <td className="px-6 py-4">
                       {item.manager ? (
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center text-[9px] font-bold text-white uppercase">
-                            {item.manager.firstName && item.manager.lastName
-                              ? (item.manager.firstName.substring(0, 1) + item.manager.lastName.substring(0, 1)).toUpperCase()
-                              : item.manager.email.substring(0, 2).toUpperCase()}
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-lg overflow-hidden shrink-0 shadow-sm border border-zinc-200">
+                            {item.manager.avatarUrl ? (
+                              <img
+                                src={item.manager.avatarUrl}
+                                alt={item.manager.firstName || item.manager.email}
+                                className="w-full h-full object-cover"
+                                referrerPolicy="no-referrer"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-blue-600 text-[10px] font-bold text-white uppercase">
+                                {item.manager.firstName && item.manager.lastName
+                                  ? (item.manager.firstName.substring(0, 1) + item.manager.lastName.substring(0, 1)).toUpperCase()
+                                  : item.manager.email.substring(0, 2).toUpperCase()}
+                              </div>
+                            )}
                           </div>
                           <span className="text-xs font-medium text-zinc-700">
                             {(item.manager.firstName || item.manager.lastName)

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 import {
@@ -33,6 +33,21 @@ export default function AdminLayout() {
   const isManager = role === "ROLE_EVENT_MANAGER";
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    // Reset root CSS variables for the admin area to their default values
+    const root = document.documentElement;
+    root.style.removeProperty('--theme-primary');
+    root.style.removeProperty('--theme-primary-hover');
+    root.style.removeProperty('--theme-primary-light');
+    root.style.removeProperty('--theme-foreground');
+    root.style.removeProperty('--theme-secondary');
+    root.style.removeProperty('--theme-secondary-hover');
+    root.style.removeProperty('--theme-secondary-foreground');
+    root.style.removeProperty('--theme-bg-light');
+    root.style.removeProperty('--theme-primary-rgb');
+    root.style.removeProperty('--theme-secondary-rgb');
+  }, []);
 
   const visibleNavItems = isManager
     ? navItems.filter((n) => !n.adminOnly)

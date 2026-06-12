@@ -1,9 +1,14 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { Calendar, MapPin, Users, Sparkles, ArrowRight } from "lucide-react";
 import { getMediaUrl } from "../api";
 
 export default function TotemEventsDisplay({ events, onEventSelect, selectedEvent }) {
   const [hoveredId, setHoveredId] = useState(null);
+  const [brokenImages, setBrokenImages] = useState(new Set());
+
+  const handleImageError = useCallback((eventId) => {
+    setBrokenImages(prev => new Set(prev).add(eventId));
+  }, []);
 
   const getStatusBadgeColor = (status) => {
     if (!status) return "bg-zinc-50 text-zinc-600 border-zinc-200";
@@ -68,11 +73,12 @@ export default function TotemEventsDisplay({ events, onEventSelect, selectedEven
                   
                   {/* Image Section */}
                   <div className="relative h-40 overflow-hidden bg-zinc-50 flex items-center justify-center">
-                    {event.logoUrl ? (
+                    {event.logoUrl && !brokenImages.has(event.id) ? (
                       <img
                         src={getMediaUrl(event.logoUrl)}
                         alt={event.name}
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
+                        onError={() => handleImageError(event.id)}
                       />
                     ) : (
                       <div className="flex flex-col items-center justify-center h-full text-zinc-300">

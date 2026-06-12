@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
-import { Lock, User, Presentation } from "lucide-react";
+import { Lock, User, Presentation, ArrowLeft } from "lucide-react";
 import { GoogleLogin } from "@react-oauth/google";
 
 export default function LoginPage() {
@@ -27,7 +27,14 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-4 font-sans bg-dot-grid relative overflow-hidden">
-
+      {/* Floating Back to Home button */}
+      <Link
+        to="/"
+        className="absolute top-6 left-6 flex items-center gap-2 text-xs font-bold text-zinc-600 hover:text-zinc-950 bg-white/80 hover:bg-white backdrop-blur-sm border border-zinc-200/80 rounded-2xl px-4 py-2.5 shadow-sm hover:shadow-md transition-all active:scale-[0.98] z-20 group"
+      >
+        <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
+        <span>Retour au portail</span>
+      </Link>
 
       <div className="w-full max-w-md bg-white/90 backdrop-blur-sm border border-zinc-200/80 rounded-3xl p-10 shadow-xl relative z-10 animate-fade-in">
         {/* Logo & Branding */}

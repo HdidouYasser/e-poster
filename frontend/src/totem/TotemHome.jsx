@@ -3,11 +3,25 @@ import { Link, useNavigate, useSearchParams, useLocation } from "react-router-do
 import { useQuery } from "@tanstack/react-query";
 import { publicApi, getMediaUrl, getPosterThumbnail } from "../api";
 import { Presentation, ArrowRight, ArrowLeft, Calendar, Monitor, BookOpen, HelpCircle } from "lucide-react";
+import { QRCodeCanvas } from "qrcode.react";
 import { useIdleTimer } from "../hooks/useIdleTimer";
 import { useDynamicTheme } from "../hooks/useDynamicTheme";
 import { createTotemSync } from "./totemSync";
 
 const sync = createTotemSync();
+
+/** Replace localhost with current hostname + current port so QR codes work from phones via Vite proxy */
+const toScannableUrl = (url) => {
+  if (!url) return "";
+  try {
+    const u = new URL(url);
+    u.hostname = window.location.hostname;
+    u.port = window.location.port;
+    return u.toString();
+  } catch {
+    return url;
+  }
+};
 
 export default function TotemHome() {
   const navigate = useNavigate();
@@ -301,36 +315,34 @@ export default function TotemHome() {
                       {/* QR Access section */}
                       <div className="space-y-3 pt-4 border-t border-zinc-100 theme-transition">
                         {(event.programUrl || event.revueUrl) ? (
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className={`grid gap-3 ${
+                            (event.programUrl && event.revueUrl) ? 'grid-cols-2' : 'grid-cols-1 max-w-xs'
+                          }`}>
                             {event.programUrl && (
                               <div
                                 onClick={(e) => e.stopPropagation()}
-                                className="flex items-center gap-3 bg-zinc-50 p-3 rounded-xl border border-zinc-200 theme-transition"
+                                className="flex flex-col items-center gap-2 bg-zinc-50 p-4 rounded-xl border border-zinc-200 theme-transition"
                               >
-                                <img
-                                  src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(event.programUrl)}`}
-                                  alt="QR Program"
-                                  className="w-11 h-11 bg-white p-1 rounded-lg shrink-0 border border-zinc-200"
-                                />
-                                <div className="min-w-0">
-                                  <h4 className="text-[10px] font-extrabold text-theme-primary uppercase tracking-wider theme-transition">Programme</h4>
-                                  <p className="text-[10px] text-zinc-400 truncate mt-0.5 font-medium">Scanner PDF</p>
+                                <div className="bg-white p-2 rounded-xl border border-zinc-200 flex items-center justify-center">
+                                  <QRCodeCanvas value={toScannableUrl(event.programUrl)} size={80} level="H" fgColor={event.colorPrimary || '#18181b'} />
+                                </div>
+                                <div className="text-center">
+                                  <h4 className="text-[10px] font-extrabold uppercase tracking-wider theme-transition" style={{ color: event.colorPrimary || 'var(--theme-primary)' }}>Programme</h4>
+                                  <p className="text-[10px] text-zinc-400 mt-0.5 font-medium">Scanner le PDF</p>
                                 </div>
                               </div>
                             )}
                             {event.revueUrl && (
                               <div
                                 onClick={(e) => e.stopPropagation()}
-                                className="flex items-center gap-3 bg-zinc-50 p-3 rounded-xl border border-zinc-200 theme-transition"
+                                className="flex flex-col items-center gap-2 bg-zinc-50 p-4 rounded-xl border border-zinc-200 theme-transition"
                               >
-                                <img
-                                  src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(event.revueUrl)}`}
-                                  alt="QR Revue"
-                                  className="w-11 h-11 bg-white p-1 rounded-lg shrink-0 border border-zinc-200"
-                                />
-                                <div className="min-w-0">
-                                  <h4 className="text-[10px] font-extrabold text-theme-primary uppercase tracking-wider theme-transition">La Revue</h4>
-                                  <p className="text-[10px] text-zinc-400 truncate mt-0.5 font-medium">Scanner Journal</p>
+                                <div className="bg-white p-2 rounded-xl border border-zinc-200 flex items-center justify-center">
+                                  <QRCodeCanvas value={toScannableUrl(event.revueUrl)} size={80} level="H" fgColor={event.colorPrimary || '#18181b'} />
+                                </div>
+                                <div className="text-center">
+                                  <h4 className="text-[10px] font-extrabold uppercase tracking-wider theme-transition" style={{ color: event.colorPrimary || 'var(--theme-primary)' }}>La Revue</h4>
+                                  <p className="text-[10px] text-zinc-400 mt-0.5 font-medium">Scanner le Journal</p>
                                 </div>
                               </div>
                             )}

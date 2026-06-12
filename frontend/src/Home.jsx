@@ -11,6 +11,20 @@ import {
   Scissors, Stethoscope, Baby, HelpCircle, ChevronDown,
   ChevronUp, Activity
 } from "lucide-react";
+import { QRCodeCanvas } from "qrcode.react";
+
+/** Replace localhost with current hostname + port for cross-device QR scanning */
+const toScannableUrl = (url) => {
+  if (!url) return "";
+  try {
+    const u = new URL(url);
+    u.hostname = window.location.hostname;
+    u.port = window.location.port;
+    return u.toString();
+  } catch {
+    return url;
+  }
+};
 
 export default function Home() {
   const navigate = useNavigate();
@@ -538,19 +552,28 @@ function EventCard({ event, formatDate, formatDateShort, onClick }) {
         <p className="vh-card-desc">{event.description || "Cliquez pour explorer les communications de ce congrès."}</p>
 
         <div className="vh-card-footer">
-          {event.programUrl && (
-            <div
-              className="vh-card-qr"
-              onClick={(e) => e.stopPropagation()}
-              title="Scanner pour accéder au programme"
-            >
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=64x64&data=${encodeURIComponent(event.programUrl)}`}
-                alt="QR Programme"
-              />
-              <span>Programme</span>
-            </div>
-          )}
+          <div className="flex flex-wrap gap-2">
+            {event.programUrl && (
+              <div
+                className="vh-card-qr"
+                onClick={(e) => e.stopPropagation()}
+                title="Scanner pour accéder au programme"
+              >
+                <QRCodeCanvas value={toScannableUrl(event.programUrl)} size={56} level="H" fgColor="#18181b" />
+                <span>Programme</span>
+              </div>
+            )}
+            {event.revueUrl && (
+              <div
+                className="vh-card-qr"
+                onClick={(e) => e.stopPropagation()}
+                title="Scanner pour accéder à la revue"
+              >
+                <QRCodeCanvas value={toScannableUrl(event.revueUrl)} size={56} level="H" fgColor="#18181b" />
+                <span>La Revue</span>
+              </div>
+            )}
+          </div>
           <button className="vh-card-cta">
             Explorer les posters
             <ArrowRight size={13} />

@@ -11,6 +11,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.EntityManager;
+
 import com.eposter.backend.audit.AuditService;
 import com.eposter.backend.category.Category;
 import com.eposter.backend.category.CategoryRepository;
@@ -23,16 +25,18 @@ public class PublicationService {
 
     private final PublicationRepository repository;
     private final EventRepository eventRepository;
+    private final EntityManager entityManager;
     private final AuditService auditService;
     private final AuthorRepository authorRepository;
     private final CategoryRepository categoryRepository;
 
-    public PublicationService(PublicationRepository repository, EventRepository eventRepository, AuditService auditService, AuthorRepository authorRepository, CategoryRepository categoryRepository) {
+    public PublicationService(PublicationRepository repository, EventRepository eventRepository, AuditService auditService, AuthorRepository authorRepository, CategoryRepository categoryRepository, EntityManager entityManager) {
         this.repository = repository;
         this.eventRepository = eventRepository;
         this.auditService = auditService;
         this.authorRepository = authorRepository;
         this.categoryRepository = categoryRepository;
+        this.entityManager = entityManager;
     }
 
     private String getCurrentUserEmail() {
@@ -236,10 +240,29 @@ public class PublicationService {
         processRelations(existing);
         
         if (payload.getMediaList() != null) {
-            existing.getMediaList().clear();
+            java.util.List<Long> payloadMediaIds = payload.getMediaList().stream()
+                    .map(com.eposter.backend.media.Media::getId)
+                    .filter(java.util.Objects::nonNull)
+                    .toList();
+
+            existing.getMediaList().removeIf(m -> m.getId() != null && !payloadMediaIds.contains(m.getId()));
+
             for (com.eposter.backend.media.Media media : payload.getMediaList()) {
-                media.setPublication(existing);
-                existing.getMediaList().add(media);
+                if (media.getId() == null) {
+                    media.setPublication(existing);
+                    existing.getMediaList().add(media);
+                } else {
+                    existing.getMediaList().stream()
+                            .filter(m -> m.getId().equals(media.getId()))
+                            .findFirst()
+                            .ifPresent(m -> {
+                                m.setFilePath(media.getFilePath());
+                                m.setFileName(media.getFileName());
+                                m.setFileType(media.getFileType());
+                                m.setFileSize(media.getFileSize());
+                                m.setThumbnailPath(media.getThumbnailPath());
+                            });
+                }
             }
         }
         
@@ -291,6 +314,7 @@ public class PublicationService {
 
         if (publication.getAuthorIds() != null) {
             publication.getPublicationAuthors().clear();
+            entityManager.flush(); // Flush DELETEs before INSERTs to avoid duplicate key violation
             List<String> authorNames = new ArrayList<>();
             int order = 0;
             for (Long authorId : publication.getAuthorIds()) {
@@ -335,6 +359,7 @@ public class PublicationService {
 
         if (publication.getCategoryIds() != null) {
             publication.getPublicationCategories().clear();
+            entityManager.flush(); // Flush DELETEs before INSERTs to avoid duplicate key violation
             List<String> categoryNames = new ArrayList<>();
             for (Long categoryId : publication.getCategoryIds()) {
                 Category category = categoryRepository.findByIdAndDeletedAtIsNull(categoryId).orElse(null);

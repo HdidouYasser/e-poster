@@ -55,7 +55,6 @@ public class Event {
 
     @jakarta.persistence.ManyToOne
     @jakarta.persistence.JoinColumn(name = "manager_id")
-    @com.fasterxml.jackson.annotation.JsonIgnore
     private com.eposter.backend.auth.User manager;
 
     public Long getId() { return id; }

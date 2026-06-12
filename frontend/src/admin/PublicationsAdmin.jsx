@@ -144,7 +144,7 @@ export default function PublicationsAdmin() {
     formData.append("file", file);
     try {
       const res = await api.post("/files", formData, { headers: { "Content-Type": "multipart/form-data" } });
-      const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : "http://localhost:8080";
+      const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : window.location.origin;
       setValue("posterUrl", baseUrl + res.data.url);
       toast.success("Image téléversée avec succès");
     } catch {
@@ -162,7 +162,7 @@ export default function PublicationsAdmin() {
     formData.append("file", file);
     try {
       const res = await api.post("/files", formData, { headers: { "Content-Type": "multipart/form-data" } });
-      const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : "http://localhost:8080";
+      const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : window.location.origin;
       
       const fileType = file.type.startsWith("image/") ? "IMAGE" : file.type.startsWith("video/") ? "VIDEO" : "PDF";
       const newMedia = {
