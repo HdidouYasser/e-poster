@@ -103,15 +103,24 @@ public class AuthService {
             newUser.setAvatarUrl(picture);
             // Non-usable password for Google-only accounts
             newUser.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
+            newUser.setIsGoogleAccount(true);
             newUser.setCreatedAt(java.time.Instant.now());
             newUser.setUpdatedAt(java.time.Instant.now());
             newUser.setRole(findOrCreateManagerRole());
             return userRepository.save(newUser);
         });
 
-        // Update avatar if Google provides a newer one and we don't have a custom one
+        // Ensure isGoogleAccount is updated/set to true and update avatar if needed
+        boolean needsUpdate = false;
+        if (Boolean.FALSE.equals(user.getIsGoogleAccount())) {
+            user.setIsGoogleAccount(true);
+            needsUpdate = true;
+        }
         if (picture != null && user.getAvatarUrl() == null) {
             user.setAvatarUrl(picture);
+            needsUpdate = true;
+        }
+        if (needsUpdate) {
             user.setUpdatedAt(java.time.Instant.now());
             userRepository.save(user);
         }

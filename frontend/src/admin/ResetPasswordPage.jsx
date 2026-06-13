@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api";
-import { Lock, ArrowLeft, Loader2, Check, Presentation } from "lucide-react";
+import { Lock, ArrowLeft, Loader2, Check, Presentation, Mail } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") || "";
+  const emailParam = searchParams.get("email") || "";
 
+  const [email, setEmail] = useState(emailParam);
   const [password, setPassword] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,6 +19,10 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     if (!token) {
       toast.error("Jeton de réinitialisation manquant.");
+      return;
+    }
+    if (!email) {
+      toast.error("L'adresse email est requise.");
       return;
     }
     if (password !== confirmPass) {
@@ -30,7 +36,7 @@ export default function ResetPasswordPage() {
 
     setLoading(true);
     try {
-      await api.post("/auth/reset-password", { token, password });
+      await api.post("/auth/reset-password", { token, email, password });
       toast.success("Mot de passe réinitialisé avec succès !");
       navigate("/login");
     } catch (err) {
@@ -73,6 +79,31 @@ export default function ResetPasswordPage() {
           </div>
         ) : (
           <form onSubmit={onSubmit} className="space-y-5">
+            {/* Email field — readonly if provided via URL, editable otherwise */}
+            <div>
+              <label className="block text-sm font-semibold text-zinc-700 mb-1.5 flex items-center gap-1.5">
+                <Mail size={13} className="text-zinc-400" /> Adresse email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                readOnly={!!emailParam}
+                placeholder="votre@email.com"
+                className={`w-full border text-zinc-900 px-4 py-3 rounded-2xl outline-none transition-all text-sm shadow-inner ${
+                  emailParam
+                    ? 'bg-zinc-100 border-zinc-200 cursor-not-allowed text-zinc-500'
+                    : 'bg-zinc-50/70 border-zinc-200 focus:border-zinc-400 focus:bg-white'
+                }`}
+                required
+              />
+              {emailParam && (
+                <p className="text-[10px] text-zinc-400 mt-1 font-medium">
+                  Email vérifié depuis le lien de réinitialisation.
+                </p>
+              )}
+            </div>
+
             <div>
               <label className="block text-sm font-semibold text-zinc-700 mb-1.5 flex items-center gap-1.5">
                 <Lock size={13} className="text-zinc-400" /> Nouveau mot de passe

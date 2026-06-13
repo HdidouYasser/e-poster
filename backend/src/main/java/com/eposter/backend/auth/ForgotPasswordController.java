@@ -36,10 +36,20 @@ public class ForgotPasswordController {
             return ResponseEntity.badRequest().body(Map.of("message", "L'adresse email est requise."));
         }
 
-        User user = userRepository.findByEmail(email).orElse(null);
+        // Strict email format validation
+        if (!email.matches("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$")) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Le format de l'adresse email est invalide."));
+        }
+
+        User user = userRepository.findByEmail(email.trim()).orElse(null);
         if (user == null) {
             // Standard security practice: return a success message even if email is not found to prevent user enumeration
             return ResponseEntity.ok(Map.of("message", "Si cet email existe dans notre base de données, un lien de réinitialisation vous a été envoyé."));
+        }
+
+        // Restrict reset for Google SSO accounts
+        if (Boolean.TRUE.equals(user.getIsGoogleAccount())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Ce compte est associé à Google Sign-In. Veuillez vous connecter directement avec Google."));
         }
 
         // Clean up old tokens for this user (find + delete + flush to avoid unique constraint)
@@ -66,15 +76,16 @@ public class ForgotPasswordController {
     @Transactional
     public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
         String token = body.get("token");
+        String email = body.get("email");
         String newPassword = body.get("password");
 
-        if (token == null || token.isBlank() || newPassword == null || newPassword.isBlank()) {
+        if (token == null || token.isBlank() || email == null || email.isBlank() || newPassword == null || newPassword.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Les paramètres requis sont manquants."));
         }
 
         PasswordResetToken resetToken = tokenRepository.findByToken(token).orElse(null);
-        if (resetToken == null) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Jeton de réinitialisation invalide."));
+        if (resetToken == null || !resetToken.getUser().getEmail().equalsIgnoreCase(email.trim())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Jeton de réinitialisation ou adresse email invalide."));
         }
 
         if (resetToken.isExpired()) {
@@ -86,6 +97,7 @@ public class ForgotPasswordController {
         User user = resetToken.getUser();
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         user.setUpdatedAt(Instant.now());
+        // Since they set a password, they now have a local password. If they logged in with Google before, they can still do so.
         userRepository.save(user);
 
         // Delete token

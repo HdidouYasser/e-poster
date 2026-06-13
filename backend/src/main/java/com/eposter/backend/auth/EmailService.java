@@ -18,7 +18,7 @@ public class EmailService {
     }
 
     public void sendResetPasswordEmail(String toEmail, String token) {
-        String resetUrl = "http://localhost:5173/reset-password?token=" + token;
+        String resetUrl = "http://localhost:5173/reset-password?token=" + token + "&email=" + java.net.URLEncoder.encode(toEmail, java.nio.charset.StandardCharsets.UTF_8);
         String subject = "Réinitialisation de votre mot de passe - E-Poster";
         String content = "<h3>Bonjour,</h3>"
                 + "<p>Vous avez demandé la réinitialisation de votre mot de passe pour la plateforme E-Poster.</p>"

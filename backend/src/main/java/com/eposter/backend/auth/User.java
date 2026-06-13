@@ -45,6 +45,9 @@ public class User {
     @Column(name = "avatar_url")
     private String avatarUrl;
 
+    @Column(name = "is_google_account", nullable = false)
+    private Boolean isGoogleAccount = false;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getEmail() { return email; }
@@ -65,5 +68,7 @@ public class User {
     public void setDeletedAt(Instant deletedAt) { this.deletedAt = deletedAt; }
     public String getAvatarUrl() { return avatarUrl; }
     public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+    public Boolean getIsGoogleAccount() { return isGoogleAccount; }
+    public void setIsGoogleAccount(Boolean googleAccount) { this.isGoogleAccount = googleAccount; }
 }
 

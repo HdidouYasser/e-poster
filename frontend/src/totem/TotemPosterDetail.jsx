@@ -76,6 +76,12 @@ export default function TotemPosterDetail() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
 
+  /** Build a scannable URL pointing to the visitor detail page (not the raw poster file) */
+  const visitorUrl = useMemo(() => {
+    const base = `${window.location.origin}/totem/publications/${id}?screen=visitor`;
+    return base;
+  }, [id]);
+
   const activeEventQuery = useQuery({
     queryKey: ["totem-active-event"],
     queryFn: async () => (await publicApi.get("/events/active")).data,
@@ -497,7 +503,7 @@ export default function TotemPosterDetail() {
                     className="flex items-center gap-3 bg-white p-3 rounded-lg border border-zinc-200 cursor-pointer hover:border-zinc-300 active:scale-[0.99] transition-all"
                   >
                     <div className="p-1 bg-zinc-50 rounded-lg border border-zinc-100 shrink-0">
-                      <QRCodeCanvas value={getMediaUrl(posterUrl)} size={64} level="M" fgColor="#18181b" />
+                      <QRCodeCanvas value={visitorUrl} size={64} level="M" fgColor="#18181b" />
                     </div>
                     <div className="flex-1">
                       <h4 className="totem-section-label mb-0.5">Accès Mobile</h4>
@@ -505,7 +511,7 @@ export default function TotemPosterDetail() {
                         <span>Consulter sur mobile</span>
                         <span className="text-[9px] text-theme-primary font-bold uppercase tracking-wider theme-transition">Agrandir</span>
                       </p>
-                      <p className="text-[9px] text-zinc-500 leading-relaxed">Scannez pour emporter cet e-poster et le lire sur votre smartphone.</p>
+                      <p className="text-[9px] text-zinc-500 leading-relaxed">Scannez pour consulter cette publication et ses médias sur votre smartphone.</p>
                     </div>
                   </div>
                 </div>
@@ -549,10 +555,10 @@ export default function TotemPosterDetail() {
             <h3 className="text-base font-bold text-zinc-900 mb-2 font-display">Accès Mobile</h3>
             <p className="text-xs text-zinc-500 mb-6">Scannez ce QR Code avec votre smartphone pour emporter et lire ce poster scientifique.</p>
             <div className="inline-block p-4 bg-zinc-50 border border-zinc-100 rounded-2xl mb-4">
-              <QRCodeCanvas value={getMediaUrl(posterUrl)} size={200} level="H" fgColor="#18181b" />
+              <QRCodeCanvas value={visitorUrl} size={200} level="H" fgColor="#18181b" />
             </div>
             <p className="text-[10px] font-mono text-zinc-400 select-all truncate bg-zinc-50 px-3 py-2 rounded-xl border border-zinc-100">
-              {getMediaUrl(posterUrl)}
+              {visitorUrl}
             </p>
           </div>
         </div>
