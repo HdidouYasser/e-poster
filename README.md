@@ -7,7 +7,7 @@ Plateforme de gestion et d'affichage interactif de posters électroniques (e-pos
 Le projet est divisé en trois parties principales :
 - **Backend** : API REST développée en Java avec Spring Boot, sécurité JWT, base de données MySQL et recherche full-text.
 - **Frontend** : Application React 18 propulsée par Vite, avec Tailwind CSS pour un design premium, Zustand pour la gestion d'état et React Query pour la récupération de données.
-- **Migration** : Script Node.js pour importer de la donnée existante.
+
 
 ## Fonctionnalités Principales
 
