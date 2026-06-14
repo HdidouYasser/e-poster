@@ -65,7 +65,7 @@ export default function RegisterPage() {
                 id="register-firstname"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Jean"
+                placeholder=""
                 className="w-full bg-zinc-50/70 border border-zinc-200 text-zinc-900 px-3.5 py-2.5 rounded-xl focus:border-zinc-450 focus:bg-white outline-none transition-all text-xs"
               />
             </div>
@@ -75,7 +75,7 @@ export default function RegisterPage() {
                 id="register-lastname"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                placeholder="Dupont"
+                placeholder=""
                 className="w-full bg-zinc-50/70 border border-zinc-200 text-zinc-900 px-3.5 py-2.5 rounded-xl focus:border-zinc-450 focus:bg-white outline-none transition-all text-xs"
               />
             </div>
@@ -91,7 +91,7 @@ export default function RegisterPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="responsable@example.com"
+                placeholder=""
                 className="w-full bg-zinc-50/70 border border-zinc-200 text-zinc-900 pl-11 pr-4 py-2.5 rounded-xl focus:border-zinc-450 focus:bg-white outline-none transition-all text-xs"
                 required
               />
@@ -108,7 +108,7 @@ export default function RegisterPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder=""
                 className="w-full bg-zinc-50/70 border border-zinc-200 text-zinc-900 pl-11 pr-4 py-2.5 rounded-xl focus:border-zinc-450 focus:bg-white outline-none transition-all text-xs"
                 required
               />

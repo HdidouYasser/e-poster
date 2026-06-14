@@ -57,7 +57,7 @@ export default function LoginPage() {
                 id="login-username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Ex: admin"
+                placeholder=""
                 className="w-full bg-zinc-50/70 border border-zinc-200 text-zinc-900 pl-11 pr-4 py-3 rounded-2xl focus:border-zinc-400 focus:bg-white outline-none transition-all text-sm shadow-inner"
                 required
               />
@@ -74,7 +74,7 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder=""
                 className="w-full bg-zinc-50/70 border border-zinc-200 text-zinc-900 pl-11 pr-4 py-3 rounded-2xl focus:border-zinc-400 focus:bg-white outline-none transition-all text-sm shadow-inner"
                 required
               />

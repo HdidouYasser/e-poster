@@ -134,7 +134,8 @@ public class EventService {
             throw new IllegalArgumentException("Access Denied: Event Managers are not allowed to delete events");
         }
         Event existing = getById(id); // Performs ownership check
-        repository.delete(existing);
+        existing.setDeletedAt(java.time.Instant.now());
+        repository.save(existing);
         auditService.log("EVENT", id, "DELETE", existing.getTitle());
     }
 

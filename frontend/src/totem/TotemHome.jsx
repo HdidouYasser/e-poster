@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { publicApi, getMediaUrl, getPosterThumbnail } from "../api";
@@ -29,6 +29,11 @@ export default function TotemHome() {
   const screen = params.get("screen") || "1";
   const [selectedScreen, setSelectedScreen] = useState(screen);
   const [hoveredEvent, setHoveredEvent] = useState(null);
+  const [brokenBanners, setBrokenBanners] = useState(new Set());
+
+  const handleBannerError = useCallback((eventId) => {
+    setBrokenBanners(prev => new Set(prev).add(eventId));
+  }, []);
 
   // Fetch all events and filter active ones in the frontend
   const eventsQuery = useQuery({
@@ -255,11 +260,12 @@ export default function TotemHome() {
                   >
                     {/* Event Banner background */}
                     <div className="totem-event-card-banner theme-transition">
-                      {event.bannerUrl ? (
+                      {event.bannerUrl && !brokenBanners.has(event.id) ? (
                         <img
                           src={getMediaUrl(event.bannerUrl)}
                           alt="Banner"
                           className="w-full h-full object-cover"
+                          onError={() => handleBannerError(event.id)}
                         />
                       ) : (
                         <div className="w-full h-full bg-zinc-100 flex items-center justify-center">
