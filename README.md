@@ -4,10 +4,7 @@ Plateforme de gestion et d'affichage interactif de communications scientifiques 
 
 ---
 
-Le projet est divisé en trois parties principales :
-- **Backend** : API REST développée en Java avec Spring Boot, sécurité JWT, base de données MySQL et recherche full-text.
-- **Frontend** : Application React 18 propulsée par Vite, avec Tailwind CSS pour un design premium, Zustand pour la gestion d'état et React Query pour la récupération de données.
-
+## À propos du projet
 
 Ce projet a été développé dans le cadre d'un stage technique effectué au sein de **DevPub Solution**, une agence spécialisée dans les solutions interactives événementielles. Il porte sur la **refonte dynamique complète** de la plateforme E-Poster existante, initialement construite sur une architecture legacy PHP/MySQL. L'objectif principal était de moderniser l'ensemble de la stack technique en migrant vers une architecture moderne, scalable et maintenable, capable de supporter les exigences de performance et de sécurité d'un environnement professionnel.
 
